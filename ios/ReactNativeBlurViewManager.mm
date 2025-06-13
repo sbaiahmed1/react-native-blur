@@ -14,6 +14,9 @@ RCT_EXPORT_MODULE(ReactNativeBlurView)
   return [[UIView alloc] init];
 }
 
-RCT_EXPORT_VIEW_PROPERTY(color, NSString)
+// Legacy view manager - properties are now handled by Fabric
+RCT_EXPORT_VIEW_PROPERTY(blurType, NSString)
+RCT_EXPORT_VIEW_PROPERTY(blurAmount, NSNumber)
+RCT_EXPORT_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString)
 
 @end
