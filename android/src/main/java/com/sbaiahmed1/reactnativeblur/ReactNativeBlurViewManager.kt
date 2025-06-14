@@ -1,8 +1,7 @@
 package com.sbaiahmed1.reactnativeblur
 
-import android.graphics.Color
 import com.facebook.react.module.annotations.ReactModule
-import com.facebook.react.uimanager.SimpleViewManager
+import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManagerDelegate
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -10,7 +9,7 @@ import com.facebook.react.viewmanagers.ReactNativeBlurViewManagerInterface
 import com.facebook.react.viewmanagers.ReactNativeBlurViewManagerDelegate
 
 @ReactModule(name = ReactNativeBlurViewManager.NAME)
-class ReactNativeBlurViewManager : SimpleViewManager<ReactNativeBlurView>(),
+class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
   ReactNativeBlurViewManagerInterface<ReactNativeBlurView> {
   private val mDelegate: ViewManagerDelegate<ReactNativeBlurView>
 
@@ -30,9 +29,19 @@ class ReactNativeBlurViewManager : SimpleViewManager<ReactNativeBlurView>(),
     return ReactNativeBlurView(context)
   }
 
-  @ReactProp(name = "color")
-  override fun setColor(view: ReactNativeBlurView?, color: String?) {
-    view?.setBackgroundColor(Color.parseColor(color))
+  @ReactProp(name = "blurType")
+  override fun setBlurType(view: ReactNativeBlurView?, blurType: String?) {
+    view?.setBlurType(blurType ?: "light")
+  }
+
+  @ReactProp(name = "blurAmount")
+  override fun setBlurAmount(view: ReactNativeBlurView?, blurAmount: Double) {
+    view?.setBlurAmount(blurAmount.toFloat())
+  }
+
+  @ReactProp(name = "reducedTransparencyFallbackColor")
+  override fun setReducedTransparencyFallbackColor(view: ReactNativeBlurView?, reducedTransparencyFallbackColor: String?) {
+    view?.setReducedTransparencyFallbackColor(reducedTransparencyFallbackColor)
   }
 
   companion object {
