@@ -2,6 +2,15 @@
 
 A modern React Native blur view component that provides native blur effects for both iOS and Android platforms.
 
+## Demo
+
+<div align="center">
+  <img src="iOS-demo.gif" alt="iOS Demo" width="300" />
+  <img src="android-demo.gif" alt="Android Demo" width="300" />
+  <br>
+  <em>iOS (left) and Android (right) blur effects in action</em>
+</div>
+
 ## Features
 
 - 🎨 **Multiple Blur Types**: Support for various blur styles including system materials on iOS
@@ -10,6 +19,9 @@ A modern React Native blur view component that provides native blur effects for 
 - 🔧 **TypeScript**: Full TypeScript support with proper type definitions
 - 🚀 **Turbo Module**: Built with React Native's new architecture (Fabric)
 - 🎯 **Customizable**: Adjustable blur intensity and fallback colors
+- 💡 **Performance Optimized**: Uses hardware acceleration for smooth rendering
+- 🛠️ **Easy to Use**: Simple API for quick integration into your React Native projects
+- 📦 **Modern**: Uses Kotlin for Android implementation and *will* use Swift for iOS, ensuring modern development practices
 
 ## Architecture Compatibility
 
