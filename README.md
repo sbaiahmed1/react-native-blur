@@ -29,7 +29,28 @@ cd ios && pod install
 
 ### Android Setup
 
-No additional setup required for Android.
+### Requirements
+- **Minimum SDK:** API level 24 (Android 7.0)
+- **Target SDK:** API level 35 (Android 15)
+- **Compile SDK:** API level 35 (Android 15)
+- **Gradle:** 8.10.2
+- **Kotlin:** 2.0.21
+
+### Dependencies
+The Android implementation uses the [BlurView library by Dimezis](https://github.com/Dimezis/BlurView):
+```gradle
+implementation 'com.github.Dimezis:BlurView:version-2.0.6'
+```
+
+### Implementation Details
+The Android implementation leverages the BlurView library to provide real blur effects:
+
+- **Real-time Blur:** Uses `RenderEffectBlur` for hardware-accelerated blur rendering
+- **Hardware Acceleration:** Utilizes GPU rendering for optimal performance
+- **Multiple Blur Algorithms:** Supports different blur implementations based on device capabilities
+- **Performance Optimized:** Efficient blur rendering with minimal impact on app performance
+- **Fallback Handling:** Gracefully handles devices with limited graphics capabilities
+- **No Extra Permissions:** Does not require additional Android permissions
 
 ## Usage
 
