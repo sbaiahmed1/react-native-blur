@@ -1,6 +1,7 @@
 #import <React/RCTViewManager.h>
 #import <React/RCTUIManager.h>
 #import "RCTBridge.h"
+#import "ReactNativeBlurView.h"
 
 @interface ReactNativeBlurViewManager : RCTViewManager
 @end
@@ -11,7 +12,7 @@ RCT_EXPORT_MODULE(ReactNativeBlurView)
 
 - (UIView *)view
 {
-  return [[UIView alloc] init];
+  return [[ReactNativeBlurView alloc] init];
 }
 
 // Legacy view manager - properties are now handled by Fabric

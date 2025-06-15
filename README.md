@@ -11,6 +11,15 @@ A modern React Native blur view component that provides native blur effects for 
 - 🚀 **Turbo Module**: Built with React Native's new architecture (Fabric)
 - 🎯 **Customizable**: Adjustable blur intensity and fallback colors
 
+## Architecture Compatibility
+
+This library is fully compatible with both React Native architectures:
+
+- ✅ **New Architecture (Fabric)**: Full support with Turbo Modules
+- ✅ **Old Architecture (Paper)**: Backward compatibility maintained
+
+Both architectures have been tested and work perfectly without any additional configuration required.
+
 ## Installation
 
 ```bash

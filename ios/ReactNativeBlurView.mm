@@ -263,6 +263,30 @@ Class<RCTComponentViewProtocol> ReactNativeBlurViewCls(void)
   return ReactNativeBlurView.class;
 }
 
+// Legacy compatibility methods for Old Architecture
+- (void)setBlurAmount:(NSNumber *)blurAmount
+{
+  if (blurAmount) {
+    [self updateBlurEffectWithAmount:[blurAmount doubleValue]];
+  }
+}
+
+- (void)setBlurType:(NSString *)blurType
+{
+  if (blurType) {
+    UIBlurEffectStyle blurStyle = [self blurEffectStyleFromString:blurType];
+    UIBlurEffect *blurEffect = [UIBlurEffect effectWithStyle:blurStyle];
+    _blurView.effect = blurEffect;
+  }
+}
+
+- (void)setReducedTransparencyFallbackColor:(NSString *)color
+{
+  if (color && color.length > 0) {
+    _fallbackView.backgroundColor = [self hexStringToColor:color];
+  }
+}
+
 - (UIColor *)hexStringToColor:(NSString *)stringToConvert
 {
   if (!stringToConvert || stringToConvert.length == 0) {
