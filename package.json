@@ -43,7 +43,11 @@
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "blur",
+    "react blur",
+    "react native blur",
+    "modern blur"
   ],
   "repository": {
     "type": "git",
