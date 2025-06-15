@@ -141,7 +141,7 @@ The following blur types are supported:
 On iOS, this component uses `UIVisualEffectView` to provide true blur effects. All blur types are supported with their native implementations.
 
 ### Android
-On Android, the component provides a translucent overlay approximation of blur effects. While not a true blur, it provides a similar visual effect that's consistent across different Android versions.
+On Android, the component uses the BlurView library to provide real blur effects with hardware acceleration. The implementation supports multiple blur algorithms and gracefully falls back to translucent overlay approximation on devices with limited graphics capabilities.
 
 ## Accessibility
 
@@ -184,7 +184,7 @@ npx react-native run-android
 ## Performance Considerations
 
 - **iOS**: Native blur effects are hardware-accelerated and performant
-- **Android**: The translucent overlay is lightweight but not a true blur
+- **Android**: Real blur effects are hardware-accelerated with fallback to lightweight overlay when needed
 - Avoid using too many blur views simultaneously on lower-end devices
 - Consider using `reducedTransparencyFallbackColor` for better accessibility
 

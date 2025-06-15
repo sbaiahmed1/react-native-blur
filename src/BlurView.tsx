@@ -38,7 +38,7 @@ export interface BlurViewProps {
  * A cross-platform blur view component that provides native blur effects.
  *
  * On iOS, this uses UIVisualEffectView for true blur effects.
- * On Android, this provides a translucent overlay approximation.
+ * On Android, this uses the BlurView library for hardware-accelerated blur effects.
  *
  * @example
  * ```tsx
