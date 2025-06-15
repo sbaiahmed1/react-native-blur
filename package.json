@@ -56,7 +56,8 @@
   },
   "homepage": "https://github.com/sbaiahmed1/sbaiahmed1-react-native-blur#readme",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.6.0",
