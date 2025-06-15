@@ -47,14 +47,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sbaiahmed1/sbaiahmed1-react-native-blur.git"
+    "url": "git+https://github.com/sbaiahmed1/react-native-blur.git"
   },
   "author": "Ahmed Sbai <ahmedclubust@gmail.com> (https://github.com/sbaiahmed1)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sbaiahmed1/sbaiahmed1-react-native-blur/issues"
+    "url": "https://github.com/sbaiahmed1/react-native-blur/issues"
   },
-  "homepage": "https://github.com/sbaiahmed1/sbaiahmed1-react-native-blur#readme",
+  "homepage": "https://github.com/sbaiahmed1/react-native-blur#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public"
