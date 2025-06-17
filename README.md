@@ -1,7 +1,18 @@
 # @sbaiahmed1/react-native-blur
 
 A modern React Native blur view component that provides native blur effects for both iOS and Android platforms.
+<div align="center">
+  <p>
+    <img src="https://img.shields.io/npm/v/@sbaiahmed1/react-native-blur?style=for-the-badge&color=blue" alt="npm version" />
+    <img src="https://img.shields.io/npm/dm/@sbaiahmed1/react-native-blur?style=for-the-badge&color=green" alt="downloads" />
+    <img src="https://img.shields.io/github/license/sbaiahmed1/react-native-blur?style=for-the-badge&color=orange" alt="license" />
+    <img src="https://img.shields.io/github/stars/sbaiahmed1/react-native-blur?style=for-the-badge&color=yellow" alt="stars" />
+  </p>
 
+  <p>
+    <img src="https://img.shields.io/badge/New%20Architecture-Ready-purple?style=for-the-badge" alt="New Architecture" />
+  </p>
+</div>
 ## Demo
 
 <div align="center">
