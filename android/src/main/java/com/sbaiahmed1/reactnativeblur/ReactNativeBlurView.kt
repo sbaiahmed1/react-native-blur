@@ -346,19 +346,13 @@ class ReactNativeBlurView : BlurView {
     color?.let {
       try {
         val fallbackColor = Color.parseColor(it)
-        // Use fallback color as overlay when accessibility settings require it
-        // This is a simplified implementation - in a full implementation,
-        // you'd check system accessibility settings
-        overlayColor = fallbackColor
-        logDebug("setReducedTransparencyFallbackColor: $color -> $fallbackColor (isSetup: $isSetup)")
+        logDebug("setReducedTransparencyFallbackColor: $color -> $fallbackColor (stored but not applied unless accessibility requires it)")
         
-        if (isSetup) {
-          try {
-            setOverlayColor(overlayColor)
-          } catch (e: Exception) {
-            logError("Failed to set fallback overlay color: ${e.message}", e)
-          }
-        }
+        // Store the fallback color but don't apply it unless accessibility settings require it
+        // For now, we'll just log it since Android doesn't have a direct equivalent to iOS's 
+        // "Reduce Transparency" setting that we can easily check
+        // The blur effect should remain the primary visual
+        
       } catch (e: Exception) {
         logWarning("Invalid color format for reduced transparency fallback: $color")
       }

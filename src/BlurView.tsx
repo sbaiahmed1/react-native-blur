@@ -1,4 +1,5 @@
 import React from 'react';
+import { View } from 'react-native';
 import type { ViewStyle, StyleProp } from 'react-native';
 import ReactNativeBlurView, {
   type BlurType,
@@ -40,6 +41,10 @@ export interface BlurViewProps {
  * On iOS, this uses UIVisualEffectView for true blur effects.
  * On Android, this uses the BlurView library for hardware-accelerated blur effects.
  *
+ * This component automatically handles the proper positioning pattern where the blur
+ * effect is positioned absolutely behind the content, ensuring interactive elements
+ * work correctly.
+ *
  * @example
  * ```tsx
  * <BlurView
@@ -47,7 +52,8 @@ export interface BlurViewProps {
  *   blurAmount={20}
  *   style={{ flex: 1 }}
  * >
- *   <Text>Content behind blur</Text>
+ *   <Text>Content on top of blur</Text>
+ *   <Button title="Interactive Button" onPress={() => {}} />
  * </BlurView>
  * ```
  */
@@ -59,16 +65,39 @@ export const BlurView: React.FC<BlurViewProps> = ({
   children,
   ...props
 }) => {
+  // If no children, render the blur view directly (for background use)
+  if (!children) {
+    return (
+      <ReactNativeBlurView
+        blurType={blurType}
+        blurAmount={blurAmount}
+        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+        style={style}
+        {...props}
+      />
+    );
+  }
+
+  // If children exist, use the absolute positioning pattern
   return (
-    <ReactNativeBlurView
-      blurType={blurType}
-      blurAmount={blurAmount}
-      reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-      style={style}
-      {...props}
-    >
-      {children}
-    </ReactNativeBlurView>
+    <View style={[{ position: 'relative', overflow: 'hidden' }, style]}>
+      {/* Blur effect positioned absolutely behind content */}
+      <ReactNativeBlurView
+        blurType={blurType}
+        blurAmount={blurAmount}
+        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }}
+        {...props}
+      />
+      {/* Content positioned relatively on top */}
+      <View style={{ position: 'relative', zIndex: 1 }}>{children}</View>
+    </View>
   );
 };
 
