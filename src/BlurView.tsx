@@ -66,7 +66,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
   ...props
 }) => {
   // If no children, render the blur view directly (for background use)
-  if (!children) {
+  if (React.Children.count(children) === 0) {
     return (
       <ReactNativeBlurView
         blurType={blurType}
