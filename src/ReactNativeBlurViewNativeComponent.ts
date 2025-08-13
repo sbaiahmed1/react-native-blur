@@ -18,10 +18,16 @@ export type BlurType =
   | 'systemThickMaterial'
   | 'systemChromeMaterial';
 
+export type GlassType = 'clear' | 'regular';
+
 interface NativeProps extends ViewProps {
-  blurType?: WithDefault<BlurType, 'light'>;
-  blurAmount?: WithDefault<Double, 10>;
-  reducedTransparencyFallbackColor?: string;
+  glassTintColor?: WithDefault<string, 'clear'>;
+  glassOpacity?: WithDefault<Double, 1.0>;
+  blurAmount?: WithDefault<Double, 10.0>;
+  type?: WithDefault<'blur' | 'liquidGlass', 'blur'>;
+  blurType?: WithDefault<BlurType, 'xlight'>;
+  glassType?: WithDefault<GlassType, 'clear'>;
+  reducedTransparencyFallbackColor?: WithDefault<string, '#FFFFFF'>;
 }
 
 export default codegenNativeComponent<NativeProps>('ReactNativeBlurView');
