@@ -44,6 +44,26 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
     view?.setReducedTransparencyFallbackColor(reducedTransparencyFallbackColor)
   }
 
+  @ReactProp(name = "glassTintColor")
+  override fun setGlassTintColor(view: ReactNativeBlurView?, glassTintColor: String?) {
+    view?.setGlassTintColor(glassTintColor)
+  }
+
+  @ReactProp(name = "glassOpacity")
+  override fun setGlassOpacity(view: ReactNativeBlurView?, glassOpacity: Double) {
+    view?.setGlassOpacity(glassOpacity.toFloat())
+  }
+
+  @ReactProp(name = "type")
+  override fun setType(view: ReactNativeBlurView?, type: String?) {
+    view?.setType(type ?: "blur")
+  }
+
+  @ReactProp(name = "glassType")
+  override fun setGlassType(view: ReactNativeBlurView?, glassType: String?) {
+    view?.setGlassType(glassType ?: "clear")
+  }
+
   companion object {
     const val NAME = "ReactNativeBlurView"
   }
