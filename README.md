@@ -1,6 +1,6 @@
 # @sbaiahmed1/react-native-blur
 
-A modern React Native blur view component that provides native blur effects for both iOS and Android platforms.
+A modern React Native blur view component that provides native blur effects and **liquid glass effects** for both iOS and Android platforms.
 <div align="center">
   <p>
     <img src="https://img.shields.io/npm/v/@sbaiahmed1/react-native-blur?style=for-the-badge&color=blue" alt="npm version" />
@@ -11,6 +11,8 @@ A modern React Native blur view component that provides native blur effects for 
 
   <p>
     <img src="https://img.shields.io/badge/New%20Architecture-Ready-purple?style=for-the-badge" alt="New Architecture" />
+    <img src="https://img.shields.io/badge/iOS%2026+-Liquid%20Glass-blue?style=for-the-badge" alt="Liquid Glass" />
+    <img src="https://img.shields.io/badge/SwiftUI-Powered-orange?style=for-the-badge" alt="SwiftUI" />
   </p>
 </div>
 ## Demo
@@ -24,15 +26,17 @@ A modern React Native blur view component that provides native blur effects for 
 
 ## Features
 
+- 🌊 **Liquid Glass Effects**: Revolutionary glass effects using iOS 26+ UIGlassEffect API
 - 🎨 **Multiple Blur Types**: Support for various blur styles including system materials on iOS
 - 📱 **Cross-Platform**: Works on both iOS and Android
 - ♿ **Accessibility**: Automatic fallback for reduced transparency settings
 - 🔧 **TypeScript**: Full TypeScript support with proper type definitions
 - 🚀 **Turbo Module**: Built with React Native's new architecture (Fabric)
-- 🎯 **Customizable**: Adjustable blur intensity and fallback colors
+- 🎯 **Customizable**: Adjustable blur intensity, glass tint colors, and opacity
 - 💡 **Performance Optimized**: Uses hardware acceleration for smooth rendering
 - 🛠️ **Easy to Use**: Simple API for quick integration into your React Native projects
-- 📦 **Modern**: Uses Kotlin for Android implementation and *will* use Swift for iOS, ensuring modern development practices
+- 📦 **Modern**: Uses SwiftUI for iOS and Kotlin for Android, ensuring cutting-edge development practices
+- 🔄 **Smart Fallbacks**: Graceful degradation from liquid glass to blur on older iOS versions
 
 ## 📊 Library Comparison
 
@@ -289,13 +293,41 @@ function MyComponent() {
 }
 ```
 
+### Liquid Glass Usage (iOS 26+)
+
+```tsx
+import React from 'react';
+import { BlurView } from '@sbaiahmed1/react-native-blur';
+
+function LiquidGlassComponent() {
+  return (
+    <BlurView
+      type="liquidGlass"
+      glassType="regular"
+      glassTintColor="#007AFF"
+      glassOpacity={0.8}
+      style={{
+        padding: 20,
+        borderRadius: 20,
+      }}
+    >
+      <Text>Beautiful liquid glass effect</Text>
+    </BlurView>
+  );
+}
+```
+
 ## Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `blurType` | `BlurType` | `'light'` | The type of blur effect to apply |
+| `type` | `'blur' \| 'liquidGlass'` | `'blur'` | The type of effect to apply (liquidGlass is iOS 26+ only) |
+| `blurType` | `BlurType` | `'xlight'` | The type of blur effect to apply |
 | `blurAmount` | `number` | `10` | The intensity of the blur effect (0-100) |
-| `reducedTransparencyFallbackColor` | `string` | `undefined` | Fallback color when reduced transparency is enabled |
+| `glassType` | `'clear' \| 'regular'` | `'clear'` | The type of glass effect (iOS 26+ only) |
+| `glassTintColor` | `string` | `'clear'` | The tint color for glass effect (iOS 26+ only) |
+| `glassOpacity` | `number` | `1.0` | The opacity of glass effect (0-1, iOS 26+ only) |
+| `reducedTransparencyFallbackColor` | `string` | `'#FFFFFF'` | Fallback color when reduced transparency is enabled |
 | `style` | `ViewStyle` | `undefined` | Style object for the blur view |
 | `children` | `ReactNode` | `undefined` | Child components to render inside the blur view |
 
@@ -321,10 +353,15 @@ The following blur types are supported:
 ## Platform Differences
 
 ### iOS
-On iOS, this component uses `UIVisualEffectView` to provide true blur effects. All blur types are supported with their native implementations.
+On iOS, this component has been completely rewritten using **SwiftUI** for modern performance and features:
+
+- **iOS 26+**: Uses native `UIGlassEffect` API for true liquid glass effects with customizable tint colors and opacity
+- **iOS 13-25**: Uses enhanced `UIVisualEffectView` with precise blur intensity control
+- **Older iOS**: Graceful fallback to standard blur effects
+- **SwiftUI Integration**: Leverages SwiftUI's declarative UI for better performance and maintainability
 
 ### Android
-On Android, the component uses the BlurView library to provide real blur effects with hardware acceleration. The implementation supports multiple blur algorithms and gracefully falls back to translucent overlay approximation on devices with limited graphics capabilities.
+On Android, the component uses the BlurView library to provide real blur effects with hardware acceleration. The implementation supports multiple blur algorithms and gracefully falls back to translucent overlay approximation on devices with limited graphics capabilities. Liquid glass effects fall back to enhanced blur with tint overlay.
 
 ## Accessibility
 
@@ -340,36 +377,85 @@ You can customize the fallback color using the `reducedTransparencyFallbackColor
 This package includes full TypeScript definitions:
 
 ```tsx
-import { BlurView, BlurType, BlurViewProps } from '@sbaiahmed1/react-native-blur';
+import { BlurView, BlurType, GlassType, BlurViewProps } from '@sbaiahmed1/react-native-blur';
 
 // BlurType is exported for type checking
 const blurType: BlurType = 'systemMaterial';
+
+// GlassType for liquid glass effects
+const glassType: GlassType = 'regular';
 
 // BlurViewProps for component props
 interface MyComponentProps {
   blurProps: BlurViewProps;
 }
+
+// Example with all liquid glass properties
+const liquidGlassProps: BlurViewProps = {
+  type: 'liquidGlass',
+  glassType: 'regular',
+  glassTintColor: '#007AFF',
+  glassOpacity: 0.8,
+};
 ```
 
 ## Example App
 
-The package includes a comprehensive example app that demonstrates all blur types and features. To run the example:
+The package includes a comprehensive example app that demonstrates all blur types, liquid glass effects, and practical use cases. The example app features:
+
+- **Main Demo**: Interactive blur type selector with live preview
+- **Liquid Glass Examples**: Showcase of iOS 26+ glass effects with customizable properties
+- **Practical Use Cases**: Real-world examples like cards, modals, and overlays
+- **Comparison Views**: Side-by-side comparisons of different effects
+
+To run the example:
 
 ```bash
 cd example
-npm install
+yarn install
 # For iOS
-npx react-native run-ios
+yarn ios
 # For Android
-npx react-native run-android
+yarn android
 ```
 
 ## Performance Considerations
 
-- **iOS**: Native blur effects are hardware-accelerated and performant
+- **iOS**: 
+  - **SwiftUI Implementation**: Enhanced performance with declarative UI updates
+  - **Liquid Glass (iOS 26+)**: Hardware-accelerated glass effects with minimal performance impact
+  - **Blur Effects**: Native blur effects are hardware-accelerated and performant
+  - **Smart Fallbacks**: Automatic degradation ensures smooth performance on older devices
 - **Android**: Real blur effects are hardware-accelerated with fallback to lightweight overlay when needed
-- Avoid using too many blur views simultaneously on lower-end devices
+- Avoid using too many blur/glass views simultaneously on lower-end devices
 - Consider using `reducedTransparencyFallbackColor` for better accessibility
+- Liquid glass effects automatically fall back to enhanced blur on Android and older iOS versions
+
+## What's New in v0.3.0
+
+### 🌊 Liquid Glass Effects (iOS 26+)
+- Revolutionary glass effects using Apple's new UIGlassEffect API
+- Customizable glass types: `clear` and `regular`
+- Adjustable tint colors and opacity for stunning visual effects
+- Automatic fallback to enhanced blur on older iOS versions and Android
+
+### 🔄 SwiftUI Rewrite
+- Complete iOS implementation rewritten using SwiftUI
+- Enhanced performance with declarative UI updates
+- Better integration with React Native's new architecture
+- Improved blur intensity control with precise animation handling
+
+### 📱 Enhanced Example App
+- New liquid glass demonstration section
+- Interactive property controls for real-time customization
+- Practical use case examples (cards, modals, overlays)
+- Comparison views for different effect types
+
+### 🛠️ Developer Experience
+- Full TypeScript support for all new properties
+- Improved component layout handling
+- Better accessibility support with smart fallbacks
+- Enhanced documentation and examples
 
 ## Contributing
 
