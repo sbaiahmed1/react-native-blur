@@ -34,6 +34,136 @@ A modern React Native blur view component that provides native blur effects for 
 - 🛠️ **Easy to Use**: Simple API for quick integration into your React Native projects
 - 📦 **Modern**: Uses Kotlin for Android implementation and *will* use Swift for iOS, ensuring modern development practices
 
+## 📊 Library Comparison
+
+This section provides a detailed comparison between `@sbaiahmed1/react-native-blur` and other popular blur libraries in the React Native ecosystem.
+
+### vs. [@react-native-community/blur](https://www.npmjs.com/package/@react-native-community/blur)
+
+| Feature | @sbaiahmed1/react-native-blur | @react-native-community/blur |
+|---------|------------------------------|------------------------------|
+| **New Architecture Support** | ✅ Full Fabric/Turbo Module support | ❌ Limited support |
+| **Android Real Blur** | ✅ Hardware-accelerated real blur | ❌ Semi-transparent overlay only |
+| **iOS Blur Quality** | ✅ Native UIVisualEffectView | ✅ Native UIVisualEffectView |
+| **TypeScript Support** | ✅ Full TypeScript definitions | ⚠️ Basic TypeScript support |
+| **Maintenance Status** | ✅ Actively maintained | ⚠️ Community-maintained |
+| **Bundle Size** | 🟡 Moderate (includes BlurView lib) | ✅ Lightweight |
+| **API Complexity** | ✅ Simple, intuitive API | ✅ Simple API |
+| **Performance** | ✅ Hardware-accelerated | 🟡 iOS: Good, Android: Limited |
+| **Accessibility** | ✅ Full reduced transparency support | ✅ Reduced transparency support |
+| **Documentation** | ✅ Comprehensive with examples | 🟡 Basic documentation |
+
+**Advantages of @sbaiahmed1/react-native-blur:**
+- **True Android Blur**: Unlike the community version which only provides semi-transparent overlays on Android, our library delivers real hardware-accelerated blur effects on both platforms
+- **Future-Ready**: Built from the ground up with React Native's new architecture (Fabric) in mind
+- **Modern Codebase**: Uses latest development practices with Kotlin for Android
+- **Better Performance**: Hardware acceleration on both platforms ensures smooth rendering
+- **Active Development**: Regular updates and feature additions
+
+**When to choose @react-native-community/blur:**
+- If you need a battle-tested library with extensive community usage
+- If bundle size is a critical concern
+- If you're working with older React Native versions
+
+### vs. [expo-blur](https://www.npmjs.com/package/expo-blur)
+
+| Feature | @sbaiahmed1/react-native-blur | expo-blur |
+|---------|------------------------------|----------|
+| **Expo Dependency** | ✅ No Expo required | ❌ Requires Expo SDK |
+| **Bare React Native** | ✅ Works with any RN project | ⚠️ Requires Expo configuration |
+| **Android Support** | ✅ Real blur effects | ❌ Semi-transparent view only |
+| **iOS Support** | ✅ Full native blur support | ✅ Full native blur support |
+| **Bundle Size** | 🟡 Moderate | ✅ Lightweight (when using Expo) |
+| **Setup Complexity** | ✅ Simple npm install | 🟡 Requires Expo setup |
+| **Customization** | ✅ Extensive blur type options | 🟡 Limited blur types |
+| **New Architecture** | ✅ Full Fabric support | ✅ Expo handles compatibility |
+| **Development Experience** | ✅ Standard RN development | ✅ Excellent with Expo tools |
+| **Production Flexibility** | ✅ Any deployment method | 🟡 Expo-specific deployment |
+
+**Advantages of @sbaiahmed1/react-native-blur:**
+- **No Vendor Lock-in**: Works with any React Native project without requiring Expo ecosystem
+- **Real Android Blur**: Provides actual blur effects on Android, not just transparency
+- **Flexibility**: Can be used in brownfield apps, custom native modules, and any deployment scenario
+- **More Blur Types**: Extensive support for iOS system materials and custom blur types
+- **Direct Control**: Full control over native implementation without abstraction layers
+
+**When to choose expo-blur:**
+- If you're already using Expo and want ecosystem consistency
+- If you prefer Expo's managed workflow and tooling
+- If you only need basic blur effects and iOS-focused functionality
+- If you want the simplicity of Expo's managed dependencies
+
+### Performance Comparison
+
+| Metric | @sbaiahmed1/react-native-blur | @react-native-community/blur | expo-blur |
+|--------|------------------------------|------------------------------|----------|
+| **iOS Rendering** | Hardware-accelerated | Hardware-accelerated | Hardware-accelerated |
+| **Android Rendering** | Hardware-accelerated real blur | Software overlay | Software overlay |
+| **Memory Usage** | Optimized with BlurView | Low | Low |
+| **CPU Impact** | Low (GPU-based) | iOS: Low, Android: Minimal | iOS: Low, Android: Minimal |
+| **Frame Rate Impact** | Minimal on both platforms | iOS: Minimal, Android: None | iOS: Minimal, Android: None |
+
+### Community & Support
+
+| Aspect | @sbaiahmed1/react-native-blur | @react-native-community/blur | expo-blur |
+|--------|------------------------------|------------------------------|----------|
+| **GitHub Stars** | 🆕 Growing | 🌟 Established (3.8k+) | 🌟 Part of Expo ecosystem |
+| **Issue Response** | ✅ Active maintainer | 🟡 Community-driven | ✅ Expo team support |
+| **Documentation Quality** | ✅ Comprehensive | 🟡 Basic | ✅ Excellent (Expo docs) |
+| **Update Frequency** | ✅ Regular updates | 🟡 Sporadic | ✅ Regular (with Expo releases) |
+| **Breaking Changes** | ✅ Semantic versioning | ⚠️ Occasional | ✅ Managed by Expo |
+
+### Migration Guide
+
+#### From @react-native-community/blur
+
+```tsx
+// Before
+import { BlurView } from '@react-native-community/blur';
+
+// After
+import { BlurView } from '@sbaiahmed1/react-native-blur';
+
+// API is largely compatible, main differences:
+// - Better Android blur quality
+// - Additional iOS system material types
+// - Improved TypeScript support
+```
+
+#### From expo-blur
+
+```tsx
+// Before
+import { BlurView } from 'expo-blur';
+
+// After
+import { BlurView } from '@sbaiahmed1/react-native-blur';
+
+// Key differences:
+// - More blur type options available
+// - Real Android blur instead of transparency
+// - No Expo dependency required
+```
+
+### Recommendation
+
+**Choose @sbaiahmed1/react-native-blur if:**
+- You want real blur effects on Android
+- You're building for the new React Native architecture
+- You need maximum flexibility and don't want vendor lock-in
+- You want the latest performance optimizations
+- You're starting a new project or can afford migration time
+
+**Choose @react-native-community/blur if:**
+- You have an existing project that works well with it
+- Bundle size is critical and Android blur quality is not important
+- You need maximum stability and community testing
+
+**Choose expo-blur if:**
+- You're already committed to the Expo ecosystem
+- You only need iOS blur effects
+- You prefer managed dependencies and simplified setup
+
 ## Architecture Compatibility
 
 This library is fully compatible with both React Native architectures:
