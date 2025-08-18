@@ -40,23 +40,24 @@ This section provides a detailed comparison between `@sbaiahmed1/react-native-bl
 
 ### vs. [@react-native-community/blur](https://www.npmjs.com/package/@react-native-community/blur)
 
-| Feature | @sbaiahmed1/react-native-blur | @react-native-community/blur |
-|---------|------------------------------|------------------------------|
-| **New Architecture Support** | ✅ Full Fabric/Turbo Module support | ❌ Limited support |
-| **Android Real Blur** | ✅ Hardware-accelerated real blur | ❌ Semi-transparent overlay only |
-| **iOS Blur Quality** | ✅ Native UIVisualEffectView | ✅ Native UIVisualEffectView |
-| **TypeScript Support** | ✅ Full TypeScript definitions | ⚠️ Basic TypeScript support |
-| **Maintenance Status** | ✅ Actively maintained | ⚠️ Community-maintained |
-| **Bundle Size** | 🟡 Moderate (includes BlurView lib) | ✅ Lightweight |
-| **API Complexity** | ✅ Simple, intuitive API | ✅ Simple API |
-| **Performance** | ✅ Hardware-accelerated | 🟡 iOS: Good, Android: Limited |
-| **Accessibility** | ✅ Full reduced transparency support | ✅ Reduced transparency support |
-| **Documentation** | ✅ Comprehensive with examples | 🟡 Basic documentation |
+| Feature                      | @sbaiahmed1/react-native-blur       | @react-native-community/blur          |
+|------------------------------|-------------------------------------|---------------------------------------|
+| **New Architecture Support** | ✅ Full Fabric/Turbo Module support  | ❌ Limited support (crashes on android |
+| **Android Real Blur**        | ✅ Hardware-accelerated real blur    | ✅ Hardware-accelerated real blur      |
+| **iOS Blur Quality**         | ✅ Native UIVisualEffectView         | ✅ Native UIVisualEffectView           |
+| **TypeScript Support**       | ✅ Full TypeScript definitions       | ⚠️ Basic TypeScript support           |
+| **Maintenance Status**       | ✅ Actively maintained               | ⚠️ Community-maintained               |
+| **Bundle Size**              | 🟡 Moderate (includes BlurView lib) | 🟡 Moderate (includes BlurView lib)   |
+| **API Complexity**           | ✅ Simple, intuitive API             | ✅ Simple API                          |
+| **Performance**              | ✅ Hardware-accelerated              | 🟡 iOS: Good, Android: Limited        |
+| **Accessibility**            | ✅ Full reduced transparency support | ✅ Reduced transparency support        |
+| **Documentation**            | ✅ Comprehensive with examples       | 🟡 Basic documentation                |
 
 **Advantages of @sbaiahmed1/react-native-blur:**
 - **True Android Blur**: Unlike the community version which only provides semi-transparent overlays on Android, our library delivers real hardware-accelerated blur effects on both platforms
 - **Future-Ready**: Built from the ground up with React Native's new architecture (Fabric) in mind
-- **Modern Codebase**: Uses latest development practices with Kotlin for Android
+- **Modern Codebase**: Uses the latest development practices with Kotlin for Android
+- ** Uses Swift**: Use of Swift for iOS, ensuring modern and efficient native code
 - **Better Performance**: Hardware acceleration on both platforms ensures smooth rendering
 - **Active Development**: Regular updates and feature additions
 
