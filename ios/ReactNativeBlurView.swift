@@ -146,7 +146,6 @@ private struct BasicColoredView: View {
         if #available(iOS 26.0, *) {
           let baseGlassEffect = glassEffectFromString(glassType)
           Rectangle()
-            .fill(Color(.clear))
             .glassEffect(
               baseGlassEffect
                 .tint(Color(glassTintColor)
