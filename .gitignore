@@ -169,3 +169,10 @@ dist
 # Temporary folders
 tmp/
 temp/
+
+
+# IDEs
+.vscode/
+.idea/
+.cursor/
+.trae/
