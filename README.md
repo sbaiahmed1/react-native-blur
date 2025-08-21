@@ -215,6 +215,26 @@ The Android implementation leverages the BlurView library to provide real blur e
 - **Fallback Handling:** Gracefully handles devices with limited graphics capabilities
 - **No Extra Permissions:** Does not require additional Android permissions
 
+### Android Version Compatibility
+
+This library automatically handles Android version compatibility to prevent `NoClassDefFoundError` issues:
+
+- **Android 12+ (API 31+):** Uses `RenderEffectBlur` for optimal performance and modern blur effects
+- **Android 10-11 (API 29-30):** Automatically falls back to `RenderScriptBlur` for compatibility
+- **Older Android versions:** Graceful fallback to semi-transparent overlay when blur is not supported
+
+**Note:** The library includes automatic API level detection and will choose the appropriate blur algorithm based on the device's Android version. This ensures compatibility across all supported Android versions without requiring any additional configuration.
+
+#### Troubleshooting Android Issues
+
+If you encounter `java.lang.NoClassDefFoundError: Failed resolution of: Landroid/graphics/RenderEffect;` on Android 10 or 11:
+
+1. **This is automatically handled** - The library now includes fallback mechanisms
+2. **Update to latest version** - Ensure you're using the latest version of this library
+3. **Clean and rebuild** - Run `cd android && ./gradlew clean` then rebuild your project
+
+The error occurs because `RenderEffect` was introduced in Android 12 (API 31), but the library now automatically detects the API level and uses compatible alternatives on older versions.
+
 ## Usage
 
 ### Basic Usage
