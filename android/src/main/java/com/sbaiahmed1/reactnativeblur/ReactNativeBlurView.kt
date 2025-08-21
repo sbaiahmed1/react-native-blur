@@ -3,11 +3,13 @@ package com.sbaiahmed1.reactnativeblur
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.view.ViewGroup
 import eightbitlab.com.blurview.BlurView
 import eightbitlab.com.blurview.RenderEffectBlur
+import eightbitlab.com.blurview.RenderScriptBlur
 
 /**
  * Android implementation of React Native BlurView component.
@@ -210,27 +212,54 @@ class ReactNativeBlurView : BlurView {
       val rootView = findRootView()
       
       rootView?.let { root ->
-        // Setup the blur view with RenderEffect for better performance and modern API
-        this.setupWith(root, RenderEffectBlur())
-          .setBlurRadius(blurRadius)
-          .setOverlayColor(overlayColor)
-        
-        isSetup = true
-        pendingStyleUpdate = false
-        
-        // Apply any pending background color after blur setup
-        if (hasExplicitBackground && originalBackgroundColor != null) {
-          logDebug("Applying pending background color: $originalBackgroundColor")
-          super.setBackgroundColor(originalBackgroundColor!!)
+        try {
+          // Choose blur algorithm based on Android API level
+          val blurAlgorithm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Android 12+ (API 31+): Use RenderEffectBlur for better performance
+            logDebug("Using RenderEffectBlur for API ${Build.VERSION.SDK_INT}")
+            RenderEffectBlur()
+          } else {
+            // Android 10-11 (API < 31): Use RenderScriptBlur for compatibility
+            logDebug("Using RenderScriptBlur for API ${Build.VERSION.SDK_INT}")
+            try {
+              RenderScriptBlur(context)
+            } catch (e: Exception) {
+              logWarning("RenderScriptBlur not supported on this device: ${e.message}")
+              // Fallback: return null to trigger transparent background fallback
+              throw UnsupportedOperationException("Blur not supported on this device", e)
+            }
+          }
+          
+          // Setup the blur view with the appropriate algorithm
+          this.setupWith(root, blurAlgorithm)
+            .setBlurRadius(blurRadius)
+            .setOverlayColor(overlayColor)
+          
+          isSetup = true
+          pendingStyleUpdate = false
+          
+          // Apply any pending background color after blur setup
+          if (hasExplicitBackground && originalBackgroundColor != null) {
+            logDebug("Applying pending background color: $originalBackgroundColor")
+            super.setBackgroundColor(originalBackgroundColor!!)
+          }
+          
+          logDebug("Blur setup successful with root: ${root.javaClass.simpleName}")
+        } catch (e: Exception) {
+          logWarning("Failed to setup blur algorithm: ${e.message}")
+          // Fallback: use semi-transparent overlay when blur is unsupported
+          super.setBackgroundColor(overlayColor)
+          isSetup = true // Mark as setup to prevent retry loops
         }
-        
-        logDebug("Blur setup successful with root: ${root.javaClass.simpleName}")
       } ?: run {
         logWarning("No suitable root view found for blur setup")
+        // Use semi-transparent overlay when no root view is available
+        super.setBackgroundColor(overlayColor)
+        isSetup = true
       }
     } catch (e: Exception) {
-      // Fallback: set transparent background to avoid yellow tint
-      super.setBackgroundColor(Color.TRANSPARENT)
+      // Fallback: use semi-transparent overlay to avoid visual issues
+      super.setBackgroundColor(overlayColor)
       logError("Failed to setup blur: ${e.message}", e)
     }
   }
