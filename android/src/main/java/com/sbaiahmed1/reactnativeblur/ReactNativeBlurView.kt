@@ -433,6 +433,14 @@ class ReactNativeBlurView : BlurView {
     logDebug("setType: $type")
     updateViewType()
   }
+  
+    /**
+   * Set the view type (blur or liquidGlass).
+   * @param type The view type string
+   */
+  fun setIsInteractive(isInteractive: Boolean) {
+    logDebug("setType: $isInteractive")
+  }
 
   /**
    * Set the glass type for liquid glass effect.

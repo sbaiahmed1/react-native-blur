@@ -61,6 +61,7 @@ const LiquidGlassExample = ({
       {/* Glass Type Selector */}
       <View style={styles.selectorContainer}>
         <BlurView
+          isInteractive={false}
           type="liquidGlass"
           glassType="clear"
           glassTintColor="#000000"

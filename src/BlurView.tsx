@@ -66,6 +66,13 @@ export interface BlurViewProps {
    * @default 'blur'
    */
   type?: 'blur' | 'liquidGlass';
+
+  /**
+   * Platform: iOS only
+   * Whether the blur view should be interactive
+   * @default true
+   */
+  isInteractive?: boolean;
 }
 
 /**
@@ -100,6 +107,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
   glassType = 'clear',
   glassTintColor = 'clear',
   glassOpacity = 1.0,
+  isInteractive = true,
   ...props
 }) => {
   // If no children, render the blur view directly (for background use)
@@ -114,6 +122,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
         type={type}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
         style={style}
+        isInteractive={isInteractive}
         {...props}
       />
     );
@@ -130,6 +139,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
         glassTintColor={glassTintColor}
         glassOpacity={glassOpacity}
         type={type}
+        isInteractive={isInteractive}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
         style={{
           position: 'absolute',

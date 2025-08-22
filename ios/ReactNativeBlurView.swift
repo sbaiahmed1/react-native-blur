@@ -130,6 +130,7 @@ private struct BasicColoredView: View {
   var type: String
   var glassType: String
   var reducedTransparencyFallbackColor: UIColor
+  var isInteractive: Bool
 
   var body: some View {
     let blurIntensity = mapBlurAmountToIntensity(blurAmount)
@@ -150,7 +151,7 @@ private struct BasicColoredView: View {
               baseGlassEffect
                 .tint(Color(glassTintColor)
                   .opacity(glassOpacity))
-                .interactive(true)
+                .interactive(isInteractive)
               , in: .rect)
 
         } else {
@@ -221,6 +222,12 @@ private struct BasicColoredView: View {
     }
   }
 
+  @objc public var isInteractive: Bool = true {
+    didSet {
+      updateView()
+    }
+  }
+
   public override init(frame: CGRect) {
     super.init(frame: frame)
     setupHostingController()
@@ -233,7 +240,7 @@ private struct BasicColoredView: View {
 
   private func setupHostingController() {
     let blurStyle = blurStyleFromString(blurTypeString)
-    let swiftUIView = BasicColoredView(glassTintColor: glassTintColor, glassOpacity: glassOpacity, blurAmount: blurAmount, blurStyle: blurStyle, type: type, glassType: glassType, reducedTransparencyFallbackColor: reducedTransparencyFallbackColor)
+    let swiftUIView = BasicColoredView(glassTintColor: glassTintColor, glassOpacity: glassOpacity, blurAmount: blurAmount, blurStyle: blurStyle, type: type, glassType: glassType, reducedTransparencyFallbackColor: reducedTransparencyFallbackColor, isInteractive: isInteractive)
     let hosting = UIHostingController(rootView: swiftUIView)
 
     hosting.view.backgroundColor = .clear
@@ -252,7 +259,7 @@ private struct BasicColoredView: View {
 
   private func updateView() {
     let blurStyle = blurStyleFromString(blurTypeString)
-    let newSwiftUIView = BasicColoredView(glassTintColor: glassTintColor, glassOpacity: glassOpacity, blurAmount: blurAmount, blurStyle: blurStyle, type:type, glassType: glassType, reducedTransparencyFallbackColor: reducedTransparencyFallbackColor)
+    let newSwiftUIView = BasicColoredView(glassTintColor: glassTintColor, glassOpacity: glassOpacity, blurAmount: blurAmount, blurStyle: blurStyle, type:type, glassType: glassType, reducedTransparencyFallbackColor: reducedTransparencyFallbackColor, isInteractive: isInteractive)
     hostingController?.rootView = newSwiftUIView
   }
 }
@@ -294,6 +301,11 @@ private struct BasicColoredView: View {
   /// Updates the blur view with a new blur style.
   @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withType type: String) {
     blurView.type = type
+  }
+
+  /// Updates the blur view with a new blur style.
+  @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withIsInteractive isInteractive: Bool) {
+    blurView.isInteractive = isInteractive
   }
 
   /// Updates the blur view with a new reduced transparency fallback color.

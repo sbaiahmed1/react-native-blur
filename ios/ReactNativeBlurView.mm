@@ -149,6 +149,9 @@ using namespace facebook::react;
       [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withBlurType:blurTypeString];
     }
     
+    // Set initial isInteractive from default props
+      [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIsInteractive:bvProps.isInteractive];
+    
     // Set initial glassType from default props
     if (bvProps.glassType != facebook::react::ReactNativeBlurViewGlassType::Clear) {
       NSString *glassTypeString = [[NSString alloc] initWithUTF8String:toString(bvProps.glassType).c_str()];
@@ -215,6 +218,11 @@ using namespace facebook::react;
   if (oldViewProps.type != newViewProps.type) {
     NSString *blurTypeString = [[NSString alloc] initWithUTF8String:toString(newViewProps.type).c_str()];
     [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withType:blurTypeString];
+  }
+  
+  // Update isInteractive if it has changed
+  if (oldViewProps.isInteractive != newViewProps.isInteractive) {
+    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIsInteractive:newViewProps.isInteractive];
   }
   
   // Update reducedTransparencyFallbackColor if it has changed
