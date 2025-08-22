@@ -1654,7 +1654,7 @@ PODS:
     - React-logger (= 0.79.2)
     - React-perflogger (= 0.79.2)
     - React-utils (= 0.79.2)
-  - ReactNativeBlur (0.1.2):
+  - ReactNativeBlur (0.3.0-beta.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1975,7 +1975,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: 04d5eb15eb46be6720e17a4a7fa92940a776e584
   ReactCodegen: c63eda03ba1d94353fb97b031fc84f75a0d125ba
   ReactCommon: 76d2dc87136d0a667678668b86f0fca0c16fdeb0
-  ReactNativeBlur: 79dedb16d003d46b5dc88e4c88bec975f4683555
+  ReactNativeBlur: a5aa53edd362d96e925afe04a5842585f635d0f7
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: c758bfb934100bb4bf9cbaccb52557cee35e8bdf
 

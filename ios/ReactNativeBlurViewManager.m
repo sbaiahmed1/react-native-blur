@@ -56,6 +56,12 @@ RCT_CUSTOM_VIEW_PROPERTY(type, NSString, AdvancedBlurView)
   [ReactNativeBlurViewHelper updateBlurView:view withType:type];
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(isInteractive, NSNumber, AdvancedBlurView)
+{
+  BOOL isInteractive = json ? [RCTConvert BOOL:json] : YES;
+  [ReactNativeBlurViewHelper updateBlurView:view withIsInteractive:isInteractive];
+}
+
 RCT_CUSTOM_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString, AdvancedBlurView)
 {
   NSString *colorString = json ? [RCTConvert NSString:json] : @"#FFFFFF";
