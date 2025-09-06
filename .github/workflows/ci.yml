@@ -107,9 +107,8 @@ jobs:
           yarn turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}"
 
   build-ios:
-    runs-on: macos-latest
+    runs-on: self-hosted
     env:
-      XCODE_VERSION: 16.2
       TURBO_CACHE_DIR: .turbo/ios
     steps:
       - name: Checkout
@@ -133,12 +132,6 @@ jobs:
           if [[ $TURBO_CACHE_STATUS == "HIT" ]]; then
             echo "turbo_cache_hit=1" >> $GITHUB_ENV
           fi
-
-      - name: Use appropriate Xcode version
-        if: env.turbo_cache_hit != 1
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Restore cocoapods
         if: env.turbo_cache_hit != 1
