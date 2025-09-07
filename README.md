@@ -1,6 +1,6 @@
 # @sbaiahmed1/react-native-blur
 
-A modern React Native blur view component that provides native blur effects and **liquid glass effects** for both iOS and Android platforms.
+A modern React Native blur view component that provides native blur effects and **liquid glass effects** for iOS (with Android fallback to enhanced blur).
 <div align="center">
   <p>
     <img src="https://img.shields.io/npm/v/@sbaiahmed1/react-native-blur?style=for-the-badge&color=blue" alt="npm version" />
@@ -19,19 +19,25 @@ A modern React Native blur view component that provides native blur effects and 
 ## Liquid Glass Demo
 
 <div align="center">
-  <img src="liquidGlass.gif" alt="Liquid Glass Demo" width="300" />
   <br>
-  <em>Liquid Glass effect in action</em>
+  <em>Liquid Glass effect in action (iOS 26+ only)</em>
+  <br>
+  <strong>⚠️ Android automatically falls back to enhanced blur with tint overlay</strong>
 </div>
 
 ## Blur Demo
+## Liquid Glass Demo
 
 <div align="center">
-  <img src="iOS-demo.gif" alt="iOS Demo" width="300" />
-  <img src="android-demo.gif" alt="Android Demo" width="300" />
+  <img src="ios-blur-glass-demo.gif" alt="iOS Demo" width="300" />
+  <img src="android-blur-glass-demo.gif" alt="Android Demo" width="300" />
 
   <br>
   <em>iOS (left) and Android (right) blur effects in action</em>
+    <br>
+  <em>Liquid Glass effect in action (iOS 26+ only)</em>
+  <br>
+  <strong>⚠️ Android automatically falls back to enhanced blur with tint overlay</strong>
 </div>
 
 ## Version Compatibility
@@ -463,7 +469,7 @@ All props are optional and have sensible defaults.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `type` | `'blur' \| 'liquidGlass'` | `'blur'` | The type of effect to apply |
+| `type` | `'blur' \| 'liquidGlass'` | `'blur'` | The type of effect to apply. **Note**: `'liquidGlass'` is iOS 26+ only, falls back to enhanced blur on Android |
 | `blurType` | `BlurType` | `'xlight'` | The type of blur effect to apply |
 | `blurAmount` | `number` | `10.0` | The intensity of the blur effect (0-100) |
 | `glassType` | `GlassType` | `'clear'` | The type of glass effect |
@@ -506,7 +512,9 @@ On iOS, this component has been completely rewritten using **SwiftUI** for moder
 - **SwiftUI Integration**: Leverages SwiftUI's declarative UI for better performance and maintainability
 
 ### Android
-On Android, the component uses the BlurView library to provide real blur effects with hardware acceleration. The implementation supports multiple blur algorithms and gracefully falls back to translucent overlay approximation on devices with limited graphics capabilities. Liquid glass effects fall back to enhanced blur with tint overlay.
+On Android, the component uses the BlurView library to provide real blur effects with hardware acceleration. The implementation supports multiple blur algorithms and gracefully falls back to translucent overlay approximation on devices with limited graphics capabilities. 
+
+**⚠️ Liquid Glass Limitation**: Liquid glass effects (`type="liquidGlass"`) are **iOS 26+ exclusive**. On Android, they automatically fall back to enhanced blur with tint overlay to approximate the visual effect.
 
 ## Accessibility
 
