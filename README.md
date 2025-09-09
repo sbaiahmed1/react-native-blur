@@ -16,17 +16,7 @@ A modern React Native blur view component that provides native blur effects and 
   </p>
 </div>
 
-## Liquid Glass Demo
-
-<div align="center">
-  <br>
-  <em>Liquid Glass effect in action (iOS 26+ only)</em>
-  <br>
-  <strong>⚠️ Android automatically falls back to enhanced blur with tint overlay</strong>
-</div>
-
-## Blur Demo
-## Liquid Glass Demo
+## Demo
 
 <div align="center">
   <img src="ios-blur-glass-demo.gif" alt="iOS Demo" width="300" />
@@ -34,7 +24,7 @@ A modern React Native blur view component that provides native blur effects and 
 
   <br>
   <em>iOS (left) and Android (right) blur effects in action</em>
-    <br>
+  <br>
   <em>Liquid Glass effect in action (iOS 26+ only)</em>
   <br>
   <strong>⚠️ Android automatically falls back to enhanced blur with tint overlay</strong>
@@ -46,17 +36,19 @@ A modern React Native blur view component that provides native blur effects and 
 
 | Library Version | Minimum Xcode Version | iOS Features Available |
 |-----------------|----------------------|----------------------|
-| **3.0.0+** (Current) | **Xcode 26.0** | ✅ Full liquid glass effects with UIGlassEffect API<br/>✅ Enhanced SwiftUI implementation<br/>✅ All blur types and system materials |
-| **2.1.0** | Xcode 16.0+ | ✅ Standard blur effects<br/>✅ System materials (iOS 13+)<br/>❌ No liquid glass effects |
+| **0.3.0+** (Current) | **Xcode 26.0** | ✅ Full liquid glass effects with UIGlassEffect API<br/>✅ Enhanced SwiftUI implementation<br/>✅ All blur types and system materials |
+| **0.2.1** | Xcode 16.0+ | ✅ Standard blur effects<br/>✅ System materials (iOS 13+)<br/>❌ No liquid glass effects |
 
 ### Xcode 26.0+ Compatibility Table
 
 | Xcode Version | Library Compatibility | Features Available | Notes |
 |---------------|----------------------|-------------------|-------|
 | **Xcode 26.0+** | ✅ **Fully Supported** | ✅ All features including liquid glass effects<br/>✅ UIGlassEffect API<br/>✅ SwiftUI implementation<br/>✅ All blur types and system materials | **Recommended for current version** |
-| **Xcode 16.x and below** | ❌ **Not Supported** | ❌ Liquid glass effects<br/>❌ UIGlassEffect API<br/>⚠️ Basic blur effects may work with limitations | Use library version 2.1.0 instead |
+| **Xcode 16.x and below** | ❌ **Not Supported** | ❌ Liquid glass effects<br/>❌ UIGlassEffect API<br/>⚠️ Basic blur effects may work with limitations | Use library version 0.2.1 instead |
 
-> 💡 **Migration Tip**: If you're unable to upgrade to Xcode 26.0, please use version **2.1.0** of this library which supports Xcode 16.0 and provides standard blur effects without liquid glass capabilities.
+> ⚠️ **Critical Requirement**: The current version (0.3.0+) requires **Xcode 26.0 or higher** and will not work with older Xcode versions. This is a hard requirement due to the UIGlassEffect API and SwiftUI enhancements introduced in Xcode 26.0.
+
+> 💡 **Migration Tip**: If you're unable to upgrade to Xcode 26.0, please use version **0.2.1** of this library which supports Xcode 16.0 and provides standard blur effects without liquid glass capabilities.
 
 ## Features
 
@@ -299,30 +291,6 @@ import { BlurView } from '@sbaiahmed1/react-native-blur';
 - You want **zero native configuration** (Expo managed workflow)
 - **Bundle size** is your primary concern
 - You can accept **experimental Android blur** with potential fallbacks
-
-## Version Compatibility
-
-### Xcode Requirements
-
-| Library Version | Minimum Xcode Version | iOS Features Available |
-|-----------------|----------------------|----------------------|
-| **3.0.0+** (Current) | **Xcode 26.0** | ✅ Full liquid glass effects with UIGlassEffect API<br/>✅ Enhanced SwiftUI implementation<br/>✅ All blur types and system materials |
-| **2.1.0** | Xcode 16.0+ | ✅ Standard blur effects<br/>✅ System materials (iOS 13+)<br/>❌ No liquid glass effects |
-
-### Xcode 26.0+ Compatibility Table
-
-| Xcode Version | Library Compatibility | Features Available | Notes |
-|---------------|----------------------|-------------------|-------|
-| **Xcode 26.0+** | ✅ **Fully Supported** | ✅ All features including liquid glass effects<br/>✅ UIGlassEffect API<br/>✅ SwiftUI implementation<br/>✅ All blur types and system materials | **Recommended for current version** |
-| **Xcode 16.x and below** | ❌ **Not Supported** | ❌ Liquid glass effects<br/>❌ UIGlassEffect API<br/>⚠️ Basic blur effects may work with limitations | Use library version 2.1.0 instead |
-
-> ⚠️ **Critical Requirement**: The current version (3.0.0+) requires **Xcode 26.0 or higher** and will not work with older Xcode versions. This is a hard requirement due to the UIGlassEffect API and SwiftUI enhancements introduced in Xcode 26.0.
-
-> 💡 **Migration Tip**: If you're unable to upgrade to Xcode 26.0, please use version **2.1.0** of this library which supports Xcode 16.0 and provides standard blur effects without liquid glass capabilities.
-
-### Installation by Xcode Version
-
-**For Xcode 26.0+:**
 
 ## Installation
 
