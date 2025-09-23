@@ -58,6 +58,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Clean Android build artifacts
+        run: |
+          cd example
+          rm -rf android/app/build
+          rm -rf android/build
+          rm -rf android/.gradle
+          rm -rf ~/.gradle/caches
+          ./android/gradlew clean -p android || true
+
       - name: Setup
         uses: ./.github/actions/setup
 
@@ -113,6 +122,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Clean iOS build artifacts and Ruby gems
+        run: |
+          cd example
+          # Clean Ruby vendor bundle to prevent architecture conflicts
+          rm -rf vendor/bundle
+          rm -rf .bundle
+          # Clean iOS build artifacts
+          rm -rf ios/build
+          rm -rf ios/Pods
+          rm -rf ios/Podfile.lock
+          # Clean Xcode derived data
+          rm -rf ~/Library/Developer/Xcode/DerivedData
+          # Clean gem cache
+          gem cleanup || true
 
       - name: Setup
         uses: ./.github/actions/setup

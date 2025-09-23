@@ -4,6 +4,15 @@ description: Setup Node.js and install dependencies
 runs:
   using: composite
   steps:
+    - name: Clean node_modules and yarn cache
+      run: |
+        # Clean existing node_modules to prevent conflicts
+        rm -rf node_modules
+        rm -rf example/node_modules
+        # Clean yarn cache
+        yarn cache clean --all || true
+      shell: bash
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
