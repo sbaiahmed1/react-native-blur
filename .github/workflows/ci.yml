@@ -158,16 +158,54 @@ jobs:
           # Clear any cached gems that might have wrong architecture
           rm -rf ~/.gem
           gem pristine --all || true
+          # Clean Gemfile.lock to force fresh dependency resolution
+          rm -f Gemfile.lock
 
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Cache turborepo for iOS
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.TURBO_CACHE_DIR }}
+          key: ${{ runner.os }}-turborepo-ios-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-turborepo-ios-
+
+      - name: Check turborepo cache for iOS
+        run: |
+          TURBO_CACHE_STATUS=$(node -p "($(yarn turbo run build:ios --cache-dir="${{ env.TURBO_CACHE_DIR }}" --dry=json)).tasks.find(t => t.task === 'build:ios').cache.status")
+
+          if [[ $TURBO_CACHE_STATUS == "HIT" ]]; then
+            echo "turbo_cache_hit=1" >> $GITHUB_ENV
+          fi
+
+      - name: Restore cocoapods
+        if: env.turbo_cache_hit != 1
+        id: cocoapods-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            **/ios/Pods
+          key: ${{ runner.os }}-cocoapods-${{ hashFiles('example/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cocoapods-
+
       - name: Install cocoapods
+        if: env.turbo_cache_hit != 1 && steps.cocoapods-cache.outputs.cache-hit != 'true'
         run: |
           cd example
           bundle install
           bundle exec pod install --project-directory=ios
 
+      - name: Cache cocoapods
+        if: env.turbo_cache_hit != 1 && steps.cocoapods-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            **/ios/Pods
+          key: ${{ steps.cocoapods-cache.outputs.cache-key }}
+
       - name: Build example for iOS
         run: |
-          yarn turbo run build:ios --force
+          yarn turbo run build:ios --cache-dir="${{ env.TURBO_CACHE_DIR }}"
