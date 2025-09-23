@@ -123,6 +123,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Ruby environment for runner
+        run: |
+          # Reset Ruby environment to prevent architecture conflicts
+          if command -v rbenv &> /dev/null; then
+            rbenv rehash
+          fi
+          # Ensure we're using the system Ruby or correct architecture
+          ruby --version
+          gem --version
+          # Clear bundler config that might cause issues
+          bundle config --delete build.json || true
+          bundle config --delete force_ruby_platform || true
+          # Set bundler to use system gems path
+          bundle config --local path vendor/bundle
+          
       - name: Clean iOS build artifacts and Ruby gems
         run: |
           cd example
@@ -135,8 +150,14 @@ jobs:
           rm -rf ios/Podfile.lock
           # Clean Xcode derived data
           rm -rf ~/Library/Developer/Xcode/DerivedData
-          # Clean gem cache
+          # Clean gem cache and reinstall for correct architecture
           gem cleanup || true
+          # Force reinstall gems with correct architecture for runner
+          bundle config --local force_ruby_platform true
+          bundle config --local build.json --with-cppflags=-I$(brew --prefix)/include
+          # Clear any cached gems that might have wrong architecture
+          rm -rf ~/.gem
+          gem pristine --all || true
 
       - name: Setup
         uses: ./.github/actions/setup
