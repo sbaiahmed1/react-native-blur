@@ -1,5 +1,11 @@
 #import "ReactNativeBlurViewManager.h"
+
+#if __has_include("ReactNativeBlur-Swift.h")
 #import "ReactNativeBlur-Swift.h"
+#else
+#import <ReactNativeBlur/ReactNativeBlur-Swift.h>
+#endif
+
 #import <React/RCTUIManager.h>
 #import <React/RCTBridge.h>
 

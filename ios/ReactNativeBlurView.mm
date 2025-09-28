@@ -6,7 +6,12 @@
 #import <react/renderer/components/ReactNativeBlurViewSpec/RCTComponentViewHelpers.h>
 
 #import "RCTFabricComponentsPlugins.h"
-#import "ReactNativeBlur-Swift.h" // Swift bridging header
+
+#if __has_include("ReactNativeBlur-Swift.h")
+#import "ReactNativeBlur-Swift.h"
+#else
+#import <ReactNativeBlur/ReactNativeBlur-Swift.h>
+#endif
 
 using namespace facebook::react;
 
