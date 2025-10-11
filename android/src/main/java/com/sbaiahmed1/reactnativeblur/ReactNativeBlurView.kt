@@ -2,14 +2,10 @@ package com.sbaiahmed1.reactnativeblur
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.util.AttributeSet
-import android.util.Log
 import android.view.ViewGroup
 import eightbitlab.com.blurview.BlurView
-import eightbitlab.com.blurview.RenderEffectBlur
-import eightbitlab.com.blurview.RenderScriptBlur
+ 
 
 /**
  * Android implementation of React Native BlurView component.
@@ -40,17 +36,15 @@ class ReactNativeBlurView : BlurView {
     private const val DEFAULT_BLUR_AMOUNT = 10f
 
     private fun logDebug(message: String) {
-      if (DEBUG) {
-        Log.d(TAG, message)
-      }
+      if (DEBUG) BlurLogger.d(TAG, message)
     }
 
     private fun logWarning(message: String) {
-      Log.w(TAG, message)
+      BlurLogger.w(TAG, message)
     }
 
     private fun logError(message: String, throwable: Throwable? = null) {
-      Log.e(TAG, message, throwable)
+      BlurLogger.e(TAG, message, throwable)
     }
 
     /**
@@ -60,8 +54,7 @@ class ReactNativeBlurView : BlurView {
      * @return The corresponding blur radius from 0-25
      */
     private fun mapBlurAmountToRadius(amount: Float): Float {
-      val clampedAmount = amount.coerceIn(MIN_BLUR_AMOUNT, MAX_BLUR_AMOUNT)
-      return (clampedAmount / MAX_BLUR_AMOUNT) * MAX_BLUR_RADIUS
+      return BlurConstants.mapBlurAmountToRadius(amount)
     }
   }
 
@@ -217,21 +210,12 @@ class ReactNativeBlurView : BlurView {
 
       rootView?.let { root ->
         try {
-          // Choose blur algorithm based on Android API level
-          val blurAlgorithm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Android 12+ (API 31+): Use RenderEffectBlur for better performance
-            logDebug("Using RenderEffectBlur for API ${Build.VERSION.SDK_INT}")
-            RenderEffectBlur()
-          } else {
-            // Android 10-11 (API < 31): Use RenderScriptBlur for compatibility
-            logDebug("Using RenderScriptBlur for API ${Build.VERSION.SDK_INT}")
-            try {
-              RenderScriptBlur(context)
-            } catch (e: Exception) {
-              logWarning("RenderScriptBlur not supported on this device: ${e.message}")
-              // Fallback: return null to trigger transparent background fallback
-              throw UnsupportedOperationException("Blur not supported on this device", e)
-            }
+          // Choose blur algorithm via factory (handles API differences)
+          val blurAlgorithm = try {
+            BlurAlgorithmFactory.create(context)
+          } catch (e: Exception) {
+            logWarning("Blur algorithm not supported on this device: ${e.message}")
+            throw UnsupportedOperationException("Blur not supported on this device", e)
           }
 
           // Setup the blur view with the appropriate algorithm
@@ -272,27 +256,7 @@ class ReactNativeBlurView : BlurView {
    * @return The root ViewGroup or null if not found
    */
   private fun findRootView(): ViewGroup? {
-    // Strategy 1: Look for the content view (most reliable)
-    var parent = this.parent
-    while (parent != null) {
-      if (parent is ViewGroup && parent.id == android.R.id.content) {
-        return parent
-      }
-      parent = parent.parent
-    }
-
-    // Strategy 2: If content view not found, use the activity's root view
-    try {
-      val activity = context as? android.app.Activity
-      activity?.findViewById<ViewGroup>(android.R.id.content)?.let {
-        return it
-      }
-    } catch (e: Exception) {
-      logDebug("Could not access activity root view: ${e.message}")
-    }
-
-    // Strategy 3: Fallback to immediate parent
-    return this.parent as? ViewGroup
+    return RootViewFinder.findRootView(this)
   }
 
   /**
@@ -316,41 +280,7 @@ class ReactNativeBlurView : BlurView {
    * Enum representing different blur types with their corresponding overlay colors.
    * Maps iOS blur types to Android overlay colors to approximate the visual appearance.
    */
-  enum class BlurType(val overlayColor: Int) {
-    XLIGHT(Color.argb(25, 255, 255, 255)),
-    LIGHT(Color.argb(40, 255, 255, 255)),
-    DARK(Color.argb(60, 0, 0, 0)),
-    EXTRA_DARK(Color.argb(80, 0, 0, 0)),
-    REGULAR(Color.argb(50, 255, 255, 255)),
-    PROMINENT(Color.argb(70, 255, 255, 255)),
-    SYSTEM_ULTRA_THIN_MATERIAL(Color.argb(20, 255, 255, 255)),
-    SYSTEM_THIN_MATERIAL(Color.argb(35, 255, 255, 255)),
-    SYSTEM_MATERIAL(Color.argb(50, 255, 255, 255)),
-    SYSTEM_THICK_MATERIAL(Color.argb(65, 255, 255, 255)),
-    SYSTEM_CHROME_MATERIAL(Color.argb(45, 240, 240, 240));
-
-    companion object {
-      /**
-       * Get BlurType from string, with fallback to LIGHT for unknown types.
-       */
-      fun fromString(type: String): BlurType {
-        return when (type.lowercase()) {
-          "xlight" -> XLIGHT
-          "light" -> LIGHT
-          "dark" -> DARK
-          "extradark" -> EXTRA_DARK
-          "regular" -> REGULAR
-          "prominent" -> PROMINENT
-          "systemultrathinmaterial" -> SYSTEM_ULTRA_THIN_MATERIAL
-          "systemthinmaterial" -> SYSTEM_THIN_MATERIAL
-          "systemmaterial" -> SYSTEM_MATERIAL
-          "systemthickmaterial" -> SYSTEM_THICK_MATERIAL
-          "systemchromematerial" -> SYSTEM_CHROME_MATERIAL
-          else -> LIGHT // default fallback
-        }
-      }
-    }
-  }
+  
 
   /**
    * Set the blur type which determines the overlay color.
@@ -458,13 +388,8 @@ class ReactNativeBlurView : BlurView {
   private fun updateGlassEffect() {
     if (viewType == "liquidGlass" && isSetup) {
       try {
-        // Apply glass tint with opacity
-        val glassColor = Color.argb(
-          (glassOpacity * 255).toInt(),
-          Color.red(glassTintColor),
-          Color.green(glassTintColor),
-          Color.blue(glassTintColor)
-        )
+        // Apply glass tint with opacity via utility
+        val glassColor = GlassEffect.computeOverlay(glassTintColor, glassOpacity)
         setOverlayColor(glassColor)
         logDebug("Applied glass effect: color=$glassColor, opacity=$glassOpacity")
       } catch (e: Exception) {

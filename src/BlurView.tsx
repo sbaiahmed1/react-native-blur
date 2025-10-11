@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { ViewStyle, StyleProp } from 'react-native';
 import ReactNativeBlurView, {
   type BlurType,
@@ -141,13 +141,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
         type={type}
         isInteractive={isInteractive}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}
+        style={StyleSheet.absoluteFill}
         {...props}
       />
       {/* Content positioned relatively on top */}
