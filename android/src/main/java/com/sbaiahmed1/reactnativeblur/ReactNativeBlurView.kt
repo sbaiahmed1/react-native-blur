@@ -19,6 +19,7 @@ class ReactNativeBlurView : BlurView {
   private var blurRadius = mapBlurAmountToRadius(DEFAULT_BLUR_AMOUNT)
   private var overlayColor = Color.TRANSPARENT
   private var isSetup = false
+  private var isConfigured = false
   private var pendingStyleUpdate: Boolean = false
   private var originalBackgroundColor: Int? = null
   private var hasExplicitBackground: Boolean = false
@@ -179,15 +180,23 @@ class ReactNativeBlurView : BlurView {
    */
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
-    setupBlurView()
+    
+    // Now we can safely walk the parent hierarchy
+    if (!this.isConfigured) {
+      this.isConfigured = true
+      setupBlurView()
+    }
   }
 
   /**
    * Called when the view is detached from a window.
-   * Performs cleanup to prevent memory leaks.
+   * Performs cleanup to prevent memory leaks and navigation transition issues.
    */
   override fun onDetachedFromWindow() {
     super.onDetachedFromWindow()
+    
+    this.isConfigured = false
+    this.removeCallbacks(null)
     cleanup()
   }
 
@@ -195,7 +204,7 @@ class ReactNativeBlurView : BlurView {
    * Cleanup method to reset state and remove pending callbacks.
    * Helps prevent memory leaks and ensures clean state.
    */
-  private fun cleanup() {
+  fun cleanup() {
     isSetup = false
     hasExplicitBackground = false
     originalBackgroundColor = null
@@ -213,7 +222,7 @@ class ReactNativeBlurView : BlurView {
     if (isSetup) return
 
     try {
-      val rootView = findRootView()
+      val rootView = findOptimalBlurRoot()
 
       rootView?.let { root ->
         try {
@@ -261,10 +270,41 @@ class ReactNativeBlurView : BlurView {
         isSetup = true
       }
     } catch (e: Exception) {
-      // Fallback: use semi-transparent overlay to avoid visual issues
+      // Final fallback: set transparent background to prevent visual artifacts
       super.setBackgroundColor(overlayColor)
       logError("Failed to setup blur: ${e.message}", e)
     }
+  }
+
+  /**
+   * Find the optimal blur root view by walking up the parent hierarchy.
+   * This method is crucial for proper blur rendering during navigation transitions.
+   * @return The optimal ViewGroup to use as blur root or null if not found
+   */
+  private fun findOptimalBlurRoot(): ViewGroup? {
+    var current = this.parent
+    
+    // Walk up the parent hierarchy to find the best blur root
+    while (current != null) {
+      if (current is ViewGroup) {
+        // Prefer content view as it's the most stable during transitions
+        if (current.id == android.R.id.content) {
+          return current
+        }
+        
+        // Look for other suitable container views
+        val className = current.javaClass.simpleName
+        if (className.contains("DecorView") || 
+            className.contains("ContentFrameLayout") ||
+            className.contains("LinearLayout") && current.parent?.parent == null) {
+          return current
+        }
+      }
+      current = current.parent
+    }
+    
+    // Fallback: try to get activity's content view
+    return findRootView()
   }
 
   /**

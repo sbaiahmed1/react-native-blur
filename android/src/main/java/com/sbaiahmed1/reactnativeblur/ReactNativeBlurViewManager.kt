@@ -69,6 +69,16 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
     view?.setIsInteractive(isInteractive)
   }
 
+  /**
+   * Called when view is detached from view hierarchy and allows for cleanup.
+   * This prevents the white screen issue during navigation transitions on Android.
+   */
+  override fun onDropViewInstance(view: ReactNativeBlurView) {
+    super.onDropViewInstance(view)
+    // Call cleanup to reset state and prevent white screen artifacts
+    view.cleanup()
+  }
+
   companion object {
     const val NAME = "ReactNativeBlurView"
   }

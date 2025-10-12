@@ -1,8 +1,18 @@
 import BlurView from '@sbaiahmed1/react-native-blur';
-import { View, Text, ImageBackground, Image, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  ImageBackground,
+  Image,
+  StyleSheet,
+  Pressable,
+  Modal,
+} from 'react-native';
 import { width } from '../constants';
+import { useState } from 'react';
 
 const PracticalExamples = () => {
+  const [showModal, setShowModal] = useState(false);
   return (
     <View style={styles.practicalExamplesContainer}>
       <Text style={styles.sectionTitle}>Practical Use Cases</Text>
@@ -54,6 +64,37 @@ const PracticalExamples = () => {
           </BlurView>
         </View>
       </View>
+      <Pressable
+        onPress={() => setShowModal(!showModal)}
+        style={[styles.modalButton, styles.modalToggleButton]}
+      >
+        <Text style={styles.modalButtonText}>Toggle Modal</Text>
+      </Pressable>
+
+      <Modal visible={showModal} transparent>
+        <BlurView
+          type="blur"
+          blurType="light"
+          blurAmount={70}
+          glassType="clear"
+          style={styles.RNModalContent}
+        >
+          <View
+            style={{ backgroundColor: 'white', padding: 30, borderRadius: 15 }}
+          >
+            <Text style={styles.modalTitle}>Frosted Glass Modal</Text>
+            <Text style={styles.modalText}>
+              Blur effects create elegant, modern UI components
+            </Text>
+            <Pressable
+              onPress={() => setShowModal(false)}
+              style={styles.modalButton}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </Pressable>
+          </View>
+        </BlurView>
+      </Modal>
     </View>
   );
 };
@@ -127,6 +168,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 15,
   },
+  modalToggleButton: {
+    marginVertical: 12,
+    borderRadius: 12,
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   modalButton: {
     backgroundColor: '#007AFF',
     paddingVertical: 8,
@@ -136,6 +184,18 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: 'white',
     fontWeight: '600',
+  },
+  RNModalContent: {
+    width: '100%',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    padding: 20,
+    borderRadius: 15,
   },
 });
 
