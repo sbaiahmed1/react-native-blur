@@ -28,8 +28,10 @@ class BlurEffectView: UIVisualEffectView {
 
   private func setupBlur() {
     // Clean up existing animator
-    animator?.stopAnimation(true)
-    animator?.finishAnimation(at: .current)
+    if let animator = animator {
+      animator.stopAnimation(true)
+      animator.finishAnimation(at: .current)
+    }
     animator = nil
 
     // Reset effect
