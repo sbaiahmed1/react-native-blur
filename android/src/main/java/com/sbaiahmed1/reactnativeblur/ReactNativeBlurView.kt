@@ -294,12 +294,13 @@ class ReactNativeBlurView : BlurView {
         
         // Look for other suitable container views
         val className = current.javaClass.simpleName
-        if (className.contains("DecorView") || 
+        if (className.contains("DecorView") ||
             className.contains("ContentFrameLayout") ||
-            className.contains("LinearLayout") && current.parent?.parent == null) {
+            (className.contains("LinearLayout") && current.parent == null)) {
+          // For LinearLayout, only consider it if it's the root of the hierarchy (parent == null)
+          // This avoids misidentifying containers in complex layouts
           return current
         }
-      }
       current = current.parent
     }
     
