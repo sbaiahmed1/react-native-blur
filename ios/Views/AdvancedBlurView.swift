@@ -1,5 +1,3 @@
-// AdvancedBlurView.swift
-
 import SwiftUI
 import UIKit
 
@@ -67,11 +65,34 @@ import UIKit
     setupHostingController()
   }
 
-  private func setupHostingController() {
-    let blurStyle = blurStyleFromString(blurTypeString)
-    let swiftUIView = BasicColoredView(glassTintColor: glassTintColor, glassOpacity: glassOpacity, blurAmount: blurAmount, blurStyle: blurStyle, type: type, glassType: glassType, reducedTransparencyFallbackColor: reducedTransparencyFallbackColor, isInteractive: isInteractive)
-    let hosting = UIHostingController(rootView: swiftUIView)
+  public override func layoutSubviews() {
+    super.layoutSubviews()
+    if hostingController == nil {
+      setupHostingController()
+    }
+  }
 
+  private func setupHostingController() {
+    // Completely remove old hosting controller
+    if let oldHosting = hostingController {
+      oldHosting.view.removeFromSuperview()
+      oldHosting.removeFromParent()
+    }
+    hostingController = nil
+
+    let blurStyle = blurStyleFromString(blurTypeString)
+    let swiftUIView = BasicColoredView(
+      glassTintColor: glassTintColor,
+      glassOpacity: glassOpacity,
+      blurAmount: blurAmount,
+      blurStyle: blurStyle,
+      type: type,
+      glassType: glassType,
+      reducedTransparencyFallbackColor: reducedTransparencyFallbackColor,
+      isInteractive: isInteractive
+    )
+
+    let hosting = UIHostingController(rootView: swiftUIView)
     hosting.view.backgroundColor = .clear
     hosting.view.translatesAutoresizingMaskIntoConstraints = false
 
@@ -87,8 +108,28 @@ import UIKit
   }
 
   private func updateView() {
-    let blurStyle = blurStyleFromString(blurTypeString)
-    let newSwiftUIView = BasicColoredView(glassTintColor: glassTintColor, glassOpacity: glassOpacity, blurAmount: blurAmount, blurStyle: blurStyle, type:type, glassType: glassType, reducedTransparencyFallbackColor: reducedTransparencyFallbackColor, isInteractive: isInteractive)
-    hostingController?.rootView = newSwiftUIView
+    setupHostingController()
+  }
+
+  public override func didMoveToSuperview() {
+    super.didMoveToSuperview()
+    if superview != nil {
+      setupHostingController()
+    }
+  }
+  
+  public override func didMoveToWindow() {
+    super.didMoveToWindow()
+    if window != nil {
+      setupHostingController()
+    }
+  }
+
+  deinit {
+    if let hosting = hostingController {
+      hosting.view.removeFromSuperview()
+      hosting.removeFromParent()
+    }
+    hostingController = nil
   }
 }
