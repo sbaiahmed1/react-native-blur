@@ -257,7 +257,8 @@ class ReactNativeBlurView : BlurView {
           super.setBackgroundColor(originalBackgroundColor!!)
         }
 
-        logDebug("Blur setup successful with root: ${root.javaClass.simpleName}")} catch (e: Exception) {
+        logDebug("Blur setup successful with root: ${root.javaClass.simpleName}")
+        } catch (e: Exception) {
           logWarning("Failed to setup blur algorithm: ${e.message}")
           // Fallback: use semi-transparent overlay when blur is unsupported
           super.setBackgroundColor(overlayColor)
@@ -301,6 +302,7 @@ class ReactNativeBlurView : BlurView {
           // This avoids misidentifying containers in complex layouts
           return current
         }
+      }
       current = current.parent
     }
     
