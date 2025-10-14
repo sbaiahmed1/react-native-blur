@@ -68,6 +68,12 @@ RCT_CUSTOM_VIEW_PROPERTY(isInteractive, NSNumber, AdvancedBlurView)
   [ReactNativeBlurViewHelper updateBlurView:view withIsInteractive:isInteractive];
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(ignoreSafeArea, NSNumber, AdvancedBlurView)
+{
+  BOOL ignoreSafeArea = json ? [RCTConvert BOOL:json] : NO;
+  [ReactNativeBlurViewHelper updateBlurView:view withIgnoringSafeArea:ignoreSafeArea];
+}
+
 RCT_CUSTOM_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString, AdvancedBlurView)
 {
   NSString *colorString = json ? [RCTConvert NSString:json] : @"#FFFFFF";
@@ -81,13 +87,13 @@ RCT_CUSTOM_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString, AdvancedBlu
   if (!colorString || [colorString isEqualToString:@""] || colorString.length == 0) {
     return [UIColor clearColor]; // Default color
   }
-  
+
   // Prevent excessively long strings that could cause performance issues
   if (colorString.length > 50) {
     NSLog(@"[ReactNativeBlurViewManager] Warning: Color string too long, using default clear color");
     return [UIColor clearColor];
   }
-  
+
   // Handle common color names
   NSDictionary *colorMap = @{
     @"red": [UIColor redColor],
@@ -102,12 +108,12 @@ RCT_CUSTOM_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString, AdvancedBlu
     @"clear": [UIColor clearColor],
     @"transparent": [UIColor clearColor]
   };
-  
+
   UIColor *namedColor = colorMap[colorString.lowercaseString];
   if (namedColor) {
     return namedColor;
   }
-  
+
   // Handle hex colors (e.g., "#FF0000", "FF0000", "#FF00FF00", "FF00FF00")
   NSString *hexString = colorString;
   if ([hexString hasPrefix:@"#"]) {
@@ -117,7 +123,7 @@ RCT_CUSTOM_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString, AdvancedBlu
     }
     hexString = [hexString substringFromIndex:1];
   }
-  
+
   // Validate hex string contains only valid hex characters
   NSCharacterSet *hexCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"0123456789ABCDEFabcdef"];
   NSCharacterSet *invalidCharacters = [hexCharacterSet invertedSet];
@@ -125,7 +131,7 @@ RCT_CUSTOM_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString, AdvancedBlu
     NSLog(@"[ReactNativeBlurViewManager] Warning: Invalid hex color format '%@', contains non-hex characters", colorString);
     return [UIColor clearColor];
   }
-  
+
   // Handle 6-character hex (RGB)
   if (hexString.length == 6) {
     unsigned int hexValue;
@@ -157,7 +163,7 @@ RCT_CUSTOM_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString, AdvancedBlu
       unsigned int r = (hexValue & 0xF00) >> 8;
       unsigned int g = (hexValue & 0x0F0) >> 4;
       unsigned int b = (hexValue & 0x00F);
-      
+
       return [UIColor colorWithRed:(r | (r << 4)) / 255.0
                              green:(g | (g << 4)) / 255.0
                               blue:(b | (b << 4)) / 255.0
@@ -165,10 +171,10 @@ RCT_CUSTOM_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString, AdvancedBlu
     }
   }
   else {
-    NSLog(@"[ReactNativeBlurViewManager] Warning: Unsupported hex color length (%lu) for '%@', expected 3, 6, or 8 characters", 
+    NSLog(@"[ReactNativeBlurViewManager] Warning: Unsupported hex color length (%lu) for '%@', expected 3, 6, or 8 characters",
           (unsigned long)hexString.length, colorString);
   }
-  
+
   NSLog(@"[ReactNativeBlurViewManager] Warning: Could not parse color '%@', using default clear color", colorString);
   return [UIColor clearColor]; // Fallback to clear
 }

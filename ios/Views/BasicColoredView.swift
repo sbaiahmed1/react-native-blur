@@ -6,53 +6,90 @@ import UIKit
 // MARK: - SwiftUI View Component
 
 struct BasicColoredView: View {
-  var glassTintColor: UIColor
-  var glassOpacity: Double
-  var blurAmount: Double
-  var blurStyle: UIBlurEffect.Style
-  var type: String
-  var glassType: String
-  var reducedTransparencyFallbackColor: UIColor
-  var isInteractive: Bool
+  let glassTintColor: UIColor
+  let glassOpacity: Double
+  let blurAmount: Double
+  let blurStyle: UIBlurEffect.Style
+  let type: String
+  let glassType: String
+  let reducedTransparencyFallbackColor: UIColor
+  let isInteractive: Bool
+  let blurIntensity: Double
+  let ignoreSafeArea: Bool
+
+  let isReducedTransparencyEnabled = UIAccessibility.isReduceTransparencyEnabled
+
+
+  init(glassTintColor: UIColor,
+       glassOpacity: Double,
+       blurAmount: Double,
+       blurStyle: UIBlurEffect.Style,
+       type: String,
+       glassType: String,
+       reducedTransparencyFallbackColor: UIColor,
+       isInteractive: Bool,
+       ignoreSafeArea: Bool = false) {
+    self.glassTintColor = glassTintColor
+    self.glassOpacity = glassOpacity
+    self.blurAmount = blurAmount
+    self.blurStyle = blurStyle
+    self.type = type
+    self.glassType = glassType
+    self.reducedTransparencyFallbackColor = reducedTransparencyFallbackColor
+    self.isInteractive = isInteractive
+    self.ignoreSafeArea = ignoreSafeArea
+
+    self.blurIntensity = mapBlurAmountToIntensity(blurAmount)
+  }
 
   var body: some View {
-    let blurIntensity = mapBlurAmountToIntensity(blurAmount)
+    content
+      .ignoresSafeArea(ignoreSafeArea ? .all : [])
+  }
 
-    // Check if reduced transparency is enabled
-    let isReducedTransparencyEnabled = UIAccessibility.isReduceTransparencyEnabled
-
+  private var content: some View {
     if isReducedTransparencyEnabled {
-      // Use fallback color when reduced transparency is enabled
-      Rectangle()
-        .fill(Color(reducedTransparencyFallbackColor))
+      AnyView(
+        Rectangle()
+          .fill(Color(reducedTransparencyFallbackColor))
+      )
     } else {
       if (type == "liquidGlass"){
-        if #available(iOS 26.0, *) {
-          let baseGlassEffect = glassEffectFromString(glassType)
-          Rectangle()
-            .glassEffect(
-              baseGlassEffect
-                .tint(Color(glassTintColor)
-                  .opacity(glassOpacity))
-                .interactive(isInteractive)
-              , in: .rect)
-
-        } else {
-          // Use proper blur intensity control for liquid glass fallback
-          Rectangle()
-            .fill(Color(.clear))
-            .background(Blur(style: blurStyle, intensity: blurIntensity))
-            .overlay(
-              Color(glassTintColor)
-                .opacity(glassOpacity)
-            )
-        }
-      }else {
-        // Use proper blur intensity control for regular blur
-        Rectangle()
-          .fill(Color(.clear))
-          .background(Blur(style: blurStyle, intensity: blurIntensity))
+        AnyView(liquidGlassBlurView)
+      } else {
+        AnyView(regularBlurView)
       }
     }
   }
+
+  private var liquidGlassBlurView: some View {
+    Group {
+      if #available(iOS 26.0, *) {
+        let baseGlassEffect = glassEffectFromString(glassType)
+        Rectangle()
+          .glassEffect(
+            baseGlassEffect
+              .tint(Color(glassTintColor).opacity(glassOpacity))
+              .interactive(isInteractive), in: .rect
+          )
+      } else {
+        // Use proper blur intensity control for liquid glass fallback
+        Rectangle()
+          .fill(Color(.clear))
+          .background(Blur(style: blurStyle, intensity: blurIntensity))
+          .overlay(
+            Color(glassTintColor)
+              .opacity(glassOpacity)
+          )
+      }
+    }
+  }
+
+  private var regularBlurView: some View {
+    // Use proper blur intensity control for regular blur
+    Rectangle()
+      .fill(Color(.clear))
+      .background(Blur(style: blurStyle, intensity: blurIntensity))
+  }
 }
+

@@ -55,6 +55,12 @@ import UIKit
     }
   }
 
+  @objc public var ignoreSafeArea: Bool = false {
+    didSet {
+      updateView()
+    }
+  }
+
   public override init(frame: CGRect) {
     super.init(frame: frame)
     setupHostingController()
@@ -89,7 +95,8 @@ import UIKit
       type: type,
       glassType: glassType,
       reducedTransparencyFallbackColor: reducedTransparencyFallbackColor,
-      isInteractive: isInteractive
+      isInteractive: isInteractive,
+      ignoreSafeArea: ignoreSafeArea
     )
 
     let hosting = UIHostingController(rootView: swiftUIView)
