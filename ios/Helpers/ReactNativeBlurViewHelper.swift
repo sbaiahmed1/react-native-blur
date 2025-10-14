@@ -47,6 +47,11 @@ import UIKit
     blurView.isInteractive = isInteractive
   }
 
+  /// Updates the blur view with a new blur style.
+  @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withIgnoringSafeArea ignoreSafeArea: Bool) {
+    blurView.ignoreSafeArea = ignoreSafeArea
+  }
+
   /// Updates the blur view with a new reduced transparency fallback color.
   @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withReducedTransparencyFallbackColor fallbackColor: UIColor) {
     blurView.reducedTransparencyFallbackColor = fallbackColor

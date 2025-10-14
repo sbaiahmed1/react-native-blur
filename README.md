@@ -206,7 +206,7 @@ import { BlurView } from '@sbaiahmed1/react-native-blur';
 // Before - Expo dependency + limited Android
 import { BlurView } from 'expo-blur';
 
-<BlurView 
+<BlurView
   intensity={50}                // 0-100 intensity scale
   tint="light"                  // light, dark, default, system materials
   experimentalBlurMethod="dimezisBlurView" // Android experimental blur
@@ -218,7 +218,7 @@ import { BlurView } from 'expo-blur';
 // After - No dependencies + real Android blur
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 
-<BlurView 
+<BlurView
   blurAmount={50}               // intensity → blurAmount (same scale)
   blurType="light"              // tint → blurType (same options + more)
   style={styles.absolute}
@@ -257,11 +257,11 @@ import { BlurView } from '@sbaiahmed1/react-native-blur';
 
 3. **Optional: Add liquid glass effects:**
    ```tsx
-   <BlurView 
-     type="liquidGlass" 
-     glassType="regular" 
-     glassTintColor="#007AFF" 
-     glassOpacity={0.8} 
+   <BlurView
+     type="liquidGlass"
+     glassType="regular"
+     glassTintColor="#007AFF"
+     glassOpacity={0.8}
    />
    ```
 
@@ -443,6 +443,7 @@ All props are optional and have sensible defaults.
 | `glassType` | `GlassType` | `'clear'` | The type of glass effect |
 | `glassTintColor` | `string` | `'clear'` | The tint color for glass effect |
 | `glassOpacity` | `number` | `1.0` | The opacity of glass effect (0-1) |
+| `ignoreSafeArea` | `boolean` | `false` | (iOS only) Controls whether the liquid glass effect should ignore all safe area edges or stops once it reaches it |
 | `isInteractive` | `boolean` | `true` | (iOS only) Controls whether the liquid glass effect is interactive. When `false`, the liquid glass effect will not react to touch or movement. Only applicable when `type` is `'liquidGlass'` and iOS 26+. |
 | `reducedTransparencyFallbackColor` | `string` | `'#FFFFFF'` | Fallback color when reduced transparency is enabled |
 | `style` | `ViewStyle` | `undefined` | Style object for the blur view |
@@ -480,7 +481,7 @@ On iOS, this component has been completely rewritten using **SwiftUI** for moder
 - **SwiftUI Integration**: Leverages SwiftUI's declarative UI for better performance and maintainability
 
 ### Android
-On Android, the component uses the BlurView library to provide real blur effects with hardware acceleration. The implementation supports multiple blur algorithms and gracefully falls back to translucent overlay approximation on devices with limited graphics capabilities. 
+On Android, the component uses the BlurView library to provide real blur effects with hardware acceleration. The implementation supports multiple blur algorithms and gracefully falls back to translucent overlay approximation on devices with limited graphics capabilities.
 
 **⚠️ Liquid Glass Limitation**: Liquid glass effects (`type="liquidGlass"`) are **iOS 26+ exclusive**. On Android, they automatically fall back to enhanced blur with tint overlay to approximate the visual effect.
 

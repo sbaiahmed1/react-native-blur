@@ -29,6 +29,7 @@ interface NativeProps extends ViewProps {
   glassType?: WithDefault<GlassType, 'clear'>;
   reducedTransparencyFallbackColor?: WithDefault<string, '#FFFFFF'>;
   isInteractive?: WithDefault<boolean, true>;
+  ignoreSafeArea?: WithDefault<boolean, false>;
 }
 
 export default codegenNativeComponent<NativeProps>('ReactNativeBlurView');

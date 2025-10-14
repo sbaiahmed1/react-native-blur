@@ -73,6 +73,13 @@ export interface BlurViewProps {
    * @default true
    */
   isInteractive?: boolean;
+
+  /**
+   * Platform: iOS only
+   * Whether the blur view should be ignore safe area insets
+   * @default false
+   */
+  ignoreSafeArea?: boolean;
 }
 
 /**
@@ -108,6 +115,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
   glassTintColor = 'clear',
   glassOpacity = 1.0,
   isInteractive = true,
+  ignoreSafeArea = false,
   ...props
 }) => {
   // If no children, render the blur view directly (for background use)
@@ -123,6 +131,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
         style={style}
         isInteractive={isInteractive}
+        ignoreSafeArea={ignoreSafeArea}
         {...props}
       />
     );
@@ -140,6 +149,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
         glassOpacity={glassOpacity}
         type={type}
         isInteractive={isInteractive}
+        ignoreSafeArea={ignoreSafeArea}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
         style={{
           position: 'absolute',
