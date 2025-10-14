@@ -63,10 +63,15 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
   override fun setGlassType(view: ReactNativeBlurView?, glassType: String?) {
     view?.setGlassType(glassType ?: "clear")
   }
-  
+
   @ReactProp(name = "isInteractive")
   override fun setIsInteractive(view: ReactNativeBlurView?, isInteractive: Boolean) {
     view?.setIsInteractive(isInteractive)
+  }
+
+  @ReactProp(name = "setIgnoreSafeArea")
+  override fun setIgnoreSafeArea(view: ReactNativeBlurView?, isInteractive: Boolean) {
+    // no-op
   }
 
   /**
