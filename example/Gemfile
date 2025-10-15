@@ -1,9 +1,12 @@
-source 'https://rubygems.org'
+ruby '3.2.2'
 
-# You may use http://rbenv.org/ or https://rvm.io/ to install and use this version
-ruby ">= 2.6.10"
+# Check if ruby version is matching ruby specification in line 1
+raise "Ruby 3.2.2 is required, but you're using Ruby #{RUBY_VERSION}. Please use Ruby 3.2.2." unless RUBY_VERSION == "3.2.2"
+
+source "https://rubygems.org"
 
 # Exclude problematic versions of cocoapods and activesupport that causes build failures.
+gem 'bundler', '2.4.18'
 gem 'cocoapods', '>= 1.13', '!= 1.15.0', '!= 1.15.1', '!= 1.15.2'
 gem 'activesupport', '>= 6.1.7.5', '!= 7.1.0'
 gem 'xcodeproj', '< 1.26.0'
