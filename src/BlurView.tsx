@@ -83,8 +83,23 @@ export interface BlurViewProps {
   /**
    * Platform: Android only
    * The ID of the target view to blur (BlurView v3)
-   * When provided, enables real blur effect on Android
-   * Must be used with a TargetView component with matching id
+   * When provided, enables real blur effect on Android by blurring the specified TargetView.
+   *
+   * **Important:** This must match the `id` prop of an existing `TargetView` component in your app.
+   * If the targetId doesn't match any TargetView, the blur effect will fail and fall back to overlay color.
+   *
+   * @example
+   * ```tsx
+   * // Define a TargetView with an id
+   * <TargetView id="background" style={styles.container}>
+   *   <Image source={backgroundImage} />
+   * </TargetView>
+   *
+   * // Reference it in BlurView with matching targetId
+   * <BlurView targetId="background" blurAmount={40}>
+   *   <Text>This blurs the background</Text>
+   * </BlurView>
+   * ```
    */
   targetId?: string;
 }
@@ -110,6 +125,22 @@ export interface BlurViewProps {
  *   <Button title="Interactive Button" onPress={() => {}} />
  * </BlurView>
  * ```
+ *
+ * @example With Android real blur using targetId:
+ * ```tsx
+ * <TargetView id="background" style={styles.container}>
+ *   <Image source={backgroundImage} style={styles.background} />
+ * </TargetView>
+ *
+ * <BlurView
+ *   targetId="background"
+ *   blurType="light"
+ *   blurAmount={40}
+ *   style={{ flex: 1 }}
+ * >
+ *   <Text>Blurs the actual background in real-time</Text>
+ * </BlurView>
+ * ```
  */
 export const BlurView: React.FC<BlurViewProps> = ({
   blurType = 'xlight',
@@ -127,7 +158,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
   ...props
 }) => {
   return (
-    <View style={[style, { overflow: 'hidden' }]}>
+    <View style={[{ position: 'relative' }, style, { overflow: 'hidden' }]}>
       <ReactNativeBlurView
         blurType={blurType}
         blurAmount={blurAmount}

@@ -75,7 +75,7 @@ const MainExample = ({ cycleBackground }: { cycleBackground: () => void }) => {
       {/* Blur Amount Selector */}
       <View style={styles.selectorContainer}>
         <BlurView
-          targetId="app-background"
+          targetId="background"
           blurType="dark"
           blurAmount={30}
           style={styles.selectorHeader}

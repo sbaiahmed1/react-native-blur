@@ -113,10 +113,8 @@ class ReactNativeBlurView : eightbitlab.com.blurview.BlurView {
     super.setBackgroundColor(this.overlayColor.color)
     super.clipChildren = true
     super.clipToOutline = true
-    super.layoutParams = LayoutParams(
-      LayoutParams.MATCH_PARENT,
-      LayoutParams.MATCH_PARENT
-    )
+    // Note: Do not set layoutParams here to avoid overriding React Native constraints
+    // React Native will handle the layout parameters through its layout system
   }
 
   // Wait all views are mounted in interface

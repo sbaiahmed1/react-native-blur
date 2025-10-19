@@ -67,7 +67,7 @@ const ComparisonExamples = () => {
       {useRealBlur ? (
         <View style={styles.realBlurContainer}>
           <BlurView
-            targetId="app-background"
+            targetId="background"
             blurType={currentCard.type as BlurType}
             blurAmount={selectedIntensity}
             style={styles.realBlurCard}

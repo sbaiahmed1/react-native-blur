@@ -73,7 +73,7 @@ This version upgrades the Android BlurView library and changes how blur works on
 
 #### Migration Required (Android)
 
-**Before (v3.1.x and earlier):**
+**Before (v3.2.x and earlier):**
 ```tsx
 // This worked with real blur on Android
 <View style={styles.container}>
@@ -84,7 +84,7 @@ This version upgrades the Android BlurView library and changes how blur works on
 </View>
 ```
 
-**After (v3.2.0+):**
+**After (v4.0.0+):**
 ```tsx
 // REQUIRED: Use TargetView for real blur on Android
 import { BlurView, TargetView } from '@sbaiahmed1/react-native-blur';
