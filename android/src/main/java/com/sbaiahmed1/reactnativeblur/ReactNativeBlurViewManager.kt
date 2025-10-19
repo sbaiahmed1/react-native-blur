@@ -74,6 +74,11 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
     // no-op
   }
 
+  @ReactProp(name = "targetId")
+  override fun setTargetId(view: ReactNativeBlurView?, targetId: String?) {
+    view?.setTargetId(targetId)
+  }
+
   /**
    * Called when view is detached from view hierarchy and allows for cleanup.
    * This prevents the white screen issue during navigation transitions on Android.

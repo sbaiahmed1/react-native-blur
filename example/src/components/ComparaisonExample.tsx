@@ -1,12 +1,13 @@
 import BlurView, { type BlurType } from '@sbaiahmed1/react-native-blur';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { width } from '../constants';
 import { useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { width } from '../constants';
 
 const ComparisonExamples = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [selectedIntensity, setSelectedIntensity] = useState(40);
   const [showAllCards, setShowAllCards] = useState(false);
+  const [useRealBlur, setUseRealBlur] = useState(false);
 
   const blurCards = [
     { type: 'light', emoji: '☀️' },
@@ -40,17 +41,42 @@ const ComparisonExamples = () => {
     <View style={styles.comparisonContainer}>
       <Text style={styles.sectionTitle}>Blur Effect Showcase</Text>
 
-      {/* Main Carousel Card */}
-      <View style={styles.carouselContainer}>
-        <View style={[styles.mainCard]}>
+      {/* Mode Toggle */}
+      <View style={styles.modeToggle}>
+        <TouchableOpacity
+          onPress={() => setUseRealBlur(false)}
+          style={[styles.modeButton, !useRealBlur && styles.activeModeButton]}
+        >
+          <Text
+            style={[styles.modeText, !useRealBlur && styles.activeModeText]}
+          >
+            Standard Blur
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setUseRealBlur(true)}
+          style={[styles.modeButton, useRealBlur && styles.activeModeButton]}
+        >
+          <Text style={[styles.modeText, useRealBlur && styles.activeModeText]}>
+            Real Blur (v3)
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Real Blur Example - blurs the app's background */}
+      {useRealBlur ? (
+        <View style={styles.realBlurContainer}>
           <BlurView
+            targetId="app-background"
             blurType={currentCard.type as BlurType}
             blurAmount={selectedIntensity}
-            style={styles.carouselBlurView}
+            style={styles.realBlurCard}
           >
             <Text style={styles.cardEmoji}>{currentCard.emoji}</Text>
             <Text style={styles.cardTitle}>{currentCard.type}</Text>
-            <Text style={styles.cardIntensity}>{selectedIntensity}% Blur</Text>
+            <Text style={styles.cardIntensity}>
+              {selectedIntensity}% Real Blur
+            </Text>
 
             <View style={styles.cardControls}>
               <TouchableOpacity onPress={prevCard} style={styles.navButton}>
@@ -68,8 +94,45 @@ const ComparisonExamples = () => {
               </TouchableOpacity>
             </View>
           </BlurView>
+
+          <Text style={styles.realBlurNote}>
+            ✨ Blurring the actual app background in real-time
+          </Text>
         </View>
-      </View>
+      ) : (
+        /* Main Carousel Card - Standard Blur */
+        <View style={styles.carouselContainer}>
+          <View style={[styles.mainCard]}>
+            <BlurView
+              blurType={currentCard.type as BlurType}
+              blurAmount={selectedIntensity}
+              style={styles.carouselBlurView}
+            >
+              <Text style={styles.cardEmoji}>{currentCard.emoji}</Text>
+              <Text style={styles.cardTitle}>{currentCard.type}</Text>
+              <Text style={styles.cardIntensity}>
+                {selectedIntensity}% Blur
+              </Text>
+
+              <View style={styles.cardControls}>
+                <TouchableOpacity onPress={prevCard} style={styles.navButton}>
+                  <Text style={styles.navButtonText}>←</Text>
+                </TouchableOpacity>
+
+                <View style={styles.cardIndicator}>
+                  <Text style={styles.indicatorText}>
+                    {currentCardIndex + 1} / {blurCards.length}
+                  </Text>
+                </View>
+
+                <TouchableOpacity onPress={nextCard} style={styles.navButton}>
+                  <Text style={styles.navButtonText}>→</Text>
+                </TouchableOpacity>
+              </View>
+            </BlurView>
+          </View>
+        </View>
+      )}
 
       {/* Intensity Slider */}
       <View style={styles.intensitySlider}>
@@ -361,6 +424,57 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     lineHeight: 20,
+  },
+  modeToggle: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    gap: 10,
+  },
+  modeButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    alignItems: 'center',
+  },
+  activeModeButton: {
+    backgroundColor: 'rgba(0, 122, 255, 0.8)',
+  },
+  modeText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  activeModeText: {
+    color: '#fff',
+  },
+  realBlurContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  realBlurCard: {
+    width: width * 0.9,
+    height: 250,
+    borderRadius: 20,
+    overflow: 'hidden',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  realBlurNote: {
+    marginTop: 10,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
   },
 });
 

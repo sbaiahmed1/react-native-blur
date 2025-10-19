@@ -50,6 +50,115 @@ A modern React Native blur view component that provides native blur effects and 
 
 > 💡 **Migration Tip**: If you're unable to upgrade to Xcode 26.0, please use version **0.2.1** of this library which supports Xcode 16.0 and provides standard blur effects without liquid glass capabilities.
 
+## ⚠️ Breaking Changes
+
+### Version 3.2.0 (Current)
+
+#### � Android Blur Implementation Change
+
+**⚠️ BREAKING CHANGE - Action Required for Android Users**
+
+This version upgrades the Android BlurView library and changes how blur works on Android.
+
+#### What Changed
+
+**Android BlurView Library Upgrade:**
+- **Previous:** Dimezis BlurView v2.0.6 (overlay-based blur)
+- **Now:** Dimezis BlurView v3.1.0 (target-based blur system)
+
+**Impact on Existing Code:**
+- ❌ **BlurView without `targetId` will show semi-transparent overlay** (no real blur)
+- ✅ **BlurView with `targetId` will show real hardware-accelerated blur**
+- ✅ **iOS implementation unchanged** - no migration needed for iOS
+
+#### Migration Required (Android)
+
+**Before (v3.1.x and earlier):**
+```tsx
+// This worked with real blur on Android
+<View style={styles.container}>
+  <Image source={{ uri: 'https://...' }} />
+  <BlurView blurType="light" blurAmount={20} style={styles.blur}>
+    <Text>Blurred content</Text>
+  </BlurView>
+</View>
+```
+
+**After (v3.2.0+):**
+```tsx
+// REQUIRED: Use TargetView for real blur on Android
+import { BlurView, TargetView } from '@sbaiahmed1/react-native-blur';
+
+<TargetView id="background" style={styles.container}>
+  <Image source={{ uri: 'https://...' }} />
+</TargetView>
+
+<BlurView targetId="background" blurType="light" blurAmount={20} style={styles.blur}>
+  <Text>Real blurred content</Text>
+</BlurView>
+```
+
+**Without migration, you'll see:**
+- Semi-transparent colored overlay instead of real blur
+- Reduced visual quality on Android
+- iOS remains unaffected
+
+#### New Features
+
+**1. TargetView Component**
+- **Purpose:** Marks content to be blurred on Android
+- **Platform:** Android only (renders as regular `View` on iOS)
+- **Aliases:** `TargetView` or `BlurTargetView` (same component)
+
+```tsx
+<TargetView id="uniqueId" style={styles.target}>
+  {/* Content to be blurred */}
+</TargetView>
+```
+
+**2. targetId Prop**
+- **Platform:** Android only (ignored on iOS)
+- **Required:** Yes, for real blur on Android
+- **Purpose:** Links BlurView to TargetView for blur targeting
+
+```tsx
+<BlurView targetId="uniqueId" blurType="light" blurAmount={20}>
+  {/* Blur overlay */}
+</BlurView>
+```
+
+#### Migration Checklist
+
+1. **Import TargetView:**
+   ```tsx
+   import { BlurView, TargetView } from '@sbaiahmed1/react-native-blur';
+   ```
+
+2. **Wrap blur target content:**
+   ```tsx
+   <TargetView id="myBackground">
+     {/* Your background content */}
+   </TargetView>
+   ```
+
+3. **Add targetId to BlurView:**
+   ```tsx
+   <BlurView targetId="myBackground" {...props}>
+     {/* Your blur overlay content */}
+   </BlurView>
+   ```
+
+4. **Test on Android device:** Verify real blur works correctly
+
+#### Why This Change?
+
+- ✅ **Better Performance:** Hardware-accelerated blur rendering
+- ✅ **Real Blur Quality:** True blur instead of approximation
+- ✅ **More Control:** Blur specific content instead of everything behind
+- ✅ **Modern Android API:** Leverages latest BlurView capabilities
+
+---
+
 ## Features
 
 - 🌊 **Liquid Glass Effects**: Revolutionary glass effects using iOS 26+ UIGlassEffect API

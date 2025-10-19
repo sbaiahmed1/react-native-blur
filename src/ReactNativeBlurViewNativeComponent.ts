@@ -1,9 +1,9 @@
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 import type { ViewProps } from 'react-native';
 import type {
-  WithDefault,
   Double,
+  WithDefault,
 } from 'react-native/Libraries/Types/CodegenTypes';
+import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
 
 export type BlurType =
   | 'xlight'
@@ -30,6 +30,7 @@ interface NativeProps extends ViewProps {
   reducedTransparencyFallbackColor?: WithDefault<string, '#FFFFFF'>;
   isInteractive?: WithDefault<boolean, true>;
   ignoreSafeArea?: WithDefault<boolean, false>;
+  targetId?: string;
 }
 
 export default codegenNativeComponent<NativeProps>('ReactNativeBlurView');

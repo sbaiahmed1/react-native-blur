@@ -1,10 +1,9 @@
 import React from 'react';
-import { View } from 'react-native';
-import type { ViewStyle, StyleProp } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import type { GlassType } from '../src/ReactNativeBlurViewNativeComponent';
 import ReactNativeBlurView, {
   type BlurType,
 } from './ReactNativeBlurViewNativeComponent';
-import type { GlassType } from '../src/ReactNativeBlurViewNativeComponent';
 
 export interface BlurViewProps {
   /**
@@ -80,6 +79,14 @@ export interface BlurViewProps {
    * @default false
    */
   ignoreSafeArea?: boolean;
+
+  /**
+   * Platform: Android only
+   * The ID of the target view to blur (BlurView v3)
+   * When provided, enables real blur effect on Android
+   * Must be used with a TargetView component with matching id
+   */
+  targetId?: string;
 }
 
 /**
@@ -116,31 +123,11 @@ export const BlurView: React.FC<BlurViewProps> = ({
   glassOpacity = 1.0,
   isInteractive = true,
   ignoreSafeArea = false,
+  targetId,
   ...props
 }) => {
-  // If no children, render the blur view directly (for background use)
-  if (React.Children.count(children) === 0) {
-    return (
-      <ReactNativeBlurView
-        blurType={blurType}
-        blurAmount={blurAmount}
-        glassType={glassType}
-        glassTintColor={glassTintColor}
-        glassOpacity={glassOpacity}
-        type={type}
-        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-        style={style}
-        isInteractive={isInteractive}
-        ignoreSafeArea={ignoreSafeArea}
-        {...props}
-      />
-    );
-  }
-
-  // If children exist, use the absolute positioning pattern
   return (
-    <View style={[{ position: 'relative', overflow: 'hidden' }, style]}>
-      {/* Blur effect positioned absolutely behind content */}
+    <View style={[style, { overflow: 'hidden' }]}>
       <ReactNativeBlurView
         blurType={blurType}
         blurAmount={blurAmount}
@@ -151,16 +138,10 @@ export const BlurView: React.FC<BlurViewProps> = ({
         isInteractive={isInteractive}
         ignoreSafeArea={ignoreSafeArea}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}
+        targetId={targetId}
+        style={StyleSheet.absoluteFill}
         {...props}
       />
-      {/* Content positioned relatively on top */}
       <View style={{ position: 'relative', zIndex: 1 }}>{children}</View>
     </View>
   );

@@ -2,76 +2,87 @@ package com.sbaiahmed1.reactnativeblur
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.view.ViewGroup
-import eightbitlab.com.blurview.BlurView
-import eightbitlab.com.blurview.RenderEffectBlur
-import eightbitlab.com.blurview.RenderScriptBlur
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.toDrawable
+import eightbitlab.com.blurview.BlurTarget
 
 /**
  * Android implementation of React Native BlurView component.
- * Provides cross-platform blur effects using the BlurView library.
+ * Uses Dimezis BlurView v3 with BlurTarget approach.
  */
-class ReactNativeBlurView : BlurView {
-  private var blurRadius = mapBlurAmountToRadius(DEFAULT_BLUR_AMOUNT)
-  private var overlayColor = Color.TRANSPARENT
-  private var isSetup = false
-  private var isConfigured = false
-  private var pendingStyleUpdate: Boolean = false
-  private var originalBackgroundColor: Int? = null
-  private var hasExplicitBackground: Boolean = false
-  private var glassTintColor: Int = Color.TRANSPARENT
-  private var glassOpacity: Float = 1.0f
-  private var viewType: String = "blur"
-  private var glassType: String = "clear"
+class ReactNativeBlurView : eightbitlab.com.blurview.BlurView {
+  private var targetId: String? = null
+  private var overlayColor: OverlayColor = OverlayColor.fromString("light")
+  private var radius: Float = 10f * INTENSITY
+  private var isInitialized: Boolean = false
+  private var rootView: BlurTarget? = null
 
   companion object {
-    private const val TAG = "ReactNativeBlurView"
-    private const val MIN_BLUR_RADIUS = 0f
-    private const val MAX_BLUR_RADIUS = 25f
-    private const val DEFAULT_BLUR_RADIUS = 10f
-    private const val DEBUG = false // Set to true for debug builds
+    private const val TAG: String = "ReactNativeBlurView"
+    private const val INTENSITY: Float = 0.675f
+  }
 
-    // Cross-platform blur amount constants
-    private const val MIN_BLUR_AMOUNT = 0f
-    private const val MAX_BLUR_AMOUNT = 100f
-    private const val DEFAULT_BLUR_AMOUNT = 10f
+  private enum class OverlayColor(val color: Int) {
+    X_LIGHT(Color.argb(140, 240, 240, 240)),
+    LIGHT(Color.argb(42, 255, 255, 255)),
+    DARK(Color.argb(120, 26, 22, 22)),
+    REGULAR(Color.argb(35, 255, 255, 255)),
+    PROMINENT(Color.argb(140, 240, 240, 240)),
+    ULTRA_THIN_MATERIAL(Color.argb(75, 240, 240, 240)),
+    ULTRA_THIN_MATERIAL_LIGHT(Color.argb(77, 240, 240, 240)),
+    ULTRA_THIN_MATERIAL_DARK(Color.argb(65, 40, 40, 40)),
+    THIN_MATERIAL(Color.argb(102, 240, 240, 240)),
+    THIN_MATERIAL_LIGHT(Color.argb(105, 240, 240, 240)),
+    THIN_MATERIAL_DARK(Color.argb(102, 35, 35, 35)),
+    MATERIAL(Color.argb(140, 245, 245, 245)),
+    MATERIAL_LIGHT(Color.argb(140, 248, 248, 248)),
+    MATERIAL_DARK(Color.argb(215, 65, 60, 60)),
+    THICK_MATERIAL(Color.argb(210, 248, 248, 248)),
+    THICK_MATERIAL_LIGHT(Color.argb(212, 248, 248, 248)),
+    THICK_MATERIAL_DARK(Color.argb(165, 35, 35, 35)),
+    CHROME_MATERIAL(Color.argb(165, 248, 248, 248)),
+    CHROME_MATERIAL_LIGHT(Color.argb(167, 248, 248, 248)),
+    CHROME_MATERIAL_DARK(Color.argb(100, 32, 32, 32));
 
-    private fun logDebug(message: String) {
-      if (DEBUG) {
-        Log.d(TAG, message)
+    companion object {
+      fun fromString(color: String): OverlayColor {
+        return when (color.lowercase()) {
+          "xlight", "x-light" -> X_LIGHT
+          "light" -> LIGHT
+          "dark" -> DARK
+          "extradark", "extra-dark" -> DARK
+          "regular" -> REGULAR
+          "prominent" -> PROMINENT
+          "systemultrathinmaterial", "ultra-thin-material" -> ULTRA_THIN_MATERIAL
+          "ultra-thin-material-light" -> ULTRA_THIN_MATERIAL_LIGHT
+          "ultra-thin-material-dark" -> ULTRA_THIN_MATERIAL_DARK
+          "systemthinmaterial", "thin-material" -> THIN_MATERIAL
+          "thin-material-light" -> THIN_MATERIAL_LIGHT
+          "thin-material-dark" -> THIN_MATERIAL_DARK
+          "systemmaterial", "material" -> MATERIAL
+          "material-light" -> MATERIAL_LIGHT
+          "material-dark" -> MATERIAL_DARK
+          "systemthickmaterial", "thick-material" -> THICK_MATERIAL
+          "thick-material-light" -> THICK_MATERIAL_LIGHT
+          "thick-material-dark" -> THICK_MATERIAL_DARK
+          "systemchromematerial", "chrome-material" -> CHROME_MATERIAL
+          "chrome-material-light" -> CHROME_MATERIAL_LIGHT
+          "chrome-material-dark" -> CHROME_MATERIAL_DARK
+          else -> LIGHT
+        }
       }
-    }
-
-    private fun logWarning(message: String) {
-      Log.w(TAG, message)
-    }
-
-    private fun logError(message: String, throwable: Throwable? = null) {
-      Log.e(TAG, message, throwable)
-    }
-
-    /**
-     * Maps blur amount (0-100) to Android blur radius (0-25).
-     * This ensures cross-platform consistency while respecting Android's limitations.
-     * @param amount The blur amount from 0-100
-     * @return The corresponding blur radius from 0-25
-     */
-    private fun mapBlurAmountToRadius(amount: Float): Float {
-      val clampedAmount = amount.coerceIn(MIN_BLUR_AMOUNT, MAX_BLUR_AMOUNT)
-      return (clampedAmount / MAX_BLUR_AMOUNT) * MAX_BLUR_RADIUS
     }
   }
 
   constructor(context: Context?) : super(context) {
-    initializeBlur()
+    this.setupBlurView()
   }
 
   constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
-    initializeBlur()
+    this.setupBlurView()
   }
 
   constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(
@@ -79,461 +90,238 @@ class ReactNativeBlurView : BlurView {
     attrs,
     defStyleAttr
   ) {
-    initializeBlur()
+    this.setupBlurView()
   }
 
-  /**
-   * Initialize the blur view with default settings.
-   * Sets transparent background to prevent visual artifacts.
-   */
-  private fun initializeBlur() {
-    // Set transparent background initially to avoid yellow tint - use super to avoid recursion
-    super.setBackgroundColor(Color.TRANSPARENT)
-    logDebug("ReactNativeBlurView initialized")
-  }
-
-  /**
-   * Override setBackgroundColor to handle blur setup timing and background preservation.
-   * @param color The background color to apply
-   */
-  override fun setBackgroundColor(color: Int) {
-    logDebug("setBackgroundColor called: $color (isSetup: $isSetup)")
-
-    // Store the original background color if it's not transparent
-    if (color != Color.TRANSPARENT) {
-      originalBackgroundColor = color
-      hasExplicitBackground = true
-      logDebug("Stored explicit background color: $color")
-    }
-
-    // If blur is not setup yet, defer setting the background
-    if (!isSetup) {
-      logDebug("Blur not setup, deferring background color")
-      pendingStyleUpdate = true
-      // Post a setup attempt
-      post {
-        if (!isSetup && isAttachedToWindow) {
-          logDebug("Attempting deferred blur setup from setBackgroundColor")
-          setupBlurView()
-        }
-      }
-      return
-    }
-
-    // If blur is setup and we have an explicit background, apply it carefully
-     if (hasExplicitBackground && color != Color.TRANSPARENT) {
-       logDebug("Applying background color over blur: $color")
-       super.setBackgroundColor(color)
-     } else {
-       logDebug("Keeping transparent background for blur effect")
-       super.setBackgroundColor(Color.TRANSPARENT)
-     }
-   }
-
-   /**
-    * Override setAlpha to handle blur setup timing.
-    * @param alpha The alpha value to apply
-    */
-   override fun setAlpha(alpha: Float) {
-     logDebug("setAlpha called: $alpha (isSetup: $isSetup)")
-
-     // Always apply alpha changes immediately as they don't interfere with blur setup
-     super.setAlpha(alpha)
-
-     // If blur is not setup yet, trigger setup attempt
-     if (!isSetup && isAttachedToWindow) {
-       pendingStyleUpdate = true
-       post {
-         if (!isSetup && isAttachedToWindow) {
-           logDebug("Attempting deferred blur setup from setAlpha")
-           setupBlurView()
-         }
-       }
-     }
-   }
-
-   /**
-    * Override setElevation to handle blur setup timing.
-    * @param elevation The elevation value to apply
-    */
-   override fun setElevation(elevation: Float) {
-     logDebug("setElevation called: $elevation (isSetup: $isSetup)")
-
-     // Always apply elevation changes immediately
-     super.setElevation(elevation)
-
-     // If blur is not setup yet, trigger setup attempt
-     if (!isSetup && isAttachedToWindow) {
-       pendingStyleUpdate = true
-       post {
-         if (!isSetup && isAttachedToWindow) {
-           logDebug("Attempting deferred blur setup from setElevation")
-           setupBlurView()
-         }
-       }
-     }
-   }
-
-  /**
-   * Called when the view is attached to a window.
-   * Triggers blur setup if not already configured.
-   */
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
-    
-    // Now we can safely walk the parent hierarchy
-    if (!this.isConfigured) {
-      this.isConfigured = true
-      setupBlurView()
+
+    if (!this.isInitialized) {
+      this.reinitialize()
     }
   }
 
-  /**
-   * Called when the view is detached from a window.
-   * Performs cleanup to prevent memory leaks and navigation transition issues.
-   */
   override fun onDetachedFromWindow() {
     super.onDetachedFromWindow()
-    
-    this.isConfigured = false
+
+    this.rootView = null
+    this.isInitialized = false
     this.removeCallbacks(null)
-    cleanup()
   }
 
-  /**
-   * Cleanup method to reset state and remove pending callbacks.
-   * Helps prevent memory leaks and ensures clean state.
-   */
-  fun cleanup() {
-    isSetup = false
-    hasExplicitBackground = false
-    originalBackgroundColor = null
-    pendingStyleUpdate = false
-    // Clear any pending runnables to prevent memory leaks
-    removeCallbacks(null)
-    logDebug("View detached, reset state")
-  }
-
-  /**
-   * Setup the blur view with multiple fallback strategies for finding the root view.
-   * Uses RenderEffectBlur for optimal performance on modern Android versions.
-   */
   private fun setupBlurView() {
-    if (isSetup) return
+    super.setBackgroundColor(this.overlayColor.color)
+    super.clipChildren = true
+    super.clipToOutline = true
+    super.layoutParams = LayoutParams(
+      LayoutParams.MATCH_PARENT,
+      LayoutParams.MATCH_PARENT
+    )
+  }
 
-    try {
-      val rootView = findOptimalBlurRoot()
-
-      rootView?.let { root ->
-        try {
-          // Choose blur algorithm based on Android API level
-          val blurAlgorithm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Android 12+ (API 31+): Use RenderEffectBlur for better performance
-            logDebug("Using RenderEffectBlur for API ${Build.VERSION.SDK_INT}")
-            RenderEffectBlur()
-          } else {
-            // Android 10-11 (API < 31): Use RenderScriptBlur for compatibility
-            logDebug("Using RenderScriptBlur for API ${Build.VERSION.SDK_INT}")
-            try {
-              RenderScriptBlur(context)
-            } catch (e: Exception) {
-              logWarning("RenderScriptBlur not supported on this device: ${e.message}")
-              // Fallback: return null to trigger transparent background fallback
-              throw UnsupportedOperationException("Blur not supported on this device", e)
-            }
-          }
-
-          // Setup the blur view with the appropriate algorithm
-          this.setupWith(root, blurAlgorithm)
-          .setBlurRadius(blurRadius)
-          .setOverlayColor(overlayColor)
-
-        isSetup = true
-        pendingStyleUpdate = false
-
-        // Apply any pending background color after blur setup
-        if (hasExplicitBackground && originalBackgroundColor != null) {
-          logDebug("Applying pending background color: $originalBackgroundColor")
-          super.setBackgroundColor(originalBackgroundColor!!)
-        }
-
-        logDebug("Blur setup successful with root: ${root.javaClass.simpleName}")
-        } catch (e: Exception) {
-          logWarning("Failed to setup blur algorithm: ${e.message}")
-          // Fallback: use semi-transparent overlay when blur is unsupported
-          super.setBackgroundColor(overlayColor)
-          isSetup = true // Mark as setup to prevent retry loops
-        }
-      } ?: run {
-        logWarning("No suitable root view found for blur setup")
-        // Use semi-transparent overlay when no root view is available
-        super.setBackgroundColor(overlayColor)
-        isSetup = true
-      }
-    } catch (e: Exception) {
-      // Final fallback: set transparent background to prevent visual artifacts
-      super.setBackgroundColor(overlayColor)
-      logError("Failed to setup blur: ${e.message}", e)
+  // Wait all views are mounted in interface
+  private fun reinitialize() {
+    post {
+      this.initialize()
     }
   }
 
-  /**
-   * Find the optimal blur root view by walking up the parent hierarchy.
-   * This method is crucial for proper blur rendering during navigation transitions.
-   * @return The optimal ViewGroup to use as blur root or null if not found
-   */
-  private fun findOptimalBlurRoot(): ViewGroup? {
-    var current = this.parent
-    
-    // Walk up the parent hierarchy to find the best blur root
-    while (current != null) {
-      if (current is ViewGroup) {
-        // Prefer content view as it's the most stable during transitions
-        if (current.id == android.R.id.content) {
-          return current
-        }
-        
-        // Look for other suitable container views
-        val className = current.javaClass.simpleName
-        if (className.contains("DecorView") ||
-            className.contains("ContentFrameLayout") ||
-            (className.contains("LinearLayout") && current.parent == null)) {
-          // For LinearLayout, only consider it if it's the root of the hierarchy (parent == null)
-          // This avoids misidentifying containers in complex layouts
-          return current
-        }
+  private fun initialize() {
+    // Find rootView only on first mount (when the initialization is false)
+    if (!this.isInitialized) {
+      this.rootView = this.findRootTargetView()
+
+      if (this.rootView == null) {
+        super.setBackgroundColor(this.overlayColor.color)
+        super.setOverlayColor(this.overlayColor.color)
+        super.setBlurEnabled(false)
+
+        Log.w(TAG, "Target view not found: $targetId")
+        return
       }
-      current = current.parent
     }
-    
-    // Fallback: try to get activity's content view
-    return findRootView()
+
+    val drawable = this.getAppropriateBackground()
+    super.setupWith(this.rootView!!, 6f, false)
+      .setBlurRadius(this.radius)
+      .setOverlayColor(this.overlayColor.color)
+      .setBlurAutoUpdate(true)
+      .setBlurEnabled(true)
+      .setFrameClearDrawable(drawable)
+
+    this.isInitialized = true
   }
 
-  /**
-   * Find the root view using multiple strategies.
-   * @return The root ViewGroup or null if not found
-   */
-  private fun findRootView(): ViewGroup? {
-    // Strategy 1: Look for the content view (most reliable)
+  private fun findRootTargetView(): BlurTarget? {
+    if (this.targetId == null) {
+      Log.w(TAG, "TargetId is null")
+
+      return null
+    }
+
+    val activityRoot = this.getRootView()
+    activityRoot?.let { root ->
+      val target = findViewWithTagInViewGroup(root as? ViewGroup, targetId!!)
+      if (target != null) return target
+    }
+
     var parent = this.parent
     while (parent != null) {
-      if (parent is ViewGroup && parent.id == android.R.id.content) {
-        return parent
+      if (parent is ViewGroup) {
+        val target = findViewWithTagInViewGroup(parent, targetId!!)
+        if (target != null) return target
       }
       parent = parent.parent
     }
 
-    // Strategy 2: If content view not found, use the activity's root view
+    Log.w(TAG, "Target not found anywhere: $targetId")
+    return null
+  }
+
+  private fun findViewWithTagInViewGroup(viewGroup: ViewGroup?, tag: String): BlurTarget? {
+    if (viewGroup == null) return null
+
+    if (viewGroup.tag == tag && viewGroup is BlurTarget) {
+      return viewGroup
+    }
+
+    for (i in 0 until viewGroup.childCount) {
+      val child = viewGroup.getChildAt(i)
+      if (child.tag == tag && child is BlurTarget) {
+        return child
+      }
+
+      if (child is ViewGroup) {
+        val found = this.findViewWithTagInViewGroup(child, tag)
+        if (found != null) return found
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * This method attempts to obtain a background in the following priority order:
+   * 1. The current window's decor view background (if available)
+   * 2. A fallback overlay color converted to a drawable
+   */
+  private fun getAppropriateBackground(): android.graphics.drawable.Drawable {
     try {
-      val activity = context as? android.app.Activity
-      activity?.findViewById<ViewGroup>(android.R.id.content)?.let {
+      val activity = this.getActivityFromContext()
+      activity?.window?.decorView?.background?.let {
         return it
       }
+
+      activity?.window?.let { window ->
+        val windowBackground = window.decorView.background
+        windowBackground?.let {
+          return it
+        }
+      }
+
+      return this.overlayColor.color.toDrawable()
     } catch (e: Exception) {
-      logDebug("Could not access activity root view: ${e.message}")
-    }
+      Log.e(TAG, "Error getting background: ${e.message}")
 
-    // Strategy 3: Fallback to immediate parent
-    return this.parent as? ViewGroup
-  }
-
-  /**
-   * Set the blur amount with cross-platform mapping.
-   * @param amount The blur amount value (0-100), will be mapped to Android's 0-25 radius range
-   */
-  fun setBlurAmount(amount: Float) {
-    blurRadius = mapBlurAmountToRadius(amount)
-    logDebug("setBlurAmount: $amount -> $blurRadius (mapped from 0-100 to 0-25 range, isSetup: $isSetup)")
-
-    if (isSetup) {
-      try {
-        setBlurRadius(blurRadius)
-      } catch (e: Exception) {
-        logError("Failed to set blur radius: ${e.message}", e)
-      }
+      return this.overlayColor.color.toDrawable()
     }
   }
 
   /**
-   * Enum representing different blur types with their corresponding overlay colors.
-   * Maps iOS blur types to Android overlay colors to approximate the visual appearance.
+   * Traverses the context hierarchy to find the associated AppCompatActivity.
+   * This method unwraps the context chain by checking each context in the hierarchy.
+   * It handles ContextWrapper instances by accessing their base context recursively
+   * until it either finds an AppCompatActivity or reaches the end of the chain.
    */
-  enum class BlurType(val overlayColor: Int) {
-    XLIGHT(Color.argb(25, 255, 255, 255)),
-    LIGHT(Color.argb(40, 255, 255, 255)),
-    DARK(Color.argb(60, 0, 0, 0)),
-    EXTRA_DARK(Color.argb(80, 0, 0, 0)),
-    REGULAR(Color.argb(50, 255, 255, 255)),
-    PROMINENT(Color.argb(70, 255, 255, 255)),
-    SYSTEM_ULTRA_THIN_MATERIAL(Color.argb(20, 255, 255, 255)),
-    SYSTEM_THIN_MATERIAL(Color.argb(35, 255, 255, 255)),
-    SYSTEM_MATERIAL(Color.argb(50, 255, 255, 255)),
-    SYSTEM_THICK_MATERIAL(Color.argb(65, 255, 255, 255)),
-    SYSTEM_CHROME_MATERIAL(Color.argb(45, 240, 240, 240));
+  private fun getActivityFromContext(): AppCompatActivity? {
+    var context = this.context
 
-    companion object {
-      /**
-       * Get BlurType from string, with fallback to LIGHT for unknown types.
-       */
-      fun fromString(type: String): BlurType {
-        return when (type.lowercase()) {
-          "xlight" -> XLIGHT
-          "light" -> LIGHT
-          "dark" -> DARK
-          "extradark" -> EXTRA_DARK
-          "regular" -> REGULAR
-          "prominent" -> PROMINENT
-          "systemultrathinmaterial" -> SYSTEM_ULTRA_THIN_MATERIAL
-          "systemthinmaterial" -> SYSTEM_THIN_MATERIAL
-          "systemmaterial" -> SYSTEM_MATERIAL
-          "systemthickmaterial" -> SYSTEM_THICK_MATERIAL
-          "systemchromematerial" -> SYSTEM_CHROME_MATERIAL
-          else -> LIGHT // default fallback
+    while (context != null) {
+      when (context) {
+        is AppCompatActivity -> return context
+        is android.content.ContextWrapper -> {
+          context = context.baseContext
         }
+        else -> break
       }
     }
+
+    return null
+  }
+
+  private fun clipRadius(radius: Float): Float {
+    return if (radius <= 0) 0f
+    else if (radius >= 67.5f) 67.5f
+    else radius
   }
 
   /**
-   * Set the blur type which determines the overlay color.
-   * @param type The blur type string (case-insensitive)
+   * Maps blur amount (0-100) to blur radius with intensity factor
    */
+  private fun mapBlurAmountToRadius(amount: Float): Float {
+    return this.clipRadius(amount * INTENSITY)
+  }
+
   fun setBlurType(type: String) {
-    val blurType = BlurType.fromString(type)
-    overlayColor = blurType.overlayColor
-    logDebug("setBlurType: $type -> ${blurType.name} (isSetup: $isSetup)")
+    val overlay = OverlayColor.fromString(type)
+    this.overlayColor = overlay
+    super.setBackgroundColor(overlay.color)
 
-    if (isSetup) {
-      try {
-        setOverlayColor(overlayColor)
-      } catch (e: Exception) {
-        logError("Failed to set overlay color: ${e.message}", e)
-      }
+    if (this.isInitialized) {
+      super.setOverlayColor(overlay.color)
+      this.isInitialized = false
+      this.reinitialize()
     }
   }
 
-  /**
-   * Set the fallback color for reduced transparency accessibility mode.
-   * @param color The color string in hex format (e.g., "#FF0000") or null to clear
-   */
+  fun setBlurAmount(amount: Float) {
+    val radiusValue = mapBlurAmountToRadius(amount)
+    this.radius = radiusValue
+
+    if (this.isInitialized) {
+      super.setBlurRadius(radiusValue)
+      this.reinitialize()
+    }
+  }
+
+  fun setTargetId(targetId: String?) {
+    val oldTargetId = this.targetId
+    this.targetId = targetId
+
+    if (oldTargetId != targetId && this.isAttachedToWindow) {
+      this.isInitialized = false
+      this.rootView = null
+      this.reinitialize()
+    }
+  }
+
   fun setReducedTransparencyFallbackColor(color: String?) {
-    color?.let {
-      try {
-        val fallbackColor = Color.parseColor(it)
-        logDebug("setReducedTransparencyFallbackColor: $color -> $fallbackColor (stored but not applied unless accessibility requires it)")
-
-        // Store the fallback color but don't apply it unless accessibility settings require it
-        // For now, we'll just log it since Android doesn't have a direct equivalent to iOS's
-        // "Reduce Transparency" setting that we can easily check
-        // The blur effect should remain the primary visual
-
-      } catch (e: Exception) {
-        logWarning("Invalid color format for reduced transparency fallback: $color")
-      }
-    } ?: run {
-      logDebug("Cleared reduced transparency fallback color")
-    }
+    // No-op for Android - iOS only feature
   }
 
-  /**
-   * Set the glass tint color for liquid glass effect.
-   * @param color The color string in hex format (e.g., "#FF0000") or null to clear
-   */
   fun setGlassTintColor(color: String?) {
-    color?.let {
-      try {
-        glassTintColor = Color.parseColor(it)
-        logDebug("setGlassTintColor: $color -> $glassTintColor")
-        updateGlassEffect()
-      } catch (e: Exception) {
-        logWarning("Invalid color format for glass tint: $color")
-        glassTintColor = Color.TRANSPARENT
-      }
-    } ?: run {
-      glassTintColor = Color.TRANSPARENT
-      logDebug("Cleared glass tint color")
-      updateGlassEffect()
-    }
+    // No-op for Android - iOS only feature
   }
 
-  /**
-   * Set the glass opacity for liquid glass effect.
-   * @param opacity The opacity value (0.0 to 1.0)
-   */
   fun setGlassOpacity(opacity: Float) {
-    glassOpacity = opacity.coerceIn(0.0f, 1.0f)
-    logDebug("setGlassOpacity: $opacity")
-    updateGlassEffect()
+    // No-op for Android - iOS only feature
   }
 
-  /**
-   * Set the view type (blur or liquidGlass).
-   * @param type The view type string
-   */
   fun setType(type: String) {
-    viewType = type
-    logDebug("setType: $type")
-    updateViewType()
+    // No-op for Android - iOS only feature
   }
-  
-    /**
-   * Set the view type (blur or liquidGlass).
-   * @param type The view type string
-   */
+
   fun setIsInteractive(isInteractive: Boolean) {
-    logDebug("setType: $isInteractive")
+    // No-op for Android - iOS only feature
   }
 
-  /**
-   * Set the glass type for liquid glass effect.
-   * @param type The glass type string
-   */
   fun setGlassType(type: String) {
-    glassType = type
-    logDebug("setGlassType: $type")
-    updateGlassEffect()
+    // No-op for Android - iOS only feature
   }
 
-  /**
-   * Update the glass effect based on current glass properties.
-   */
-  private fun updateGlassEffect() {
-    if (viewType == "liquidGlass" && isSetup) {
-      try {
-        // Apply glass tint with opacity
-        val glassColor = Color.argb(
-          (glassOpacity * 255).toInt(),
-          Color.red(glassTintColor),
-          Color.green(glassTintColor),
-          Color.blue(glassTintColor)
-        )
-        setOverlayColor(glassColor)
-        logDebug("Applied glass effect: color=$glassColor, opacity=$glassOpacity")
-      } catch (e: Exception) {
-        logError("Failed to update glass effect: ${e.message}", e)
-      }
-    }
-  }
-
-  /**
-   * Update the view type and apply appropriate effects.
-   */
-  private fun updateViewType() {
-    when (viewType) {
-      "liquidGlass" -> {
-        updateGlassEffect()
-      }
-      "blur" -> {
-        // Restore original blur overlay color
-        if (isSetup) {
-          try {
-            setOverlayColor(overlayColor)
-          } catch (e: Exception) {
-            logError("Failed to restore blur overlay: ${e.message}", e)
-          }
-        }
-      }
-    }
+  fun cleanup() {
+    this.isInitialized = false
+    this.rootView = null
+    this.removeCallbacks(null)
   }
 }

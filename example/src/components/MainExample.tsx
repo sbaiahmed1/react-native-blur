@@ -1,36 +1,46 @@
 import BlurView, { type BlurType } from '@sbaiahmed1/react-native-blur';
+import { useState } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { BLUR_TYPES, width } from '../constants';
-import { useState } from 'react';
 
 const MainExample = ({ cycleBackground }: { cycleBackground: () => void }) => {
   const [selectedBlurType, setSelectedBlurType] = useState<BlurType>('light');
   const [blurAmount, setBlurAmount] = useState(20);
+
   return (
     <>
-      {/* Main Blur Demo */}
-      <View style={styles.demoContainer}>
+      <View style={styles.targetBlurContainer}>
         <BlurView
+          // targetId="app-background"
           blurType={selectedBlurType}
           blurAmount={blurAmount}
-          style={styles.blurCard}
-          reducedTransparencyFallbackColor="rgba(255, 255, 255, 0.8)"
+          style={styles.blurOverlay}
         >
-          <Text style={styles.cardTitle}>Blur Effect Demo</Text>
-          <Text style={styles.cardSubtitle}>Type: {selectedBlurType}</Text>
-          <Text style={styles.cardSubtitle}>Amount: {blurAmount}%</Text>
-          <TouchableOpacity
-            style={styles.changeBackgroundButton}
-            onPress={cycleBackground}
-          >
-            <Text style={styles.buttonText}>Change Background</Text>
-          </TouchableOpacity>
+          <View style={styles.blurContent}>
+            <Text style={styles.cardTitle}>Real Blur with Target</Text>
+            <Text style={styles.cardSubtitle}>Type: {selectedBlurType}</Text>
+            <Text style={styles.cardSubtitle}>Amount: {blurAmount}%</Text>
+            <TouchableOpacity
+              style={styles.changeBackgroundButton}
+              onPress={cycleBackground}
+            >
+              <Text style={styles.buttonText}>Change Background</Text>
+            </TouchableOpacity>
+            <ScrollView contentContainerStyle={styles.targetScrollContent}>
+              <Text style={styles.targetText}>This is the blur target 🎯</Text>
+              {Array.from({ length: 5 }, (_, i) => (
+                <View key={i} style={styles.targetCard}>
+                  <Text style={styles.targetCardText}>Content {i + 1}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
         </BlurView>
       </View>
 
@@ -64,7 +74,12 @@ const MainExample = ({ cycleBackground }: { cycleBackground: () => void }) => {
 
       {/* Blur Amount Selector */}
       <View style={styles.selectorContainer}>
-        <BlurView blurType="dark" blurAmount={30} style={styles.selectorHeader}>
+        <BlurView
+          targetId="app-background"
+          blurType="dark"
+          blurAmount={30}
+          style={styles.selectorHeader}
+        >
           <Text style={styles.selectorTitle}>Blur Amount</Text>
         </BlurView>
 
@@ -184,6 +199,76 @@ const styles = StyleSheet.create({
   demoContainer: {
     marginBottom: 30,
     alignItems: 'center',
+  },
+  modeToggle: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    gap: 10,
+  },
+  modeButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    alignItems: 'center',
+  },
+  activeModeButton: {
+    backgroundColor: 'rgba(0, 122, 255, 0.8)',
+  },
+  modeButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  activeModeText: {
+    color: '#fff',
+  },
+  targetBlurContainer: {
+    height: 350,
+    marginBottom: 30,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  blurOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
+  blurContent: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  targetView: {
+    flex: 1,
+  },
+  targetBackground: {
+    flex: 1,
+  },
+  targetScrollContent: {
+    padding: 16,
+    paddingTop: 200,
+  },
+  targetText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 16,
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
+  },
+  targetCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    padding: 16,
+    marginBottom: 12,
+    borderRadius: 8,
+  },
+  targetCardText: {
+    fontSize: 16,
+    color: '#333',
   },
 });
 

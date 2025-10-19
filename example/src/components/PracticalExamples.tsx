@@ -1,15 +1,16 @@
-import BlurView from '@sbaiahmed1/react-native-blur';
+import BlurView, { TargetView } from '@sbaiahmed1/react-native-blur';
+import { useState } from 'react';
 import {
-  View,
-  Text,
-  ImageBackground,
   Image,
-  StyleSheet,
-  Pressable,
+  ImageBackground,
   Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { width } from '../constants';
-import { useState } from 'react';
 
 const PracticalExamples = () => {
   const [showModal, setShowModal] = useState(false);
@@ -96,6 +97,31 @@ const PracticalExamples = () => {
           </View>
         </BlurView>
       </Modal>
+
+      {/* Real Blur Example with TargetView */}
+      <View style={styles.exampleCard}>
+        <Text style={styles.exampleTitle}>Real Blur with Target</Text>
+        <View style={styles.realBlurExample}>
+          <BlurView
+            targetId="practical-target"
+            blurType="light"
+            blurAmount={30}
+            style={styles.practicalBlurOverlay}
+          >
+            <Text style={styles.overlayText}>Blurred Header</Text>
+          </BlurView>
+          <TargetView id="practical-target" style={styles.practicalTarget}>
+            <ScrollView contentContainerStyle={styles.practicalScroll}>
+              <Text style={styles.practicalText}>Target Content Below 👇</Text>
+              {Array.from({ length: 3 }, (_, i) => (
+                <View key={i} style={styles.practicalCard}>
+                  <Text>Card {i + 1}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          </TargetView>
+        </View>
+      </View>
     </View>
   );
 };
@@ -187,16 +213,55 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   RNModalContent: {
-    width: '100%',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  exampleTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  realBlurExample: {
+    height: 250,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  practicalBlurOverlay: {
+    position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
-    alignItems: 'center',
+    height: 60,
+    zIndex: 10,
     justifyContent: 'center',
-    position: 'absolute',
-    padding: 20,
-    borderRadius: 15,
+    alignItems: 'center',
+  },
+  overlayText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  practicalTarget: {
+    flex: 1,
+    backgroundColor: '#f0f0f0',
+  },
+  practicalScroll: {
+    padding: 16,
+    paddingTop: 80,
+  },
+  practicalText: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  practicalCard: {
+    backgroundColor: 'white',
+    padding: 16,
+    marginBottom: 8,
+    borderRadius: 8,
   },
 });
 

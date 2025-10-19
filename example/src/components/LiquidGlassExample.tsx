@@ -1,13 +1,13 @@
 import BlurView from '@sbaiahmed1/react-native-blur';
 import { useState } from 'react';
 import {
-  View,
+  Image,
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  ScrollView,
-  ImageBackground,
-  Image,
-  StyleSheet,
+  View,
 } from 'react-native';
 import { glassColors } from '../constants';
 
@@ -32,6 +32,7 @@ const LiquidGlassExample = ({
       {/* Main Liquid Glass Demo */}
       <View style={styles.liquidGlassDemo}>
         <BlurView
+          targetId="background"
           type="liquidGlass"
           glassType={selectedGlassType}
           glassTintColor={glassTintColor}
@@ -188,6 +189,7 @@ const LiquidGlassExample = ({
             style={styles.glassCardBackground}
           >
             <BlurView
+              targetId="background"
               type="liquidGlass"
               glassType="regular"
               glassTintColor="#FFFFFF"
@@ -220,6 +222,7 @@ const LiquidGlassExample = ({
             style={styles.glassModalBackground}
           />
           <BlurView
+            targetId="background"
             type="liquidGlass"
             glassType="regular"
             glassTintColor="#007AFF"
@@ -240,6 +243,7 @@ const LiquidGlassExample = ({
       {/* iOS Version Info */}
       <View style={styles.versionInfoContainer}>
         <BlurView
+          targetId="background"
           type="liquidGlass"
           glassType="clear"
           glassTintColor="#FF9500"
