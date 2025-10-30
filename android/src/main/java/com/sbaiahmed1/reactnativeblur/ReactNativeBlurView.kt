@@ -249,9 +249,19 @@ class ReactNativeBlurView : eightbitlab.com.blurview.BlurView {
   }
 
   private fun clipRadius(radius: Float): Float {
-    val maxRadius = if (Build.VERSION.SDK_INT > 31) 67.5f else 25f
+    /**
+     * On Android > 31 the maximum blur radius is 67.5f and minimum is 0f.
+     * On Android <= 31 the maximum blur radius is 25f and minimum must be
+     * 0.00001f because if 0f radius is provided, the Dimezis's BlurView library
+     * crashes. That's momentarily hack.
+     *
+     * See more details in the issue: https://github.com/Dimezis/BlurView/issues/247
+     */
+    val isAndroidHigherThan12 = Build.VERSION.SDK_INT > Build.VERSION_CODES.S
+    val minRadius = if (isAndroidHigherThan12) 0f else 0.00001f
+    val maxRadius = if (isAndroidHigherThan12) 67.5f else 25f
 
-    return if (radius <= 0) 0f
+    return if (radius <= minRadius) minRadius
     else if (radius >= maxRadius) maxRadius
     else radius
   }
