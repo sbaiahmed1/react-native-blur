@@ -7,19 +7,9 @@ import UIKit
 
 @objc public class ReactNativeBlurViewHelper: NSObject {
 
-  /// Creates and returns a view containing a colored rectangle.
+  /// Creates and returns a blur view.
   @objc public static func createBlurViewWithFrame(_ frame: CGRect) -> AdvancedBlurView {
     return AdvancedBlurView(frame: frame)
-  }
-
-  /// Updates the blur view with a new glass tint color.
-  @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withGlassTintColor glassTintColor: UIColor) {
-    blurView.glassTintColor = glassTintColor
-  }
-
-  /// Updates the blur view with a new glass opacity.
-  @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withGlassOpacity glassOpacity: Double) {
-    blurView.glassOpacity = glassOpacity
   }
 
   /// Updates the blur view with a new blur amount.
@@ -32,33 +22,9 @@ import UIKit
     blurView.blurTypeString = blurType
   }
 
-  /// Updates the blur view with a new glass type.
-  @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withGlassType glassType: String) {
-    blurView.glassType = glassType
-  }
-
-  /// Updates the blur view with a new blur style.
-  @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withType type: String) {
-    blurView.type = type
-  }
-
-  /// Updates the blur view with a new blur style.
-  @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withIsInteractive isInteractive: Bool) {
-    blurView.isInteractive = isInteractive
-  }
-
-  /// Updates the blur view with a new blur style.
-  @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withIgnoringSafeArea ignoreSafeArea: Bool) {
-    blurView.ignoreSafeArea = ignoreSafeArea
-  }
-
   /// Updates the blur view with a new reduced transparency fallback color.
-  @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withReducedTransparencyFallbackColor fallbackColor: UIColor) {
-    blurView.reducedTransparencyFallbackColor = fallbackColor
-  }
-
-  /// No-op updater kept for API compatibility.
-  @objc public static func updateBlurView(_ blurView: AdvancedBlurView) {
-    // Nothing to update in the minimal implementation
+  @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withReducedTransparencyFallbackColor reducedTransparencyFallbackColor: UIColor) {
+    blurView.reducedTransparencyFallbackColor = reducedTransparencyFallbackColor
   }
 }
+

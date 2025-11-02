@@ -33,5 +33,31 @@ target 'ReactNativeBlurExample' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+    
+    # Fix for glog header issue with C++ modules
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+        config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
+        
+        # Add glog header search paths
+        if target.name == 'glog'
+          config.build_settings['HEADER_SEARCH_PATHS'] ||= ['$(inherited)']
+          config.build_settings['HEADER_SEARCH_PATHS'] << '$(PODS_TARGET_SRCROOT)'
+          config.build_settings['HEADER_SEARCH_PATHS'] << '$(PODS_TARGET_SRCROOT)/src'
+        end
+      end
+    end
+    
+    # Fix glog compilation issue
+    glog_target = installer.pods_project.targets.find { |target| target.name == 'glog' }
+    if glog_target
+      glog_target.source_build_phase.files.each do |file|
+        if file.file_ref && file.file_ref.path && file.file_ref.path.end_with?('.cc')
+          # Add compiler flags for glog C++ files
+          file.settings = { 'COMPILER_FLAGS' => '-Wno-shorten-64-to-32' }
+        end
+      end
+    end
   end
 end

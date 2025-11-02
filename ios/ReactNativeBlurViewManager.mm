@@ -25,18 +25,6 @@ RCT_EXPORT_MODULE(ReactNativeBlurView)
 // Export properties
 
 // Custom setters for proper type conversion
-RCT_CUSTOM_VIEW_PROPERTY(glassTintColor, NSString, AdvancedBlurView)
-{
-  NSString *colorString = json ? [RCTConvert NSString:json] : @"clear";
-  UIColor *color = [self colorFromString:colorString];
-  [ReactNativeBlurViewHelper updateBlurView:view withGlassTintColor:color];
-}
-
-RCT_CUSTOM_VIEW_PROPERTY(glassOpacity, NSNumber, AdvancedBlurView)
-{
-  double opacity = json ? [RCTConvert double:json] : 1.0;
-  [ReactNativeBlurViewHelper updateBlurView:view withGlassOpacity:opacity];
-}
 
 RCT_CUSTOM_VIEW_PROPERTY(blurAmount, NSNumber, AdvancedBlurView)
 {
@@ -48,30 +36,6 @@ RCT_CUSTOM_VIEW_PROPERTY(blurType, NSString, AdvancedBlurView)
 {
   NSString *blurType = json ? [RCTConvert NSString:json] : @"xlight";
   [ReactNativeBlurViewHelper updateBlurView:view withBlurType:blurType];
-}
-
-RCT_CUSTOM_VIEW_PROPERTY(glassType, NSString, AdvancedBlurView)
-{
-  NSString *glassType = json ? [RCTConvert NSString:json] : @"clear";
-  [ReactNativeBlurViewHelper updateBlurView:view withGlassType:glassType];
-}
-
-RCT_CUSTOM_VIEW_PROPERTY(type, NSString, AdvancedBlurView)
-{
-  NSString *type = json ? [RCTConvert NSString:json] : @"blur";
-  [ReactNativeBlurViewHelper updateBlurView:view withType:type];
-}
-
-RCT_CUSTOM_VIEW_PROPERTY(isInteractive, NSNumber, AdvancedBlurView)
-{
-  BOOL isInteractive = json ? [RCTConvert BOOL:json] : YES;
-  [ReactNativeBlurViewHelper updateBlurView:view withIsInteractive:isInteractive];
-}
-
-RCT_CUSTOM_VIEW_PROPERTY(ignoreSafeArea, NSNumber, AdvancedBlurView)
-{
-  BOOL ignoreSafeArea = json ? [RCTConvert BOOL:json] : NO;
-  [ReactNativeBlurViewHelper updateBlurView:view withIgnoringSafeArea:ignoreSafeArea];
 }
 
 RCT_CUSTOM_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString, AdvancedBlurView)

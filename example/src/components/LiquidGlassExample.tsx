@@ -1,4 +1,4 @@
-import BlurView from '@sbaiahmed1/react-native-blur';
+import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 import { useState } from 'react';
 import {
   View,
@@ -31,11 +31,11 @@ const LiquidGlassExample = ({
 
       {/* Main Liquid Glass Demo */}
       <View style={styles.liquidGlassDemo}>
-        <BlurView
-          type="liquidGlass"
+        <LiquidGlassView
           glassType={selectedGlassType}
           glassTintColor={glassTintColor}
           glassOpacity={glassOpacity}
+          borderRadius={20}
           style={styles.liquidGlassCard}
           reducedTransparencyFallbackColor="rgba(255, 255, 255, 0.9)"
         >
@@ -55,21 +55,20 @@ const LiquidGlassExample = ({
           >
             <Text style={styles.glassButtonText}>Change Background</Text>
           </TouchableOpacity>
-        </BlurView>
+        </LiquidGlassView>
       </View>
 
       {/* Glass Type Selector */}
       <View style={styles.selectorContainer}>
-        <BlurView
+        <LiquidGlassView
           isInteractive={false}
-          type="liquidGlass"
           glassType="clear"
           glassTintColor="#000000"
           glassOpacity={0.3}
           style={styles.selectorHeader}
         >
           <Text style={styles.selectorTitle}>Glass Types</Text>
-        </BlurView>
+        </LiquidGlassView>
 
         <View style={styles.glassTypeSelector}>
           {['clear', 'regular'].map((glassType) => (
@@ -80,8 +79,7 @@ const LiquidGlassExample = ({
               }
               style={styles.glassTypeButton}
             >
-              <BlurView
-                type="liquidGlass"
+              <LiquidGlassView
                 glassType={glassType as 'clear' | 'regular'}
                 glassTintColor={glassTintColor}
                 glassOpacity={0.6}
@@ -94,7 +92,7 @@ const LiquidGlassExample = ({
                   {glassType === 'clear' ? '🔮 Clear' : '💎 Regular'}
                 </Text>
                 <Text style={styles.glassTypeSubtext}>{glassType}</Text>
-              </BlurView>
+              </LiquidGlassView>
             </TouchableOpacity>
           ))}
         </View>
@@ -102,15 +100,14 @@ const LiquidGlassExample = ({
 
       {/* Glass Tint Color Selector */}
       <View style={styles.selectorContainer}>
-        <BlurView
-          type="liquidGlass"
+        <LiquidGlassView
           glassType="clear"
           glassTintColor="#000000"
           glassOpacity={0.3}
           style={styles.selectorHeader}
         >
           <Text style={styles.selectorTitle}>Glass Tint Colors</Text>
-        </BlurView>
+        </LiquidGlassView>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {glassColors.map((colorItem) => (
@@ -119,8 +116,7 @@ const LiquidGlassExample = ({
               onPress={() => setGlassTintColor(colorItem.color)}
               style={styles.colorButton}
             >
-              <BlurView
-                type="liquidGlass"
+              <LiquidGlassView
                 glassType={selectedGlassType}
                 glassTintColor={colorItem.color}
                 glassOpacity={0.8}
@@ -131,7 +127,7 @@ const LiquidGlassExample = ({
               >
                 <Text style={styles.colorEmoji}>{colorItem.emoji}</Text>
                 <Text style={styles.colorName}>{colorItem.name}</Text>
-              </BlurView>
+              </LiquidGlassView>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -139,15 +135,14 @@ const LiquidGlassExample = ({
 
       {/* Glass Opacity Slider */}
       <View style={styles.selectorContainer}>
-        <BlurView
-          type="liquidGlass"
+        <LiquidGlassView
           glassType="clear"
           glassTintColor="#000000"
           glassOpacity={0.3}
           style={styles.selectorHeader}
         >
           <Text style={styles.selectorTitle}>Glass Opacity</Text>
-        </BlurView>
+        </LiquidGlassView>
 
         <View style={styles.opacitySlider}>
           {[0.2, 0.4, 0.6, 0.8, 1.0].map((opacity) => (
@@ -156,8 +151,7 @@ const LiquidGlassExample = ({
               onPress={() => setGlassOpacity(opacity)}
               style={styles.opacityButton}
             >
-              <BlurView
-                type="liquidGlass"
+              <LiquidGlassView
                 glassType={selectedGlassType}
                 glassTintColor={glassTintColor}
                 glassOpacity={opacity}
@@ -169,7 +163,7 @@ const LiquidGlassExample = ({
                 <Text style={styles.opacityText}>
                   {Math.round(opacity * 100)}%
                 </Text>
-              </BlurView>
+              </LiquidGlassView>
             </TouchableOpacity>
           ))}
         </View>
@@ -187,8 +181,7 @@ const LiquidGlassExample = ({
             }}
             style={styles.glassCardBackground}
           >
-            <BlurView
-              type="liquidGlass"
+            <LiquidGlassView
               glassType="regular"
               glassTintColor="#FFFFFF"
               glassOpacity={0}
@@ -207,7 +200,7 @@ const LiquidGlassExample = ({
                   <Text style={styles.glassCardButtonText}>Share</Text>
                 </TouchableOpacity>
               </View>
-            </BlurView>
+            </LiquidGlassView>
           </ImageBackground>
         </View>
 
@@ -219,8 +212,7 @@ const LiquidGlassExample = ({
             }}
             style={styles.glassModalBackground}
           />
-          <BlurView
-            type="liquidGlass"
+          <LiquidGlassView
             glassType="regular"
             glassTintColor="#007AFF"
             glassOpacity={0.2}
@@ -233,14 +225,13 @@ const LiquidGlassExample = ({
             <TouchableOpacity style={styles.glassModalButton}>
               <Text style={styles.glassModalButtonText}>Continue</Text>
             </TouchableOpacity>
-          </BlurView>
+          </LiquidGlassView>
         </View>
       </View>
 
       {/* iOS Version Info */}
       <View style={styles.versionInfoContainer}>
-        <BlurView
-          type="liquidGlass"
+        <LiquidGlassView
           glassType="clear"
           glassTintColor="#FF9500"
           glassOpacity={0.5}
@@ -252,7 +243,7 @@ const LiquidGlassExample = ({
             older versions, the component automatically falls back to regular
             blur effects.
           </Text>
-        </BlurView>
+        </LiquidGlassView>
       </View>
     </View>
   );
@@ -298,7 +289,6 @@ const styles = StyleSheet.create({
   },
   liquidGlassCard: {
     padding: 20,
-    borderRadius: 20,
     minHeight: 150,
     justifyContent: 'center',
     alignItems: 'center',

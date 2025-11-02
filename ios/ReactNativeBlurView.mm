@@ -137,14 +137,6 @@ using namespace facebook::react;
 
     _advancedBlurView = [ReactNativeBlurViewHelper createBlurViewWithFrame:frame];
 
-    // Set initial glassTintColor from default props
-    NSString *defaultGlassTintColorString = [[NSString alloc] initWithUTF8String:bvProps.glassTintColor.c_str()];
-    UIColor *defaultGlassTintColor = [ReactNativeBlurView colorFromString:defaultGlassTintColorString];
-    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withGlassTintColor:defaultGlassTintColor];
-
-    // Set initial glassOpacity from default props
-    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withGlassOpacity:bvProps.glassOpacity];
-
     // Set initial blurAmount from default props
     [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withBlurAmount:bvProps.blurAmount];
 
@@ -153,22 +145,6 @@ using namespace facebook::react;
       NSString *blurTypeString = [[NSString alloc] initWithUTF8String:toString(bvProps.blurType).c_str()];
       [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withBlurType:blurTypeString];
     }
-
-    // Set initial isInteractive from default props
-      [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIsInteractive:bvProps.isInteractive];
-
-    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringSafeArea:bvProps.ignoreSafeArea];
-
-
-    // Set initial glassType from default props
-    if (bvProps.glassType != facebook::react::ReactNativeBlurViewGlassType::Clear) {
-      NSString *glassTypeString = [[NSString alloc] initWithUTF8String:toString(bvProps.glassType).c_str()];
-      [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withGlassType:glassTypeString];
-    }
-
-    // Set initial type from default props
-    NSString *blurTypeString = [[NSString alloc] initWithUTF8String:toString(bvProps.type).c_str()];
-    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withType:blurTypeString];
 
     // Set initial reducedTransparencyFallbackColor from default props
     if (!bvProps.reducedTransparencyFallbackColor.empty()) {
@@ -187,20 +163,6 @@ using namespace facebook::react;
   const auto &oldViewProps = *std::static_pointer_cast<ReactNativeBlurViewProps const>(_props);
   const auto &newViewProps = *std::static_pointer_cast<ReactNativeBlurViewProps const>(props);
 
-  // Update glassTintColor if it has changed
-  if (oldViewProps.glassTintColor != newViewProps.glassTintColor) {
-    if (!newViewProps.glassTintColor.empty()) {
-      NSString *glassTintColorString = [[NSString alloc] initWithUTF8String:newViewProps.glassTintColor.c_str()];
-      UIColor *newGlassTintColor = [ReactNativeBlurView colorFromString:glassTintColorString];
-      [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withGlassTintColor:newGlassTintColor];
-    }
-  }
-
-  // Update glassOpacity if it has changed
-  if (oldViewProps.glassOpacity != newViewProps.glassOpacity) {
-    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withGlassOpacity:newViewProps.glassOpacity];
-  }
-
   // Update blurAmount if it has changed
   if (oldViewProps.blurAmount != newViewProps.blurAmount) {
     [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withBlurAmount:newViewProps.blurAmount];
@@ -212,29 +174,6 @@ using namespace facebook::react;
       NSString *blurTypeString = [[NSString alloc] initWithUTF8String:toString(newViewProps.blurType).c_str()];
       [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withBlurType:blurTypeString];
     }
-  }
-
-  // Update glassType if it has changed
-  if (oldViewProps.glassType != newViewProps.glassType) {
-    if (newViewProps.glassType != facebook::react::ReactNativeBlurViewGlassType::Clear) {
-      NSString *glassTypeString = [[NSString alloc] initWithUTF8String:toString(newViewProps.glassType).c_str()];
-      [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withGlassType:glassTypeString];
-    }
-  }
-
-  // Update type if it has changed
-  if (oldViewProps.type != newViewProps.type) {
-    NSString *blurTypeString = [[NSString alloc] initWithUTF8String:toString(newViewProps.type).c_str()];
-    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withType:blurTypeString];
-  }
-
-  // Update isInteractive if it has changed
-  if (oldViewProps.isInteractive != newViewProps.isInteractive) {
-    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIsInteractive:newViewProps.isInteractive];
-  }
-
-  if (oldViewProps.ignoreSafeArea != newViewProps.ignoreSafeArea) {
-    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringSafeArea:newViewProps.ignoreSafeArea];
   }
 
   // Update reducedTransparencyFallbackColor if it has changed
