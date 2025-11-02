@@ -2,6 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import ExamplesScreen from '../screens/ExamplesScreen';
+import LiquidGlassScreen from '../screens/LiquidGlassScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import BlurTabBar from './BlurTabBar';
 
@@ -28,6 +29,13 @@ export default function AppNavigator() {
           component={ExamplesScreen}
           options={{
             tabBarLabel: '✨ Examples',
+          }}
+        />
+        <Tab.Screen
+          name="LiquidGlass"
+          component={LiquidGlassScreen}
+          options={{
+            tabBarLabel: '🌊 Liquid',
           }}
         />
         <Tab.Screen
