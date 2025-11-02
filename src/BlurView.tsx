@@ -8,76 +8,99 @@ import type { GlassType } from '../src/ReactNativeBlurViewNativeComponent';
 
 export interface BlurViewProps {
   /**
-   * The type of blur effect to apply
+   * @description The type of blur effect to apply
+   *
    * @default 'xlight'
    */
   blurType?: BlurType;
 
   /**
-   * The intensity of the blur effect (0-100)
+   * @description The intensity of the blur effect (0-100)
+   *
    * @default 10
    */
   blurAmount?: number;
 
   /**
-   * Fallback color when reduced transparency is enabled
-   * Accepts hex color strings like '#FFFFFF'
+   * @description Fallback color when reduced transparency is enabled
+   *
+   * Accepts hex color strings like `#FFFFFF`
+   *
    * @default '#FFFFFF'
    */
   reducedTransparencyFallbackColor?: string;
 
   /**
-   * Style object for the blur view
+   * @description style object for the blur view
+   *
+   * @default undefined
    */
   style?: StyleProp<ViewStyle>;
 
   /**
-   * Child components to render inside the blur view
+   * @description Child components to render inside the blur view
+   *
+   * @default undefined
    */
   children?: React.ReactNode;
 
   /**
-   * Platform: iOS only
-   * The type of glass effect to apply
+   * @description The type of glass effect to apply
+   *
    * @default 'clear'
+   *
+   * @platform iOS
    */
   glassType?: GlassType;
 
   /**
-   * Platform: iOS only
-   * The tint color of the glass effect
-   * accepts hex color strings like '#FFFFFF'
-   * accepts color names like 'white', 'clear', 'black', 'red', 'green', 'blue', 'yellow', 'cyan', 'magenta'
+   * @description The tint color of the glass effect
+   *
+   * accepts hex color strings like `#FFFFFF`
+   *
+   * accepts color names like `white`, `clear`, `black`, `red`, `green`, `blue`, `yellow`, `cyan`, `magenta`
+   *
    * @default 'clear'
+   *
+   * @platform iOS
    */
   glassTintColor?: string;
 
   /**
-   * Platform: iOS only
-   * The opacity of the glass effect (0-1)
+   * @description The opacity of the glass effect (0-1)
+   *
    * @default 1.0
+   *
+   * @platform iOS
    */
   glassOpacity?: number;
 
   /**
-   * The type of blur effect to apply
-   * liquidGlass = iOS Only
-   * blur = Android | iOS
+   * @description The type of blur effect to apply
+   *
+   * `liquidGlass` - iOS only
+   *
+   * `blur` - Android and iOS
+   *
    * @default 'blur'
    */
   type?: 'blur' | 'liquidGlass';
 
   /**
-   * Platform: iOS only
-   * Whether the blur view should be interactive
+   * @description Whether the blur view should be interactive
+   *
    * @default true
+   *
+   * @platform iOS
    */
   isInteractive?: boolean;
 
   /**
-   * Platform: iOS only
-   * Whether the blur view should be ignore safe area insets
+   * @description Whether the blur view should be ignore safe area insets
+   *
    * @default false
+   *
+   * @platform iOS
    */
   ignoreSafeArea?: boolean;
 }
