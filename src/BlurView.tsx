@@ -4,7 +4,6 @@ import type { ViewStyle, StyleProp } from 'react-native';
 import ReactNativeBlurView, {
   type BlurType,
 } from './ReactNativeBlurViewNativeComponent';
-import type { GlassType } from '../src/ReactNativeBlurViewNativeComponent';
 
 export interface BlurViewProps {
   /**
@@ -43,66 +42,6 @@ export interface BlurViewProps {
    * @default undefined
    */
   children?: React.ReactNode;
-
-  /**
-   * @description The type of glass effect to apply
-   *
-   * @default 'clear'
-   *
-   * @platform iOS
-   */
-  glassType?: GlassType;
-
-  /**
-   * @description The tint color of the glass effect
-   *
-   * accepts hex color strings like `#FFFFFF`
-   *
-   * accepts color names like `white`, `clear`, `black`, `red`, `green`, `blue`, `yellow`, `cyan`, `magenta`
-   *
-   * @default 'clear'
-   *
-   * @platform iOS
-   */
-  glassTintColor?: string;
-
-  /**
-   * @description The opacity of the glass effect (0-1)
-   *
-   * @default 1.0
-   *
-   * @platform iOS
-   */
-  glassOpacity?: number;
-
-  /**
-   * @description The type of blur effect to apply
-   *
-   * `liquidGlass` - iOS only
-   *
-   * `blur` - Android and iOS
-   *
-   * @default 'blur'
-   */
-  type?: 'blur' | 'liquidGlass';
-
-  /**
-   * @description Whether the blur view should be interactive
-   *
-   * @default true
-   *
-   * @platform iOS
-   */
-  isInteractive?: boolean;
-
-  /**
-   * @description Whether the blur view should be ignore safe area insets
-   *
-   * @default false
-   *
-   * @platform iOS
-   */
-  ignoreSafeArea?: boolean;
 }
 
 /**
@@ -133,12 +72,6 @@ export const BlurView: React.FC<BlurViewProps> = ({
   reducedTransparencyFallbackColor = '#FFFFFF',
   style,
   children,
-  type = 'blur',
-  glassType = 'clear',
-  glassTintColor = 'clear',
-  glassOpacity = 1.0,
-  isInteractive = true,
-  ignoreSafeArea = false,
   ...props
 }) => {
   // If no children, render the blur view directly (for background use)
@@ -147,14 +80,8 @@ export const BlurView: React.FC<BlurViewProps> = ({
       <ReactNativeBlurView
         blurType={blurType}
         blurAmount={blurAmount}
-        glassType={glassType}
-        glassTintColor={glassTintColor}
-        glassOpacity={glassOpacity}
-        type={type}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
         style={style}
-        isInteractive={isInteractive}
-        ignoreSafeArea={ignoreSafeArea}
         {...props}
       />
     );
@@ -167,12 +94,6 @@ export const BlurView: React.FC<BlurViewProps> = ({
       <ReactNativeBlurView
         blurType={blurType}
         blurAmount={blurAmount}
-        glassType={glassType}
-        glassTintColor={glassTintColor}
-        glassOpacity={glassOpacity}
-        type={type}
-        isInteractive={isInteractive}
-        ignoreSafeArea={ignoreSafeArea}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
         style={{
           position: 'absolute',

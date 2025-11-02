@@ -1,25 +1,49 @@
 import SwiftUI
 import UIKit
 
-// MARK: - UIKit Wrapper for Blur
+// MARK: - UIKit Wrapper for Liquid Glass
 
-@objc public class AdvancedBlurView: UIView {
+@objc public class LiquidGlassContainerView: UIView {
 
-  private var hostingController: UIHostingController<BasicColoredView>?
+  private var hostingController: UIHostingController<LiquidGlassContentView>?
 
-  @objc public var blurAmount: Double = 10.0 {
+  @objc public var glassTintColor: UIColor = .clear {
     didSet {
       updateView()
     }
   }
 
-  @objc public var blurTypeString: String = "xlight" {
+  @objc public var glassOpacity: Double = 1.0 {
+    didSet {
+      updateView()
+    }
+  }
+
+  @objc public var glassType: String = "clear" {
     didSet {
       updateView()
     }
   }
 
   @objc public var reducedTransparencyFallbackColor: UIColor = .white {
+    didSet {
+      updateView()
+    }
+  }
+
+  @objc public var isInteractive: Bool = true {
+    didSet {
+      updateView()
+    }
+  }
+
+  @objc public var ignoreSafeArea: Bool = false {
+    didSet {
+      updateView()
+    }
+  }
+
+  @objc public var borderRadius: Double = 0 {
     didSet {
       updateView()
     }
@@ -50,11 +74,14 @@ import UIKit
     }
     hostingController = nil
 
-    let blurStyle = blurStyleFromString(blurTypeString)
-    let swiftUIView = BasicColoredView(
-      blurAmount: blurAmount,
-      blurStyle: blurStyle,
-      reducedTransparencyFallbackColor: reducedTransparencyFallbackColor
+    let swiftUIView = LiquidGlassContentView(
+      glassTintColor: glassTintColor,
+      glassOpacity: glassOpacity,
+      glassType: glassType,
+      reducedTransparencyFallbackColor: reducedTransparencyFallbackColor,
+      isInteractive: isInteractive,
+      borderRadius: borderRadius,
+      ignoreSafeArea: ignoreSafeArea
     )
 
     let hosting = UIHostingController(rootView: swiftUIView)
@@ -95,6 +122,6 @@ import UIKit
       hosting.view.removeFromSuperview()
       hosting.removeFromParent()
     }
-    hostingController = nil
+    hostingController = nil;
   }
 }

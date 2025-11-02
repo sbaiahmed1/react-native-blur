@@ -3,3 +3,9 @@ export * from './ReactNativeBlurViewNativeComponent';
 
 export { BlurView as default, BlurView } from './BlurView';
 export type { BlurViewProps } from './BlurView';
+
+export { default as ReactNativeLiquidGlassView } from './ReactNativeLiquidGlassViewNativeComponent';
+export type { GlassType } from './ReactNativeLiquidGlassViewNativeComponent';
+
+export { LiquidGlassView } from './LiquidGlassView';
+export type { LiquidGlassViewProps } from './LiquidGlassView';

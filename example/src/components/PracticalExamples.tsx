@@ -73,12 +73,9 @@ const PracticalExamples = () => {
 
       <Modal visible={showModal} transparent>
         <BlurView
-          type="blur"
           blurType="light"
           blurAmount={70}
-          glassType="clear"
           style={styles.RNModalContent}
-          ignoreSafeArea={false}
         >
           <View
             style={{ backgroundColor: 'white', padding: 30, borderRadius: 15 }}
