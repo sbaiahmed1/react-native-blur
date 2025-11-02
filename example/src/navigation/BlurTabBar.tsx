@@ -52,10 +52,11 @@ export default function BlurTabBar({
                 accessibilityLabel={options.tabBarAccessibilityLabel}
                 onPress={onPress}
                 onLongPress={onLongPress}
-                style={styles.tab}
+                style={[styles.tab, isFocused && styles.activeTab]}
               >
                 <View style={[styles.tabContent]}>
                   <Text
+                    numberOfLines={1}
                     style={[styles.tabText, isFocused && styles.activeTabText]}
                   >
                     {typeof label === 'string' ? label : route.name}
@@ -73,13 +74,15 @@ export default function BlurTabBar({
 const styles = StyleSheet.create({
   tabBarContainer: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 30,
     left: 20,
     right: 20,
     borderRadius: 24,
+    overflow: 'hidden',
   },
   blurContainer: {
-    height: '100%',
+    overflow: 'hidden',
+    height: 60,
     borderRadius: 24,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -87,14 +90,18 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
     height: 60,
-    paddingTop: 8,
+    paddingVertical: 8,
     paddingHorizontal: 12,
   },
   tab: {
-    flex: 1,
+    width: '20%',
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 4,
+    flexWrap: 'wrap',
+  },
+  activeTab: {
+    width: '30%',
   },
   tabContent: {
     flex: 1,
