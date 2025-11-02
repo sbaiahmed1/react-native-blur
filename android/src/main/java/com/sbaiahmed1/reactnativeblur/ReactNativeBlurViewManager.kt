@@ -1,7 +1,7 @@
 package com.sbaiahmed1.reactnativeblur
 
 import com.facebook.react.module.annotations.ReactModule
-import com.facebook.react.uimanager.ViewGroupManager
+import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManagerDelegate
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -9,7 +9,7 @@ import com.facebook.react.viewmanagers.ReactNativeBlurViewManagerInterface
 import com.facebook.react.viewmanagers.ReactNativeBlurViewManagerDelegate
 
 @ReactModule(name = ReactNativeBlurViewManager.NAME)
-class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
+class ReactNativeBlurViewManager : SimpleViewManager<ReactNativeBlurView>(),
   ReactNativeBlurViewManagerInterface<ReactNativeBlurView> {
   private val mDelegate: ViewManagerDelegate<ReactNativeBlurView>
 

@@ -118,7 +118,7 @@ This section provides a detailed comparison between `@sbaiahmed1/react-native-bl
 | **👨‍💻 Development Experience** | ✅ Standard RN development workflow | ✅ Excellent with Expo CLI tools |
 | **🚀 Production Flexibility** | ✅ Any deployment method (CodePush, OTA, stores) | 🟡 Limited to Expo/EAS deployment |
 | **🔧 Native Module Integration** | ✅ Easy integration with other native modules | ⚠️ May conflict with Expo managed workflow |
-| **🤖 Android Blur Quality** | ✅ Hardware-accelerated real blur | ❌ Experimental (dimezisBlurView or none fallback) |
+| **🤖 Android Blur Quality** | ✅ Hardware-accelerated real blur (QmBlurView) | ❌ Experimental (dimezisBlurView or none fallback) |
 
 **🚀 Why Choose @sbaiahmed1/react-native-blur:**
 
@@ -209,13 +209,13 @@ import { BlurView } from 'expo-blur';
 <BlurView
   intensity={50}                // 0-100 intensity scale
   tint="light"                  // light, dark, default, system materials
-  experimentalBlurMethod="dimezisBlurView" // Android experimental blur
+  experimentalBlurMethod="none" // Limited Android blur support
   style={styles.absolute}
 >
   <Text>Content</Text>
 </BlurView>
 
-// After - No dependencies + real Android blur
+// After - No expo dependencies + real Android blur (QmBlurView)
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 
 <BlurView
@@ -318,16 +318,19 @@ cd ios && pod install
 - **Kotlin:** 2.0.21
 
 ### Dependencies
-The Android implementation uses the [BlurView library by Dimezis](https://github.com/Dimezis/BlurView):
+The Android implementation uses the [QmBlurView library](https://github.com/QmDeve/QmBlurView):
 ```gradle
-implementation 'com.github.Dimezis:BlurView:version-2.0.6'
+implementation 'com.github.QmDeve:QmBlurView:v1.0.4.3'
 ```
 
-### Implementation Details
-The Android implementation leverages the BlurView library to provide real blur effects:
+For more information, see the [QmBlurView documentation](https://github.com/QmDeve/QmBlurView/wiki).
 
-- **Real-time Blur:** Uses `RenderEffectBlur` for hardware-accelerated blur rendering
+### Implementation Details
+The Android implementation leverages the QmBlurView library to provide real blur effects:
+
+- **Real-time Blur:** Uses advanced blur algorithms for hardware-accelerated rendering
 - **Hardware Acceleration:** Utilizes GPU rendering for optimal performance
+- **Stable API:** QmBlurView provides a more stable and maintained solution
 - **Multiple Blur Algorithms:** Supports different blur implementations based on device capabilities
 - **Performance Optimized:** Efficient blur rendering with minimal impact on app performance
 - **Fallback Handling:** Gracefully handles devices with limited graphics capabilities

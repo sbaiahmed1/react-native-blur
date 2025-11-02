@@ -2,25 +2,22 @@ package com.sbaiahmed1.reactnativeblur
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
-import android.view.ViewGroup
-import eightbitlab.com.blurview.BlurView
-import eightbitlab.com.blurview.RenderEffectBlur
-import eightbitlab.com.blurview.RenderScriptBlur
+import com.qmdeve.blurview.widget.BlurView
+import androidx.core.graphics.toColorInt
 
 /**
  * Android implementation of React Native BlurView component.
- * Provides cross-platform blur effects using the BlurView library.
+ * Provides cross-platform blur effects using the QmBlurView library.
+ *
+ * QmBlurView is a high-performance blur library that uses native blur algorithms
+ * implemented with underlying Native calls for optimal performance.
  */
 class ReactNativeBlurView : BlurView {
-  private var blurRadius = mapBlurAmountToRadius(DEFAULT_BLUR_AMOUNT)
-  private var overlayColor = Color.TRANSPARENT
-  private var isSetup = false
-  private var isConfigured = false
-  private var pendingStyleUpdate: Boolean = false
+  private var currentBlurRadius = DEFAULT_BLUR_RADIUS
+  private var currentOverlayColor = Color.TRANSPARENT
+  private var currentCornerRadius = 0f
   private var originalBackgroundColor: Int? = null
   private var hasExplicitBackground: Boolean = false
   private var glassTintColor: Int = Color.TRANSPARENT
@@ -30,7 +27,6 @@ class ReactNativeBlurView : BlurView {
 
   companion object {
     private const val TAG = "ReactNativeBlurView"
-    private const val MIN_BLUR_RADIUS = 0f
     private const val MAX_BLUR_RADIUS = 25f
     private const val DEFAULT_BLUR_RADIUS = 10f
     private const val DEBUG = false // Set to true for debug builds
@@ -38,7 +34,6 @@ class ReactNativeBlurView : BlurView {
     // Cross-platform blur amount constants
     private const val MIN_BLUR_AMOUNT = 0f
     private const val MAX_BLUR_AMOUNT = 100f
-    private const val DEFAULT_BLUR_AMOUNT = 10f
 
     private fun logDebug(message: String) {
       if (DEBUG) {
@@ -66,7 +61,7 @@ class ReactNativeBlurView : BlurView {
     }
   }
 
-  constructor(context: Context?) : super(context) {
+  constructor(context: Context?) : super(context, null) {
     initializeBlur()
   }
 
@@ -74,30 +69,33 @@ class ReactNativeBlurView : BlurView {
     initializeBlur()
   }
 
-  constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(
-    context,
-    attrs,
-    defStyleAttr
-  ) {
-    initializeBlur()
-  }
-
   /**
    * Initialize the blur view with default settings.
-   * Sets transparent background to prevent visual artifacts.
+   * QmBlurView automatically handles blur rendering without needing setupWith() calls.
    */
   private fun initializeBlur() {
-    // Set transparent background initially to avoid yellow tint - use super to avoid recursion
-    super.setBackgroundColor(Color.TRANSPARENT)
-    logDebug("ReactNativeBlurView initialized")
+    try {
+      // Set initial blur properties using QmBlurView's API
+      // setBlurRadius takes Float, setOverlayColor takes Int, setCornerRadius takes Float (in dp)
+      super.setBlurRadius(currentBlurRadius)
+      super.setOverlayColor(currentOverlayColor)
+      super.setCornerRadius(currentCornerRadius)
+
+      // Set transparent background to prevent visual artifacts
+      super.setBackgroundColor(Color.TRANSPARENT)
+
+      logDebug("QmBlurView initialized with blurRadius: $currentBlurRadius, overlayColor: $currentOverlayColor")
+    } catch (e: Exception) {
+      logError("Failed to initialize blur view: ${e.message}", e)
+    }
   }
 
   /**
-   * Override setBackgroundColor to handle blur setup timing and background preservation.
+   * Override setBackgroundColor to handle background preservation.
    * @param color The background color to apply
    */
   override fun setBackgroundColor(color: Int) {
-    logDebug("setBackgroundColor called: $color (isSetup: $isSetup)")
+    logDebug("setBackgroundColor called: $color")
 
     // Store the original background color if it's not transparent
     if (color != Color.TRANSPARENT) {
@@ -106,236 +104,34 @@ class ReactNativeBlurView : BlurView {
       logDebug("Stored explicit background color: $color")
     }
 
-    // If blur is not setup yet, defer setting the background
-    if (!isSetup) {
-      logDebug("Blur not setup, deferring background color")
-      pendingStyleUpdate = true
-      // Post a setup attempt
-      post {
-        if (!isSetup && isAttachedToWindow) {
-          logDebug("Attempting deferred blur setup from setBackgroundColor")
-          setupBlurView()
-        }
-      }
-      return
-    }
-
-    // If blur is setup and we have an explicit background, apply it carefully
-     if (hasExplicitBackground && color != Color.TRANSPARENT) {
-       logDebug("Applying background color over blur: $color")
-       super.setBackgroundColor(color)
-     } else {
-       logDebug("Keeping transparent background for blur effect")
-       super.setBackgroundColor(Color.TRANSPARENT)
-     }
-   }
-
-   /**
-    * Override setAlpha to handle blur setup timing.
-    * @param alpha The alpha value to apply
-    */
-   override fun setAlpha(alpha: Float) {
-     logDebug("setAlpha called: $alpha (isSetup: $isSetup)")
-
-     // Always apply alpha changes immediately as they don't interfere with blur setup
-     super.setAlpha(alpha)
-
-     // If blur is not setup yet, trigger setup attempt
-     if (!isSetup && isAttachedToWindow) {
-       pendingStyleUpdate = true
-       post {
-         if (!isSetup && isAttachedToWindow) {
-           logDebug("Attempting deferred blur setup from setAlpha")
-           setupBlurView()
-         }
-       }
-     }
-   }
-
-   /**
-    * Override setElevation to handle blur setup timing.
-    * @param elevation The elevation value to apply
-    */
-   override fun setElevation(elevation: Float) {
-     logDebug("setElevation called: $elevation (isSetup: $isSetup)")
-
-     // Always apply elevation changes immediately
-     super.setElevation(elevation)
-
-     // If blur is not setup yet, trigger setup attempt
-     if (!isSetup && isAttachedToWindow) {
-       pendingStyleUpdate = true
-       post {
-         if (!isSetup && isAttachedToWindow) {
-           logDebug("Attempting deferred blur setup from setElevation")
-           setupBlurView()
-         }
-       }
-     }
-   }
-
-  /**
-   * Called when the view is attached to a window.
-   * Triggers blur setup if not already configured.
-   */
-  override fun onAttachedToWindow() {
-    super.onAttachedToWindow()
-    
-    // Now we can safely walk the parent hierarchy
-    if (!this.isConfigured) {
-      this.isConfigured = true
-      setupBlurView()
+    // Apply background color over blur if explicitly set
+    if (hasExplicitBackground && color != Color.TRANSPARENT) {
+      logDebug("Applying background color over blur: $color")
+      super.setBackgroundColor(color)
+    } else {
+      logDebug("Keeping transparent background for blur effect")
+      super.setBackgroundColor(Color.TRANSPARENT)
     }
   }
 
   /**
    * Called when the view is detached from a window.
-   * Performs cleanup to prevent memory leaks and navigation transition issues.
+   * Performs cleanup to prevent memory leaks.
    */
   override fun onDetachedFromWindow() {
     super.onDetachedFromWindow()
-    
-    this.isConfigured = false
-    this.removeCallbacks(null)
     cleanup()
   }
 
   /**
-   * Cleanup method to reset state and remove pending callbacks.
+   * Cleanup method to reset state.
    * Helps prevent memory leaks and ensures clean state.
    */
   fun cleanup() {
-    isSetup = false
     hasExplicitBackground = false
     originalBackgroundColor = null
-    pendingStyleUpdate = false
-    // Clear any pending runnables to prevent memory leaks
     removeCallbacks(null)
-    logDebug("View detached, reset state")
-  }
-
-  /**
-   * Setup the blur view with multiple fallback strategies for finding the root view.
-   * Uses RenderEffectBlur for optimal performance on modern Android versions.
-   */
-  private fun setupBlurView() {
-    if (isSetup) return
-
-    try {
-      val rootView = findOptimalBlurRoot()
-
-      rootView?.let { root ->
-        try {
-          // Choose blur algorithm based on Android API level
-          val blurAlgorithm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Android 12+ (API 31+): Use RenderEffectBlur for better performance
-            logDebug("Using RenderEffectBlur for API ${Build.VERSION.SDK_INT}")
-            RenderEffectBlur()
-          } else {
-            // Android 10-11 (API < 31): Use RenderScriptBlur for compatibility
-            logDebug("Using RenderScriptBlur for API ${Build.VERSION.SDK_INT}")
-            try {
-              RenderScriptBlur(context)
-            } catch (e: Exception) {
-              logWarning("RenderScriptBlur not supported on this device: ${e.message}")
-              // Fallback: return null to trigger transparent background fallback
-              throw UnsupportedOperationException("Blur not supported on this device", e)
-            }
-          }
-
-          // Setup the blur view with the appropriate algorithm
-          this.setupWith(root, blurAlgorithm)
-          .setBlurRadius(blurRadius)
-          .setOverlayColor(overlayColor)
-
-        isSetup = true
-        pendingStyleUpdate = false
-
-        // Apply any pending background color after blur setup
-        if (hasExplicitBackground && originalBackgroundColor != null) {
-          logDebug("Applying pending background color: $originalBackgroundColor")
-          super.setBackgroundColor(originalBackgroundColor!!)
-        }
-
-        logDebug("Blur setup successful with root: ${root.javaClass.simpleName}")
-        } catch (e: Exception) {
-          logWarning("Failed to setup blur algorithm: ${e.message}")
-          // Fallback: use semi-transparent overlay when blur is unsupported
-          super.setBackgroundColor(overlayColor)
-          isSetup = true // Mark as setup to prevent retry loops
-        }
-      } ?: run {
-        logWarning("No suitable root view found for blur setup")
-        // Use semi-transparent overlay when no root view is available
-        super.setBackgroundColor(overlayColor)
-        isSetup = true
-      }
-    } catch (e: Exception) {
-      // Final fallback: set transparent background to prevent visual artifacts
-      super.setBackgroundColor(overlayColor)
-      logError("Failed to setup blur: ${e.message}", e)
-    }
-  }
-
-  /**
-   * Find the optimal blur root view by walking up the parent hierarchy.
-   * This method is crucial for proper blur rendering during navigation transitions.
-   * @return The optimal ViewGroup to use as blur root or null if not found
-   */
-  private fun findOptimalBlurRoot(): ViewGroup? {
-    var current = this.parent
-    
-    // Walk up the parent hierarchy to find the best blur root
-    while (current != null) {
-      if (current is ViewGroup) {
-        // Prefer content view as it's the most stable during transitions
-        if (current.id == android.R.id.content) {
-          return current
-        }
-        
-        // Look for other suitable container views
-        val className = current.javaClass.simpleName
-        if (className.contains("DecorView") ||
-            className.contains("ContentFrameLayout") ||
-            (className.contains("LinearLayout") && current.parent == null)) {
-          // For LinearLayout, only consider it if it's the root of the hierarchy (parent == null)
-          // This avoids misidentifying containers in complex layouts
-          return current
-        }
-      }
-      current = current.parent
-    }
-    
-    // Fallback: try to get activity's content view
-    return findRootView()
-  }
-
-  /**
-   * Find the root view using multiple strategies.
-   * @return The root ViewGroup or null if not found
-   */
-  private fun findRootView(): ViewGroup? {
-    // Strategy 1: Look for the content view (most reliable)
-    var parent = this.parent
-    while (parent != null) {
-      if (parent is ViewGroup && parent.id == android.R.id.content) {
-        return parent
-      }
-      parent = parent.parent
-    }
-
-    // Strategy 2: If content view not found, use the activity's root view
-    try {
-      val activity = context as? android.app.Activity
-      activity?.findViewById<ViewGroup>(android.R.id.content)?.let {
-        return it
-      }
-    } catch (e: Exception) {
-      logDebug("Could not access activity root view: ${e.message}")
-    }
-
-    // Strategy 3: Fallback to immediate parent
-    return this.parent as? ViewGroup
+    logDebug("View cleaned up")
   }
 
   /**
@@ -343,15 +139,14 @@ class ReactNativeBlurView : BlurView {
    * @param amount The blur amount value (0-100), will be mapped to Android's 0-25 radius range
    */
   fun setBlurAmount(amount: Float) {
-    blurRadius = mapBlurAmountToRadius(amount)
-    logDebug("setBlurAmount: $amount -> $blurRadius (mapped from 0-100 to 0-25 range, isSetup: $isSetup)")
+    currentBlurRadius = mapBlurAmountToRadius(amount)
+    logDebug("setBlurAmount: $amount -> $currentBlurRadius (mapped from 0-100 to 0-25 range)")
 
-    if (isSetup) {
-      try {
-        setBlurRadius(blurRadius)
-      } catch (e: Exception) {
-        logError("Failed to set blur radius: ${e.message}", e)
-      }
+    try {
+      // QmBlurView uses setBlurRadius() to set blur intensity
+      super.setBlurRadius(currentBlurRadius)
+    } catch (e: Exception) {
+      logError("Failed to set blur radius: ${e.message}", e)
     }
   }
 
@@ -401,15 +196,14 @@ class ReactNativeBlurView : BlurView {
    */
   fun setBlurType(type: String) {
     val blurType = BlurType.fromString(type)
-    overlayColor = blurType.overlayColor
-    logDebug("setBlurType: $type -> ${blurType.name} (isSetup: $isSetup)")
+    currentOverlayColor = blurType.overlayColor
+    logDebug("setBlurType: $type -> ${blurType.name}")
 
-    if (isSetup) {
-      try {
-        setOverlayColor(overlayColor)
-      } catch (e: Exception) {
-        logError("Failed to set overlay color: ${e.message}", e)
-      }
+    try {
+      // QmBlurView uses setOverlayColor() to set the tint/overlay color
+      super.setOverlayColor(currentOverlayColor)
+    } catch (e: Exception) {
+      logError("Failed to set overlay color: ${e.message}", e)
     }
   }
 
@@ -420,7 +214,7 @@ class ReactNativeBlurView : BlurView {
   fun setReducedTransparencyFallbackColor(color: String?) {
     color?.let {
       try {
-        val fallbackColor = Color.parseColor(it)
+        val fallbackColor = it.toColorInt()
         logDebug("setReducedTransparencyFallbackColor: $color -> $fallbackColor (stored but not applied unless accessibility requires it)")
 
         // Store the fallback color but don't apply it unless accessibility settings require it
@@ -443,7 +237,7 @@ class ReactNativeBlurView : BlurView {
   fun setGlassTintColor(color: String?) {
     color?.let {
       try {
-        glassTintColor = Color.parseColor(it)
+        glassTintColor = it.toColorInt()
         logDebug("setGlassTintColor: $color -> $glassTintColor")
         updateGlassEffect()
       } catch (e: Exception) {
@@ -476,10 +270,10 @@ class ReactNativeBlurView : BlurView {
     logDebug("setType: $type")
     updateViewType()
   }
-  
+
     /**
    * Set the view type (blur or liquidGlass).
-   * @param type The view type string
+   * @param isInteractive The view type string
    */
   fun setIsInteractive(isInteractive: Boolean) {
     logDebug("setType: $isInteractive")
@@ -499,7 +293,7 @@ class ReactNativeBlurView : BlurView {
    * Update the glass effect based on current glass properties.
    */
   private fun updateGlassEffect() {
-    if (viewType == "liquidGlass" && isSetup) {
+    if (viewType == "liquidGlass") {
       try {
         // Apply glass tint with opacity
         val glassColor = Color.argb(
@@ -508,7 +302,8 @@ class ReactNativeBlurView : BlurView {
           Color.green(glassTintColor),
           Color.blue(glassTintColor)
         )
-        setOverlayColor(glassColor)
+        // Use QmBlurView's setOverlayColor method
+        super.setOverlayColor(glassColor)
         logDebug("Applied glass effect: color=$glassColor, opacity=$glassOpacity")
       } catch (e: Exception) {
         logError("Failed to update glass effect: ${e.message}", e)
@@ -526,12 +321,10 @@ class ReactNativeBlurView : BlurView {
       }
       "blur" -> {
         // Restore original blur overlay color
-        if (isSetup) {
-          try {
-            setOverlayColor(overlayColor)
-          } catch (e: Exception) {
-            logError("Failed to restore blur overlay: ${e.message}", e)
-          }
+        try {
+          super.setOverlayColor(currentOverlayColor)
+        } catch (e: Exception) {
+          logError("Failed to restore blur overlay: ${e.message}", e)
         }
       }
     }
