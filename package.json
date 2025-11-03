@@ -37,10 +37,9 @@
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
-    "podspec": "pod ipc spec ReactNativeBlur.podspec",
     "prepare": "bob build",
     "release": "release-it",
-    "setup": "yarn && yarn podspec && yarn prepare",
+    "setup": "yarn && yarn prepare",
     "setup:example": "yarn setup && cd example && yarn && cd ios && pod install && cd .. && yarn start"
   },
   "keywords": [
