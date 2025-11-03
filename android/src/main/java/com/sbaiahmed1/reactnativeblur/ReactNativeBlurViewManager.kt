@@ -45,32 +45,32 @@ class ReactNativeBlurViewManager : SimpleViewManager<ReactNativeBlurView>(),
   }
 
   @ReactProp(name = "glassTintColor")
-  override fun setGlassTintColor(view: ReactNativeBlurView?, glassTintColor: String?) {
+  fun setGlassTintColor(view: ReactNativeBlurView?, glassTintColor: String?) {
     view?.setGlassTintColor(glassTintColor)
   }
 
   @ReactProp(name = "glassOpacity")
-  override fun setGlassOpacity(view: ReactNativeBlurView?, glassOpacity: Double) {
+  fun setGlassOpacity(view: ReactNativeBlurView?, glassOpacity: Double) {
     view?.setGlassOpacity(glassOpacity.toFloat())
   }
 
   @ReactProp(name = "type")
-  override fun setType(view: ReactNativeBlurView?, type: String?) {
+  fun setType(view: ReactNativeBlurView?, type: String?) {
     view?.setType(type ?: "blur")
   }
 
   @ReactProp(name = "glassType")
-  override fun setGlassType(view: ReactNativeBlurView?, glassType: String?) {
+  fun setGlassType(view: ReactNativeBlurView?, glassType: String?) {
     view?.setGlassType(glassType ?: "clear")
   }
 
   @ReactProp(name = "isInteractive")
-  override fun setIsInteractive(view: ReactNativeBlurView?, isInteractive: Boolean) {
+  fun setIsInteractive(view: ReactNativeBlurView?, isInteractive: Boolean) {
     view?.setIsInteractive(isInteractive)
   }
 
-  @ReactProp(name = "setIgnoreSafeArea")
-  override fun setIgnoreSafeArea(view: ReactNativeBlurView?, isInteractive: Boolean) {
+  @ReactProp(name = "ignoreSafeArea")
+  fun setIgnoreSafeArea(view: ReactNativeBlurView?, ignoreSafeArea: Boolean) {
     // no-op
   }
 

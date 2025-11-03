@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import type { ViewStyle, StyleProp } from 'react-native';
 import ReactNativeLiquidGlassView, {
   type GlassType,
 } from './ReactNativeLiquidGlassViewNativeComponent';
+import BlurView from './BlurView';
 
 export interface LiquidGlassViewProps {
   /**
@@ -107,7 +108,11 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
     console.warn(
       'LiquidGlassView is only supported on iOS. Rendering children without glass effect.'
     );
-    return <View style={style}>{children}</View>;
+    return (
+      <BlurView blurAmount={70} style={style}>
+        {children}
+      </BlurView>
+    );
   }
 
   // If children exist, use the absolute positioning pattern

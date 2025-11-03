@@ -160,7 +160,7 @@ const LiquidGlassExample = ({
                   glassOpacity === opacity && styles.selectedOpacity,
                 ]}
               >
-                <Text style={styles.opacityText}>
+                <Text numberOfLines={1} style={styles.opacityText}>
                   {Math.round(opacity * 100)}%
                 </Text>
               </LiquidGlassView>
