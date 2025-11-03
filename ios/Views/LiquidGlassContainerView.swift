@@ -1,127 +1,173 @@
-import SwiftUI
 import UIKit
 
-// MARK: - UIKit Wrapper for Liquid Glass
+// MARK: - UIKit-only Wrapper for Liquid Glass (following Expo's approach)
 
 @objc public class LiquidGlassContainerView: UIView {
-
-  private var hostingController: UIHostingController<LiquidGlassContentView>?
+  private var glassEffectView: UIVisualEffectView?
+  private var glassEffect: Any?
+  private var currentGlassStyle: String = "clear" // Track current style
 
   @objc public var glassTintColor: UIColor = .clear {
     didSet {
-      updateView()
+      updateEffect()
     }
   }
 
   @objc public var glassOpacity: Double = 1.0 {
     didSet {
-      updateView()
+      updateEffect()
     }
   }
 
   @objc public var glassType: String = "clear" {
     didSet {
-      updateView()
+      updateEffect()
     }
   }
 
   @objc public var reducedTransparencyFallbackColor: UIColor = .white {
     didSet {
-      updateView()
+      updateFallback()
     }
   }
 
   @objc public var isInteractive: Bool = true {
     didSet {
-      updateView()
+      updateEffect()
     }
   }
 
   @objc public var ignoreSafeArea: Bool = false {
     didSet {
-      updateView()
+      // Not used in UIKit approach
     }
   }
 
-  @objc public var borderRadius: Double = 0 {
-    didSet {
-      updateView()
-    }
-  }
+  // Border radius storage for React Native's style system
+  private var topLeftRadius: CGFloat = 0
+  private var topRightRadius: CGFloat = 0
+  private var bottomLeftRadius: CGFloat = 0
+  private var bottomRightRadius: CGFloat = 0
+  private var allBorderRadius: CGFloat = 0
 
   public override init(frame: CGRect) {
     super.init(frame: frame)
-    setupHostingController()
+    setupView()
   }
 
   required init?(coder: NSCoder) {
     super.init(coder: coder)
-    setupHostingController()
+    setupView()
+  }
+
+  private func setupView() {
+    let effectView = UIVisualEffectView()
+    effectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    effectView.frame = bounds
+    addSubview(effectView)
+    self.glassEffectView = effectView
+    
+    updateEffect()
+  }
+
+  // MARK: - Border Radius Methods (called by React Native's style system)
+  
+  @objc public func setBorderRadius(_ radius: CGFloat) {
+    allBorderRadius = radius
+    topLeftRadius = radius
+    topRightRadius = radius
+    bottomLeftRadius = radius
+    bottomRightRadius = radius
+    updateBorderRadius()
+  }
+  
+  @objc public func setBorderTopLeftRadius(_ radius: CGFloat) {
+    topLeftRadius = radius
+    updateBorderRadius()
+  }
+  
+  @objc public func setBorderTopRightRadius(_ radius: CGFloat) {
+    topRightRadius = radius
+    updateBorderRadius()
+  }
+  
+  @objc public func setBorderBottomLeftRadius(_ radius: CGFloat) {
+    bottomLeftRadius = radius
+    updateBorderRadius()
+  }
+  
+  @objc public func setBorderBottomRightRadius(_ radius: CGFloat) {
+    bottomRightRadius = radius
+    updateBorderRadius()
+  }
+
+  private func updateEffect() {
+    if #available(iOS 26.0, *) {
+      #if compiler(>=6.2)
+      let style: UIGlassEffect.Style = glassType == "regular" ? .regular : .clear
+      
+      // Always create a new effect to ensure proper rendering
+      let effect = UIGlassEffect(style: style)
+      effect.tintColor = glassTintColor.withAlphaComponent(glassOpacity)
+      effect.isInteractive = isInteractive
+      
+      glassEffectView?.effect = effect
+      glassEffect = effect
+      currentGlassStyle = glassType
+      
+      updateBorderRadius()
+      #endif
+    } else {
+      // Fallback for iOS < 26
+      updateFallback()
+    }
+  }
+
+  private func updateFallback() {
+    if #available(iOS 26.0, *) {
+      // Do nothing if iOS 26+
+    } else {
+      backgroundColor = reducedTransparencyFallbackColor
+      layer.cornerRadius = allBorderRadius
+      layer.masksToBounds = true
+    }
+  }
+
+  private func updateBorderRadius() {
+    if #available(iOS 26.0, *) {
+      #if compiler(>=6.2)
+      let topLeft = UICornerRadius(floatLiteral: Double(topLeftRadius))
+      let topRight = UICornerRadius(floatLiteral: Double(topRightRadius))
+      let bottomLeft = UICornerRadius(floatLiteral: Double(bottomLeftRadius))
+      let bottomRight = UICornerRadius(floatLiteral: Double(bottomRightRadius))
+      
+      glassEffectView?.cornerConfiguration = .corners(
+        topLeftRadius: topLeft,
+        topRightRadius: topRight,
+        bottomLeftRadius: bottomLeft,
+        bottomRightRadius: bottomRight
+      )
+      #else
+      layer.cornerRadius = allBorderRadius
+      layer.masksToBounds = true
+      #endif
+    } else {
+      layer.cornerRadius = allBorderRadius
+      layer.masksToBounds = true
+    }
   }
 
   public override func layoutSubviews() {
     super.layoutSubviews()
-    if hostingController == nil {
-      setupHostingController()
-    }
-  }
-
-  private func setupHostingController() {
-    // Completely remove old hosting controller
-    if let oldHosting = hostingController {
-      oldHosting.view.removeFromSuperview()
-      oldHosting.removeFromParent()
-    }
-    hostingController = nil
-
-    let swiftUIView = LiquidGlassContentView(
-      glassTintColor: glassTintColor,
-      glassOpacity: glassOpacity,
-      glassType: glassType,
-      reducedTransparencyFallbackColor: reducedTransparencyFallbackColor,
-      isInteractive: isInteractive,
-      borderRadius: borderRadius,
-      ignoreSafeArea: ignoreSafeArea
-    )
-
-    let hosting = UIHostingController(rootView: swiftUIView)
-    hosting.view.backgroundColor = .clear
-    hosting.view.translatesAutoresizingMaskIntoConstraints = false
-
-    addSubview(hosting.view)
-    NSLayoutConstraint.activate([
-      hosting.view.topAnchor.constraint(equalTo: topAnchor),
-      hosting.view.leadingAnchor.constraint(equalTo: leadingAnchor),
-      hosting.view.trailingAnchor.constraint(equalTo: trailingAnchor),
-      hosting.view.bottomAnchor.constraint(equalTo: bottomAnchor)
-    ])
-
-    self.hostingController = hosting
-  }
-
-  private func updateView() {
-    setupHostingController()
-  }
-
-  public override func didMoveToSuperview() {
-    super.didMoveToSuperview()
-    if superview != nil {
-      setupHostingController()
-    }
+    glassEffectView?.frame = bounds
   }
   
-  public override func didMoveToWindow() {
-    super.didMoveToWindow()
-    if window != nil {
-      setupHostingController()
+  // For child view mounting
+  @objc public func getContentView() -> UIView? {
+    if #available(iOS 26.0, *) {
+      return glassEffectView?.contentView
+    } else {
+      return self
     }
-  }
-
-  deinit {
-    if let hosting = hostingController {
-      hosting.view.removeFromSuperview()
-      hosting.removeFromParent()
-    }
-    hostingController = nil;
   }
 }

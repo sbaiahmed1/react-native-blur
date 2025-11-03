@@ -35,8 +35,7 @@ const LiquidGlassExample = ({
           glassType={selectedGlassType}
           glassTintColor={glassTintColor}
           glassOpacity={glassOpacity}
-          borderRadius={20}
-          style={styles.liquidGlassCard}
+          style={[styles.liquidGlassCard, { borderRadius: 20 }]}
           reducedTransparencyFallbackColor="rgba(255, 255, 255, 0.9)"
         >
           <Text style={styles.liquidGlassTitle}>🌊 Liquid Glass</Text>
@@ -45,6 +44,7 @@ const LiquidGlassExample = ({
           <Text style={styles.liquidGlassInfo}>
             Opacity: {Math.round(glassOpacity * 100)}%
           </Text>
+          <Text style={styles.liquidGlassInfo}>Radius: {20}px</Text>
 
           <TouchableOpacity
             style={[
@@ -405,7 +405,6 @@ const styles = StyleSheet.create({
   glassExampleCard: {
     marginBottom: 20,
     borderRadius: 20,
-    overflow: 'hidden',
     height: 300,
   },
   glassCardBackground: {
@@ -449,7 +448,6 @@ const styles = StyleSheet.create({
   glassModalExample: {
     marginBottom: 20,
     borderRadius: 20,
-    overflow: 'hidden',
     height: 180,
   },
   glassModalBackground: {

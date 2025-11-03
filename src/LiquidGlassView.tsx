@@ -7,24 +7,16 @@ import ReactNativeLiquidGlassView, {
 
 export interface LiquidGlassViewProps {
   /**
-   * The border radius of the glass effect
-   * Platform: iOS 26+ only
-   * @default 0
-   */
-  borderRadius?: number;
-  /**
    * The type of glass effect to apply
    * Platform: iOS 26+ only
    * @default 'clear'
    */
-  glassType?: GlassType;
-
-  /**
+  glassType?: GlassType /**
    * The tint color of the glass effect
    * Accepts hex color strings like '#FFFFFF' or color names
    * Platform: iOS 26+ only
    * @default 'clear'
-   */
+   */;
   glassTintColor?: string;
 
   /**
@@ -108,7 +100,6 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
   ignoreSafeArea = false,
   style,
   children,
-  borderRadius = 0,
   ...props
 }) => {
   // Only render on iOS
@@ -119,47 +110,20 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
     return <View style={style}>{children}</View>;
   }
 
-  // If no children, render the glass view directly (for background use)
-  if (React.Children.count(children) === 0) {
-    return (
-      <ReactNativeLiquidGlassView
-        glassType={glassType}
-        borderRadius={borderRadius}
-        glassTintColor={glassTintColor}
-        glassOpacity={glassOpacity}
-        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-        isInteractive={isInteractive}
-        ignoreSafeArea={ignoreSafeArea}
-        style={style}
-        {...props}
-      />
-    );
-  }
-
   // If children exist, use the absolute positioning pattern
   return (
-    <View style={[{ position: 'relative' }, style]}>
-      {/* Glass effect positioned absolutely behind content */}
-      <ReactNativeLiquidGlassView
-        glassType={glassType}
-        glassTintColor={glassTintColor}
-        glassOpacity={glassOpacity}
-        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-        isInteractive={isInteractive}
-        ignoreSafeArea={ignoreSafeArea}
-        borderRadius={borderRadius}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}
-        {...props}
-      />
-      {/* Content positioned relatively on top */}
-      <View style={{ position: 'relative', zIndex: 1 }}>{children}</View>
-    </View>
+    <ReactNativeLiquidGlassView
+      glassType={glassType}
+      glassTintColor={glassTintColor}
+      glassOpacity={glassOpacity}
+      reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+      isInteractive={isInteractive}
+      ignoreSafeArea={ignoreSafeArea}
+      style={style}
+      {...props}
+    >
+      {children}
+    </ReactNativeLiquidGlassView>
   );
 };
 
