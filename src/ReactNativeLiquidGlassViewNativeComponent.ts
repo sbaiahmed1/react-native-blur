@@ -9,12 +9,6 @@ export type GlassType = 'clear' | 'regular';
 
 interface NativeProps extends ViewProps {
   /**
-   * The border radius of the glass effect
-   * Platform: iOS only
-   * @default 0
-   */
-  borderRadius?: WithDefault<Double, 0.0>;
-  /**
    * The type of glass effect to apply
    * Platform: iOS only
    * @default 'clear'

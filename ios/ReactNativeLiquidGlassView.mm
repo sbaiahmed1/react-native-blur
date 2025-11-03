@@ -21,6 +21,7 @@ using namespace facebook::react;
 @implementation ReactNativeLiquidGlassView {
   LiquidGlassContainerView *_liquidGlassView;
   Props::Shared _props;
+  LayoutMetrics _layoutMetrics;
 }
 
 + (UIColor *)colorFromString:(NSString *)colorString {
@@ -149,9 +150,6 @@ using namespace facebook::react;
       [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassType:glassTypeString];
     }
 
-    // Set initial borderRadius from default props
-    [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withBorderRadius:lgProps.borderRadius];
-
     // Set initial isInteractive from default props
     [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIsInteractive:lgProps.isInteractive];
 
@@ -216,26 +214,55 @@ using namespace facebook::react;
     }
   }
 
-  // Update borderRadius if it has changed
-  if (oldViewProps.borderRadius != newViewProps.borderRadius) {
-    [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withBorderRadius:newViewProps.borderRadius];
-  }
-
   // Store the new props
   _props = props;
 
   [super updateProps:props oldProps:oldProps];
 }
 
+- (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask
+{
+  [super finalizeUpdates:updateMask];
+  
+  // Apply border radius from layout metrics to the inner glass view (Callstack pattern)
+  if (@available(iOS 26.0, *)) {
+    const auto &props = *std::static_pointer_cast<ReactNativeLiquidGlassViewProps const>(_props);
+    const auto borderMetrics = props.resolveBorderMetrics(_layoutMetrics);
+    
+    // Use topLeft.horizontal same as React Native RCTViewComponentView implementation
+    CGFloat radius = borderMetrics.borderRadii.topLeft.horizontal;
+    
+    if (radius > 0) {
+      [_liquidGlassView setBorderRadius:radius];
+    }
+  }
+}
+
 - (void)layoutSubviews
 {
   [super layoutSubviews];
   _liquidGlassView.frame = self.bounds;
+  
+  // Copy corner radius from the Fabric view to the inner glass view (Callstack pattern)
+  _liquidGlassView.layer.cornerRadius = self.layer.cornerRadius;
+  _liquidGlassView.layer.cornerCurve = self.layer.cornerCurve;
+  _liquidGlassView.layer.masksToBounds = YES;
+}
+
+- (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics
+{
+  _layoutMetrics = layoutMetrics;
+  [super updateLayoutMetrics:layoutMetrics oldLayoutMetrics:oldLayoutMetrics];
 }
 
 - (void)mountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
 {
-  [_liquidGlassView addSubview:childComponentView];
+  UIView *contentView = [_liquidGlassView getContentView];
+  if (contentView) {
+    [contentView insertSubview:childComponentView atIndex:index];
+  } else {
+    [_liquidGlassView addSubview:childComponentView];
+  }
 }
 
 - (void)unmountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index

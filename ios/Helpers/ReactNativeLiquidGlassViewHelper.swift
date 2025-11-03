@@ -37,11 +37,6 @@ import UIKit
     liquidGlassView.ignoreSafeArea = ignoreSafeArea
   }
 
-  /// Updates the liquid glass view with a new border radius.
-  @objc public static func updateLiquidGlassView(_ liquidGlassView: LiquidGlassContainerView, withBorderRadius borderRadius: Double) {
-    liquidGlassView.borderRadius = borderRadius
-  }
-
   /// Updates the liquid glass view with a new reduced transparency fallback color.
   @objc public static func updateLiquidGlassView(_ liquidGlassView: LiquidGlassContainerView, withReducedTransparencyFallbackColor reducedTransparencyFallbackColor: UIColor) {
     liquidGlassView.reducedTransparencyFallbackColor = reducedTransparencyFallbackColor
