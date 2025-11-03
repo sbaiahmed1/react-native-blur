@@ -40,7 +40,7 @@
     "prepare": "bob build",
     "release": "release-it",
     "setup": "yarn && yarn prepare",
-    "setup:example": "yarn setup && cd example && yarn && cd ios && pod install && cd .. && yarn start"
+    "setup:example": "yarn setup && cd example && yarn && cd ios && pod install && cd .. && yarn start --client-logs"
   },
   "keywords": [
     "react-native",
