@@ -294,6 +294,8 @@ import { BlurView } from '@sbaiahmed1/react-native-blur';
 
 ## Installation
 
+> ⚠️ **ANDROID USERS**: This library requires Android Gradle Plugin (AGP) version **8.9.1 or newer**. See [Android Setup Requirements](#android-setup) for details.
+
 ```bash
 npm install @sbaiahmed1/react-native-blur
 # or
@@ -316,6 +318,20 @@ cd ios && pod install
 - **Compile SDK:** API level 35 (Android 15)
 - **Gradle:** 8.10.2
 - **Kotlin:** 2.0.21
+
+> ⚠️ **CRITICAL REQUIREMENT - Android Gradle Plugin Version**: This library requires Android Gradle Plugin (AGP) version **8.9.1 or newer**. 
+> 
+> **Check your AGP version** in `android/build.gradle`:
+> ```gradle
+> classpath "com.android.tools.build:gradle:X.X.X"
+> ```
+> 
+> **Compatibility:**
+> - ✅ AGP 8.9.1 or newer (e.g., 8.9.1, 8.10.2, 8.11.x) - **Required**
+> - ✅ AGP 8.10.x - **Recommended for best compatibility**
+> - ❌ AGP 8.8.x or older - **Will NOT work with this library**
+>
+> If you're using an older version of AGP (8.8.x or earlier), you **must upgrade** to at least AGP 8.9.1 to use this library. This is a hard requirement due to the native Android implementation.
 
 ### Dependencies
 The Android implementation uses the [QmBlurView library](https://github.com/QmDeve/QmBlurView):
