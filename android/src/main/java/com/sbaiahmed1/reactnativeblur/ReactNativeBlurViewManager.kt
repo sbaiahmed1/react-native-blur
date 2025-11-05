@@ -70,7 +70,7 @@ class ReactNativeBlurViewManager : SimpleViewManager<ReactNativeBlurView>(),
   }
 
   @ReactProp(name = "ignoreSafeArea")
-  fun setIgnoreSafeArea(view: ReactNativeBlurView?, ignoreSafeArea: Boolean) {
+  override fun setIgnoreSafeArea(view: ReactNativeBlurView?, ignoreSafeArea: Boolean) {
     // no-op
   }
 
