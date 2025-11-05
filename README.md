@@ -235,6 +235,11 @@ The library uses native Android blur with automatic platform detection. No addit
 > classpath "com.android.tools.build:gradle:8.9.1" // or higher
 > ```
 
+> 📦 **Dependency**: The library uses [QmBlurView](https://github.com/QmDeve/QmBlurView) from Maven Central:
+> ```gradle
+> implementation 'com.qmdeve:QmBlurView:1.0.4.3'
+> ```
+
 The implementation automatically handles different Android versions:
 - Android 12+: Uses `RenderEffectBlur` 
 - Android 10-11: Falls back to `RenderScriptBlur`
@@ -602,5 +607,7 @@ MIT
 ---
 
 ## Credits
+
+QMBlur library: https://github.com/QmDeve/QmBlurView
 
 Built with [create-react-native-library](https://github.com/callstack/react-native-builder-bob)
