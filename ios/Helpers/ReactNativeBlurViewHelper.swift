@@ -26,5 +26,10 @@ import UIKit
   @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withReducedTransparencyFallbackColor reducedTransparencyFallbackColor: UIColor) {
     blurView.reducedTransparencyFallbackColor = reducedTransparencyFallbackColor
   }
+
+  /// Updates the blur view with a new ignoreSafeArea value.
+  @objc public static func updateBlurView(_ blurView: AdvancedBlurView, withIgnoringSafeArea ignoreSafeArea: Bool) {
+    blurView.ignoreSafeArea = ignoreSafeArea
+  }
 }
 

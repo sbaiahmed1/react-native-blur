@@ -153,6 +153,9 @@ using namespace facebook::react;
       [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withReducedTransparencyFallbackColor:fallbackColor];
     }
 
+    // Set initial ignoreSafeArea from default props
+    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringSafeArea:bvProps.ignoreSafeArea];
+
     [self addSubview:_advancedBlurView];
   }
   return self;
@@ -183,6 +186,11 @@ using namespace facebook::react;
       UIColor *fallbackColor = [ReactNativeBlurView colorFromString:fallbackColorString];
       [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withReducedTransparencyFallbackColor:fallbackColor];
     }
+  }
+
+  // Update ignoreSafeArea if it has changed
+  if (oldViewProps.ignoreSafeArea != newViewProps.ignoreSafeArea) {
+    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringSafeArea:newViewProps.ignoreSafeArea];
   }
 
   // Store the new props

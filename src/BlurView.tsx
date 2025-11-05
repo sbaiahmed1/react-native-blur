@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { ViewStyle, StyleProp } from 'react-native';
 import ReactNativeBlurView, {
   type BlurType,
@@ -37,6 +37,13 @@ export interface BlurViewProps {
   style?: StyleProp<ViewStyle>;
 
   /**
+   * @description style object for the blur view
+   *
+   * @default false
+   */
+  ignoreSafeArea?: boolean;
+
+  /**
    * @description Child components to render inside the blur view
    *
    * @default undefined
@@ -72,12 +79,14 @@ export const BlurView: React.FC<BlurViewProps> = ({
   reducedTransparencyFallbackColor = '#FFFFFF',
   style,
   children,
+  ignoreSafeArea = false,
   ...props
 }) => {
   // If no children, render the blur view directly (for background use)
   if (React.Children.count(children) === 0) {
     return (
       <ReactNativeBlurView
+        ignoreSafeArea={ignoreSafeArea}
         blurType={blurType}
         blurAmount={blurAmount}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
@@ -89,25 +98,31 @@ export const BlurView: React.FC<BlurViewProps> = ({
 
   // If children exist, use the absolute positioning pattern
   return (
-    <View style={[{ position: 'relative', overflow: 'hidden' }, style]}>
+    <View style={[styles.container, style]}>
       {/* Blur effect positioned absolutely behind content */}
       <ReactNativeBlurView
+        ignoreSafeArea={ignoreSafeArea}
         blurType={blurType}
         blurAmount={blurAmount}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}
+        style={StyleSheet.absoluteFill}
         {...props}
       />
       {/* Content positioned relatively on top */}
-      <View style={{ position: 'relative', zIndex: 1 }}>{children}</View>
+      <View style={styles.children}>{children}</View>
     </View>
   );
 };
 
 export default BlurView;
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  children: {
+    position: 'relative',
+    zIndex: 1,
+  },
+});

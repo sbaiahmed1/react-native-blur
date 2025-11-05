@@ -45,6 +45,12 @@ RCT_CUSTOM_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString, AdvancedBlu
   [ReactNativeBlurViewHelper updateBlurView:view withReducedTransparencyFallbackColor:color];
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(ignoreSafeArea, BOOL, AdvancedBlurView)
+{
+  BOOL ignoreSafeArea = json ? [RCTConvert BOOL:json] : NO;
+  [ReactNativeBlurViewHelper updateBlurView:view withIgnoringSafeArea:ignoreSafeArea];
+}
+
 // Color parsing helper method (copied from ReactNativeBlurView.mm)
 - (UIColor *)colorFromString:(NSString *)colorString {
   // Input validation
