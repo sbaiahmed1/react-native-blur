@@ -25,6 +25,12 @@ import UIKit
     }
   }
 
+  @objc public var ignoreSafeArea: Bool = false {
+    didSet {
+      updateView()
+    }
+ }
+
   public override init(frame: CGRect) {
     super.init(frame: frame)
     setupHostingController()
@@ -54,6 +60,7 @@ import UIKit
     let swiftUIView = BasicColoredView(
       blurAmount: blurAmount,
       blurStyle: blurStyle,
+      ignoreSafeArea: ignoreSafeArea,
       reducedTransparencyFallbackColor: reducedTransparencyFallbackColor
     )
 
@@ -82,7 +89,7 @@ import UIKit
       setupHostingController()
     }
   }
-  
+
   public override func didMoveToWindow() {
     super.didMoveToWindow()
     if window != nil {

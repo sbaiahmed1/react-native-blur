@@ -462,7 +462,7 @@ All props are optional and have sensible defaults.
 | `glassType` | `GlassType` | `'clear'` | The type of glass effect |
 | `glassTintColor` | `string` | `'clear'` | The tint color for glass effect |
 | `glassOpacity` | `number` | `1.0` | The opacity of glass effect (0-1) |
-| `ignoreSafeArea` | `boolean` | `false` | (iOS only) Controls whether the liquid glass effect should ignore all safe area edges or stops once it reaches it |
+| `ignoreSafeArea` | `boolean` | `false` | (iOS only) Controls whether the blur or liquid glass effect should ignore all safe area edges or stops once it reaches it |
 | `isInteractive` | `boolean` | `true` | (iOS only) Controls whether the liquid glass effect is interactive. When `false`, the liquid glass effect will not react to touch or movement. Only applicable when `type` is `'liquidGlass'` and iOS 26+. |
 | `reducedTransparencyFallbackColor` | `string` | `'#FFFFFF'` | Fallback color when reduced transparency is enabled |
 | `style` | `ViewStyle` | `undefined` | Style object for the blur view |
