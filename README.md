@@ -1,6 +1,9 @@
 # @sbaiahmed1/react-native-blur
 
-A modern React Native blur view component that provides native blur effects and **liquid glass effects** for iOS (with Android fallback to enhanced blur).
+A modern React Native library providing **two specialized components** for advanced visual effects: `BlurView` for native blur effects and `LiquidGlassView` for cutting-edge liquid glass effects on iOS 26+ (with Android fallback to enhanced blur).
+
+> **📦 Current Version: 4.0.0** | **⚠️ Breaking Changes**: If upgrading from 3.x, see [Breaking Changes](#️-breaking-changes-in-v400) section.
+
 <div align="center">
   <p>
     <img src="https://img.shields.io/npm/v/@sbaiahmed1/react-native-blur?style=for-the-badge&color=blue" alt="npm version" />
@@ -30,267 +33,177 @@ A modern React Native blur view component that provides native blur effects and 
   <strong>⚠️ Android automatically falls back to enhanced blur with tint overlay</strong>
 </div>
 
-## Version Compatibility
+## Requirements
 
-### Xcode Requirements
+| Platform | Minimum Version |
+|----------|----------------|
+| **iOS** | iOS 13.0+ |
+| **Xcode** | Xcode 26.0+ (for liquid glass support) |
+| **React Native** | 0.68+ (New Architecture) |
+| **Android** | API 24+ (Android 7.0) |
+| **Android Gradle Plugin** | 8.9.1+ |
 
-| Library Version | Minimum Xcode Version | iOS Features Available |
-|-----------------|----------------------|----------------------|
-| **0.3.0+** (Current) | **Xcode 26.0** | ✅ Full liquid glass effects with UIGlassEffect API<br/>✅ Enhanced SwiftUI implementation<br/>✅ All blur types and system materials |
-| **0.2.1** | Xcode 16.0+ | ✅ Standard blur effects<br/>✅ System materials (iOS 13+)<br/>❌ No liquid glass effects |
+> ⚠️ **Note**: LiquidGlassView requires Xcode 26.0+ and iOS 26+ for full glass effects. The component automatically falls back to enhanced blur on older versions.
 
-### Xcode 26.0+ Compatibility Table
+## ⚠️ Breaking Changes in v4.0.0
 
-| Xcode Version | Library Compatibility | Features Available | Notes |
-|---------------|----------------------|-------------------|-------|
-| **Xcode 26.0+** | ✅ **Fully Supported** | ✅ All features including liquid glass effects<br/>✅ UIGlassEffect API<br/>✅ SwiftUI implementation<br/>✅ All blur types and system materials | **Recommended for current version** |
-| **Xcode 16.x and below** | ❌ **Not Supported** | ❌ Liquid glass effects<br/>❌ UIGlassEffect API<br/>⚠️ Basic blur effects may work with limitations | Use library version 0.2.1 instead |
+> **Important**: Version 4.0.0 introduces significant API changes. If you're upgrading from 3.x, please read this section carefully.
 
-> ⚠️ **Critical Requirement**: The current version (0.3.0+) requires **Xcode 26.0 or higher** and will not work with older Xcode versions. This is a hard requirement due to the UIGlassEffect API and SwiftUI enhancements introduced in Xcode 26.0.
+### What Changed
 
-> 💡 **Migration Tip**: If you're unable to upgrade to Xcode 26.0, please use version **0.2.1** of this library which supports Xcode 16.0 and provides standard blur effects without liquid glass capabilities.
+In version 3.x, we had a **single `BlurView` component** with a `type` prop that switched between blur and liquid glass modes:
+
+```tsx
+// ❌ Old API (v3.x) - DEPRECATED
+<BlurView
+  type="blur"              // or "liquidGlass"
+  blurType="light"
+  blurAmount={10}
+  glassType="regular"      // Mixed blur and glass props
+  glassTintColor="#007AFF"
+/>
+```
+
+In version 4.0.0, we've **separated concerns** into **two dedicated components** for better architecture and cleaner APIs:
+
+```tsx
+// ✅ New API (v4.0.0) - Current
+import { BlurView, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+
+// For blur effects
+<BlurView
+  blurType="light"
+  blurAmount={10}
+/>
+
+// For liquid glass effects (iOS 26+)
+<LiquidGlassView
+  glassType="regular"
+  glassTintColor="#007AFF"
+  glassOpacity={0.8}
+/>
+```
+
+### Migration from 3.x to 4.0.0
+
+**If you were using blur mode:**
+```tsx
+// Before (3.x)
+<BlurView type="blur" blurType="light" blurAmount={10} />
+
+// After (4.0.0)
+<BlurView blurType="light" blurAmount={10} />
+```
+
+**If you were using liquid glass mode:**
+```tsx
+// Before (3.x)
+<BlurView
+  type="liquidGlass"
+  glassType="regular"
+  glassTintColor="#007AFF"
+  glassOpacity={0.8}
+/>
+
+// After (4.0.0)
+import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+
+<LiquidGlassView
+  glassType="regular"
+  glassTintColor="#007AFF"
+  glassOpacity={0.8}
+/>
+```
+
+### Why This Change?
+
+- **🎯 Cleaner APIs**: Each component now has focused props relevant to its purpose
+- **📦 Better Tree-Shaking**: Import only what you need
+- **🔧 Type Safety**: Separate TypeScript definitions prevent mixing incompatible props
+- **🏗️ Better Architecture**: Separation of concerns following React best practices
+- **📖 Clearer Code**: More explicit about which effect you're using
+
+### Summary
+
+- **v3.x**: Single `BlurView` component with `type` prop (blur or liquidGlass)
+- **v4.0.0**: Two components - `BlurView` for blur, `LiquidGlassView` for glass effects
+- **Action Required**: Update imports and split your components based on the effect type you need
 
 ## Features
 
-- 🌊 **Liquid Glass Effects**: Revolutionary glass effects using iOS 26+ UIGlassEffect API
+- � **Two Specialized Components**: 
+  - `BlurView` - Dedicated blur effects component with multiple blur types
+  - `LiquidGlassView` - Separate component for iOS 26+ liquid glass effects
+- �🌊 **Liquid Glass Effects**: Revolutionary glass effects using iOS 26+ UIGlassEffect API
 - 🎨 **Multiple Blur Types**: Support for various blur styles including system materials on iOS
 - 📱 **Cross-Platform**: Works on both iOS and Android
 - ♿ **Accessibility**: Automatic fallback for reduced transparency settings
-- 🔧 **TypeScript**: Full TypeScript support with proper type definitions
+- 🔧 **TypeScript**: Full TypeScript support with proper type definitions for both components
 - 🚀 **Turbo Module**: Built with React Native's new architecture (Fabric)
 - 🎯 **Customizable**: Adjustable blur intensity, glass tint colors, and opacity
 - 💡 **Performance Optimized**: Uses hardware acceleration for smooth rendering
-- 🛠️ **Easy to Use**: Simple API for quick integration into your React Native projects
+- 🛠️ **Easy to Use**: Simple, focused APIs for each effect type
 - 📦 **Modern**: Uses SwiftUI for iOS and Kotlin for Android, ensuring cutting-edge development practices
 - 🔄 **Smart Fallbacks**: Graceful degradation from liquid glass to blur on older iOS versions
 
-## 📊 Library Comparison
+## Comparison with Other Libraries
 
-This section provides a detailed comparison between `@sbaiahmed1/react-native-blur` and other popular blur libraries in the React Native ecosystem.
+### Key Advantages
 
-### 🆚 vs. [@react-native-community/blur](https://www.npmjs.com/package/@react-native-community/blur)
+- **Two Specialized Components**: Separate `BlurView` and `LiquidGlassView` components for clean architecture
+- **Liquid Glass Effects**: Only library with iOS 26+ UIGlassEffect support
+- **Real Android Blur**: Hardware-accelerated blur on Android (not overlay)
+- **New Architecture**: Built for Fabric/Turbo Modules
+- **Modern Stack**: SwiftUI for iOS, Kotlin for Android
+- **Full TypeScript**: Complete type definitions for both components
 
-| Feature                      | @sbaiahmed1/react-native-blur       | @react-native-community/blur          |
-|------------------------------|-------------------------------------|---------------------------------------|
-| **🏗️ New Architecture Support** | ✅ Full Fabric/Turbo Module support  | ❌ Limited support, crashes on Android |
-| **🤖 Android Real Blur**        | ✅ Hardware-accelerated real blur + liquid glass | Hardware-accelerated real blur      |
-| **🍎 iOS Blur Quality**         | ✅ Native UIVisualEffectView + UIGlassEffect | ✅ Native UIVisualEffectView only           |
-| **💎 Liquid Glass Effects**     | ✅ Full support (iOS 26+ UIGlassEffect & Android) | ❌ Not supported                       |
-| **📝 TypeScript Support**       | ✅ Complete TypeScript definitions with IntelliSense | ⚠️ Basic TypeScript support           |
-| **🔧 Maintenance Status**       | ✅ Actively maintained  | ⚠️ Community-maintained, slower updates |
-| **📦 Bundle Size**              | 🟡 Moderate (includes native blur libs) | 🟡 Moderate (includes BlurView lib)   |
-| **🎯 API Design**           | ✅ Modern, intuitive API with smart defaults | 🟡 Legacy API design                          |
-| **⚡ Performance**              | ✅ Hardware-accelerated on both platforms | ✅ Hardware-accelerated on both platforms       |
-| **♿ Accessibility**            | ✅ Full reduced transparency + motion support | ✅ Basic reduced transparency support        |
-| **📚 Documentation**            | ✅ Comprehensive guides + live examples | 🟡 Basic README documentation                |
-| **🎨 Blur Types**               | ✅ iOS system materials + custom Android effects | ✅ iOS blur types (including iOS 13 materials) |
-| **🔧 Android Blur Methods**     | ✅ Native hardware-accelerated blur | ✅ Native hardware-accelerated blur |
-| **📱 Platform Support**         | ✅ iOS, Android with feature parity | ✅ iOS (full), Android (limited overlay) |
+### vs. @react-native-community/blur
+- ✅ Dedicated components vs single component with mode switching
+- ✅ Liquid glass effects (iOS 26+)
+- ✅ Better new architecture support
+- ✅ Separate prop types for each component
 
-**🚀 Why Choose @sbaiahmed1/react-native-blur:**
+### vs. expo-blur
+- ✅ No Expo dependency required
+- ✅ Real Android blur (not experimental)
+- ✅ Works with bare React Native projects
+- ✅ Liquid glass effects support
 
-- **🎯 Revolutionary Android Experience**: First library to bring **real hardware-accelerated blur** to Android, including liquid glass effects. No more fake transparency overlays!
-- **💎 Liquid Glass Pioneer**: Only library supporting iOS 26+ UIGlassEffect API for stunning liquid glass materials on both platforms
-- **🏗️ Future-Proof Architecture**: Built exclusively for React Native's new architecture (Fabric/Turbo Modules) - no legacy baggage
-- **⚡ Superior Performance**: Hardware acceleration on both platforms with GPU-optimized rendering pipelines
-- **🔧 Modern Development**: Swift for iOS, Kotlin for Android - leveraging the latest native technologies
-- **📈 Active Innovation**: Regular feature updates, performance improvements, and new blur effects
+## Migration Guide
 
-**When to choose @react-native-community/blur:**
-- Legacy projects that can't upgrade to new architecture
-- iOS-only applications where Android blur quality isn't important
-- Projects requiring maximum stability over cutting-edge features
-
-### 🆚 vs. [expo-blur](https://docs.expo.dev/versions/latest/sdk/blur-view/)
-
-| Feature | @sbaiahmed1/react-native-blur | expo-blur |
-|---------|------------------------------|----------|
-| **🚫 Expo Dependency** | ✅ Zero dependencies on Expo ecosystem | ❌ Requires Expo SDK + managed workflow |
-| **📱 Bare React Native** | ✅ Works with any RN project out-of-the-box | ⚠️ Complex setup for bare RN projects |
-| **🤖 Android Support** | ✅ Real hardware-accelerated blur + liquid glass | ⚠️ Simple overlay + Experimental blur (experimentalBlurMethod prop) |
-| **🍎 iOS Support** | ✅ Full native blur + UIGlassEffect (iOS 26+) | ✅ Native UIVisualEffectView support |
-| **💎 Liquid Glass Effects** | ✅ Full support (iOS 26+ UIGlassEffect & Android) | ❌ Not supported, no plans to add |
-| **📦 Bundle Size** | 🟡 Moderate (includes native libs) | ✅ Lightweight (when using Expo managed) |
-| **⚙️ Setup Complexity** | ✅ Simple `npm install` + auto-linking | 🟡 Requires Expo development build setup |
-| **🎨 Blur Types** | ✅ iOS system materials + custom Android effects | ✅ iOS tint types (light, dark, system materials) |
-| **🎯 API Design** | ✅ `blurAmount` + `blurType` for precise control | ✅ `intensity` + `tint` (simple but limited) |
-| **🏗️ New Architecture** | ✅ Native Fabric/Turbo Module support | ✅ Expo handles compatibility layer |
-| **👨‍💻 Development Experience** | ✅ Standard RN development workflow | ✅ Excellent with Expo CLI tools |
-| **🚀 Production Flexibility** | ✅ Any deployment method (CodePush, OTA, stores) | 🟡 Limited to Expo/EAS deployment |
-| **🔧 Native Module Integration** | ✅ Easy integration with other native modules | ⚠️ May conflict with Expo managed workflow |
-| **🤖 Android Blur Quality** | ✅ Hardware-accelerated real blur (QmBlurView) | ❌ Experimental (dimezisBlurView or none fallback) |
-
-**🚀 Why Choose @sbaiahmed1/react-native-blur:**
-
-- **🔓 No Vendor Lock-in**: Complete freedom from Expo ecosystem - works with any React Native setup
-- **🎯 Revolutionary Android**: First library to deliver **real blur effects** on Android, not fake transparency tricks
-- **💎 Liquid Glass Innovation**: Exclusive support for cutting-edge liquid glass materials on both platforms
-- **🏢 Enterprise Ready**: Perfect for brownfield apps, custom native modules, and complex deployment scenarios
-- **🎨 Advanced Customization**: 15+ iOS system materials plus custom Android blur implementations
-- **⚡ Direct Performance**: No abstraction layers - direct access to native blur APIs for maximum performance
-- **🔧 Developer Freedom**: Use any build system, deployment method, or native module without restrictions
-
-**When to choose expo-blur:**
-- Already deeply invested in Expo managed workflow
-- Building simple apps with basic blur needs (iOS-focused)
-- Prefer Expo's managed dependency system over manual configuration
-- Don't need advanced blur effects or Android blur quality
-
-### ⚡ Performance Comparison
-
-| Metric | @sbaiahmed1/react-native-blur | @react-native-community/blur | expo-blur |
-|--------|------------------------------|------------------------------|----------|
-| **🍎 iOS Rendering** | Hardware-accelerated UIVisualEffect + UIGlassEffect | Hardware-accelerated UIVisualEffect | Hardware-accelerated UIVisualEffect |
-| **🤖 Android Rendering** | **Hardware-accelerated real blur** | **Hardware-accelerated real blur** | ❌ Software overlay (fake blur) |
-| **🧠 Memory Usage** | Optimized with native BlurView libs | Optimized with native BlurView libs | Low (no real Android blur) |
-| **⚙️ CPU Impact** | Low (GPU-based on both platforms) | iOS: Low, Android: Minimal (no blur) | iOS: Low, Android: Minimal (no blur) |
-| **📊 Frame Rate Impact** | Minimal impact on both platforms | iOS: Minimal, Android: None (no blur) | iOS: Minimal, Android: None (no blur) |
-| **🎯 Blur Quality** | **Excellent on both platforms** | iOS: Excellent, Android: Poor | iOS: Good, Android: Poor |
-| **💎 Liquid Glass Performance** | **Native UIGlassEffect + Android equivalent** | ❌ Not available | ❌ Not available |
-| **🚀 New Architecture Performance** | **Optimized for Fabric/Turbo Modules** | Limited compatibility | Expo abstraction layer |
-
-### 🤝 Community & Support
-
-| Aspect | @sbaiahmed1/react-native-blur | @react-native-community/blur | expo-blur |
-|--------|------------------------------|------------------------------|----------|
-| **⭐ GitHub Stars** | 🆕 Growing rapidly (new innovative features) | 🌟 Established (3.8k+, legacy codebase) | 🌟 Part of Expo ecosystem |
-| **🎯 Issue Response** | ✅ **Active core maintainer** (< 24h response) | 🟡 Community-driven (slow response) | ✅ Expo team support |
-| **📚 Documentation Quality** | ✅ **Comprehensive guides + live examples** | 🟡 Basic README only | ✅ Good (Expo docs) |
-| **🔄 Update Frequency** | ✅ **Regular feature updates** (weekly/monthly) | 🟡 Sporadic maintenance updates | ✅ Regular (with Expo releases) |
-| **💔 Breaking Changes** | ✅ **Strict semantic versioning** | ⚠️ Occasional unannounced changes | ✅ Managed by Expo |
-| **🐛 Bug Fixes** | ✅ **Rapid fixes** (same-day for critical issues) | 🟡 Depends on community availability | ✅ Good (Expo team) |
-| **💡 Feature Requests** | ✅ **Actively considered** (roadmap-driven) | 🟡 Limited by maintainer capacity | 🟡 Limited to Expo priorities |
-| **🔧 Technical Support** | ✅ **Direct maintainer support** | 🟡 Community forums only | ✅ Expo Discord/forums |
-
-### 🔄 Migration Guide
-
-#### 🚀 From @react-native-community/blur
+### From @react-native-community/blur
 
 ```tsx
-// Before - Limited Android support
+// Before
 import { BlurView } from '@react-native-community/blur';
 
-<BlurView
-  style={styles.absolute}
-  blurType="light"           // Limited to iOS blur types only
-  blurAmount={10}            // Max 32 on Android (clamped)
-  reducedTransparencyFallbackColor="white"
-/>
+// After - same API, now with dedicated components
+import { BlurView, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
-// After - Full platform support + liquid glass
-import { BlurView } from '@sbaiahmed1/react-native-blur';
+// Use BlurView for standard blur
+<BlurView blurType="light" blurAmount={10} />
 
-<BlurView
-  style={styles.absolute}
-  blurType="light"              // Same API!
-  blurAmount={10}               // No Android limitations
-  reducedTransparencyFallbackColor="white"
-  // NEW: Liquid glass support
-  type="liquidGlass"            // Enable liquid glass effects
-  glassType="regular"           // iOS 26+ UIGlassEffect styles
-  glassTintColor="#007AFF"      // Glass tint color
-  glassOpacity={0.8}            // Glass opacity (0-1)
-/>
+// Or LiquidGlassView for glass effects (iOS 26+)
+<LiquidGlassView glassType="regular" glassTintColor="#007AFF" glassOpacity={0.8} />
 ```
 
-**✨ Migration Benefits:**
-- **🎯 Zero Breaking Changes**: Drop-in replacement with same API
-- **🤖 Real Android Blur**: Instantly get hardware-accelerated blur on Android
-- **💎 Liquid Glass Bonus**: Add cutting-edge liquid glass effects with one prop
-- **⚡ Better Performance**: Hardware acceleration on both platforms
-- **🏗️ Future-Proof**: Built for React Native's new architecture
-
-#### 🚀 From expo-blur
+### From expo-blur
 
 ```tsx
-// Before - Expo dependency + limited Android
+// Before
 import { BlurView } from 'expo-blur';
+<BlurView intensity={50} tint="light" />
 
-<BlurView
-  intensity={50}                // 0-100 intensity scale
-  tint="light"                  // light, dark, default, system materials
-  experimentalBlurMethod="none" // Limited Android blur support
-  style={styles.absolute}
->
-  <Text>Content</Text>
-</BlurView>
-
-// After - No expo dependencies + real Android blur (QmBlurView)
+// After
 import { BlurView } from '@sbaiahmed1/react-native-blur';
-
-<BlurView
-  blurAmount={50}               // intensity → blurAmount (same scale)
-  blurType="light"              // tint → blurType (same options + more)
-  style={styles.absolute}
-  // NEW: Advanced features
-  type="liquidGlass"            // Liquid glass effects
-  glassType="regular"           // iOS 26+ materials
-  glassTintColor="#007AFF"      // Glass tint color
-  glassOpacity={0.8}            // Glass opacity (0-1)
-  isInteractive={true}          // Touch interaction support
-  // No experimental props needed - real blur by default
->
-  <Text>Content</Text>
-</BlurView>
+<BlurView blurAmount={50} blurType="light" />
 ```
 
-**✨ Migration Benefits:**
-- **🔓 No Vendor Lock-in**: Remove Expo dependency completely
-- **🎯 Real Android Blur**: Get actual blur effects, not fake transparency
-- **💎 Liquid Glass Effects**: Access to cutting-edge iOS 26+ materials
-- **🚀 Deployment Freedom**: Use any build system or deployment method
-- **🎨 More Customization**: 15+ blur types vs basic intensity control
-
-#### 🛠️ Quick Migration Checklist
-
-1. **Install the library:**
-   ```bash
-   npm uninstall @react-native-community/blur expo-blur
-   npm install @sbaiahmed1/react-native-blur
-   ```
-
-2. **Update imports:**
-   ```tsx
-   // Replace old imports
-   import { BlurView } from '@sbaiahmed1/react-native-blur';
-   ```
-
-3. **Optional: Add liquid glass effects:**
-   ```tsx
-   <BlurView
-     type="liquidGlass"
-     glassType="regular"
-     glassTintColor="#007AFF"
-     glassOpacity={0.8}
-   />
-   ```
-
-4. **Test on Android:** Experience real blur effects for the first time! 🎉
-
-### Recommendation
-
-**Choose @sbaiahmed1/react-native-blur if:**
-- You need **real blur effects on Android** (not experimental/fallback methods)
-- You want **liquid glass effects** for modern iOS apps (iOS 26+)
-- You're building with **React Native's new architecture** (Fabric/Turbo Modules)
-- You need **maximum performance** on both platforms
-- You want **comprehensive TypeScript support** with IntelliSense
-- You prefer **modern API design** with intuitive prop names
-- You need **unlimited blur intensity** on Android (no 32-unit clamp)
-
-**Choose @react-native-community/blur if:**
-- You're working with **legacy React Native projects** (< 0.68)
-- You need **battle-tested stability** over cutting-edge features
-- Your app **primarily targets iOS** (where it performs excellently)
-- You can accept **limited Android blur quality** (overlay-based)
-- You prefer **community-driven** open source projects
-
-**Choose expo-blur if:**
-- You're already **committed to the Expo ecosystem**
-- You're building **simple apps** with basic blur needs
-- You want **zero native configuration** (Expo managed workflow)
-- **Bundle size** is your primary concern
-- You can accept **experimental Android blur** with potential fallbacks
+**Migration Steps:**
+1. Uninstall old library: `npm uninstall @react-native-community/blur expo-blur`
+2. Install: `npm install @sbaiahmed1/react-native-blur`
+3. Update imports
+4. Run `cd ios && pod install`
 
 ## Installation
 
@@ -312,69 +225,30 @@ cd ios && pod install
 
 ### Android Setup
 
-### Requirements
-- **Minimum SDK:** API level 24 (Android 7.0)
-- **Target SDK:** API level 35 (Android 15)
-- **Compile SDK:** API level 35 (Android 15)
-- **Gradle:** 8.10.2
-- **Kotlin:** 2.0.21
+The library uses native Android blur with automatic platform detection. No additional configuration required beyond ensuring minimum requirements:
 
-> ⚠️ **CRITICAL REQUIREMENT - Android Gradle Plugin Version**: This library requires Android Gradle Plugin (AGP) version **8.9.1 or newer**. 
-> 
-> **Check your AGP version** in `android/build.gradle`:
+- **Min SDK:** API 24 (Android 7.0)
+- **Android Gradle Plugin:** 8.9.1+
+
+> ⚠️ **AGP Requirement**: Requires Android Gradle Plugin **8.9.1 or newer**. Check `android/build.gradle`:
 > ```gradle
-> classpath "com.android.tools.build:gradle:X.X.X"
+> classpath "com.android.tools.build:gradle:8.9.1" // or higher
 > ```
-> 
-> **Compatibility:**
-> - ✅ AGP 8.9.1 or newer (e.g., 8.9.1, 8.10.2, 8.11.x) - **Required**
-> - ✅ AGP 8.10.x - **Recommended for best compatibility**
-> - ❌ AGP 8.8.x or older - **Will NOT work with this library**
->
-> If you're using an older version of AGP (8.8.x or earlier), you **must upgrade** to at least AGP 8.9.1 to use this library. This is a hard requirement due to the native Android implementation.
 
-### Dependencies
-The Android implementation uses the [QmBlurView library](https://github.com/QmDeve/QmBlurView):
-```gradle
-implementation 'com.github.QmDeve:QmBlurView:v1.0.4.3'
-```
-
-For more information, see the [QmBlurView documentation](https://github.com/QmDeve/QmBlurView/wiki).
-
-### Implementation Details
-The Android implementation leverages the QmBlurView library to provide real blur effects:
-
-- **Real-time Blur:** Uses advanced blur algorithms for hardware-accelerated rendering
-- **Hardware Acceleration:** Utilizes GPU rendering for optimal performance
-- **Stable API:** QmBlurView provides a more stable and maintained solution
-- **Multiple Blur Algorithms:** Supports different blur implementations based on device capabilities
-- **Performance Optimized:** Efficient blur rendering with minimal impact on app performance
-- **Fallback Handling:** Gracefully handles devices with limited graphics capabilities
-- **No Extra Permissions:** Does not require additional Android permissions
-
-### Android Version Compatibility
-
-This library automatically handles Android version compatibility to prevent `NoClassDefFoundError` issues:
-
-- **Android 12+ (API 31+):** Uses `RenderEffectBlur` for optimal performance and modern blur effects
-- **Android 10-11 (API 29-30):** Automatically falls back to `RenderScriptBlur` for compatibility
-- **Older Android versions:** Graceful fallback to semi-transparent overlay when blur is not supported
-
-**Note:** The library includes automatic API level detection and will choose the appropriate blur algorithm based on the device's Android version. This ensures compatibility across all supported Android versions without requiring any additional configuration.
-
-#### Troubleshooting Android Issues
-
-If you encounter `java.lang.NoClassDefFoundError: Failed resolution of: Landroid/graphics/RenderEffect;` on Android 10 or 11:
-
-1. **This is automatically handled** - The library now includes fallback mechanisms
-2. **Update to latest version** - Ensure you're using the latest version of this library
-3. **Clean and rebuild** - Run `cd android && ./gradlew clean` then rebuild your project
-
-The error occurs because `RenderEffect` was introduced in Android 12 (API 31), but the library now automatically detects the API level and uses compatible alternatives on older versions.
+The implementation automatically handles different Android versions:
+- Android 12+: Uses `RenderEffectBlur` 
+- Android 10-11: Falls back to `RenderScriptBlur`
+- Older versions: Lightweight overlay fallback
 
 ## Usage
 
-### Basic Usage
+The library now provides **two specialized components** for different visual effects:
+
+### BlurView - Standard Blur Effects
+
+Use `BlurView` for standard blur effects across all platforms:
+
+#### Basic Usage
 
 ```tsx
 import React from 'react';
@@ -403,7 +277,7 @@ export default function App() {
 }
 ```
 
-### Advanced Usage
+#### Advanced Blur Usage
 
 ```tsx
 import React from 'react';
@@ -426,16 +300,17 @@ function MyComponent() {
 }
 ```
 
-### Liquid Glass Usage (iOS 26+)
+### LiquidGlassView - Liquid Glass Effects (iOS 26+)
+
+Use `LiquidGlassView` for cutting-edge liquid glass effects. **Note:** This component automatically falls back to enhanced blur on Android and older iOS versions.
 
 ```tsx
 import React from 'react';
-import { BlurView } from '@sbaiahmed1/react-native-blur';
+import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
 function LiquidGlassComponent() {
   return (
-    <BlurView
-      type="liquidGlass"
+    <LiquidGlassView
       glassType="regular"
       glassTintColor="#007AFF"
       glassOpacity={0.8}
@@ -445,34 +320,75 @@ function LiquidGlassComponent() {
       }}
     >
       <Text>Beautiful liquid glass effect</Text>
-    </BlurView>
+    </LiquidGlassView>
+  );
+}
+```
+
+#### Interactive Liquid Glass
+
+```tsx
+import React from 'react';
+import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+
+function InteractiveGlass() {
+  return (
+    <LiquidGlassView
+      glassType="regular"
+      glassTintColor="#007AFF"
+      glassOpacity={0.9}
+      isInteractive={true}  // Enables touch interaction (iOS 26+ only)
+      ignoreSafeArea={false}
+      style={{
+        flex: 1,
+        padding: 30,
+      }}
+    >
+      <Text>Interactive liquid glass that responds to touch</Text>
+    </LiquidGlassView>
   );
 }
 ```
 
 ## Props
 
+The library now provides two separate components with their own props:
+
+### BlurView Props
+
 All props are optional and have sensible defaults.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `type` | `'blur' \| 'liquidGlass'` | `'blur'` | The type of effect to apply. **Note**: `'liquidGlass'` is iOS 26+ only, falls back to enhanced blur on Android |
 | `blurType` | `BlurType` | `'xlight'` | The type of blur effect to apply |
 | `blurAmount` | `number` | `10.0` | The intensity of the blur effect (0-100) |
-| `glassType` | `GlassType` | `'clear'` | The type of glass effect |
-| `glassTintColor` | `string` | `'clear'` | The tint color for glass effect |
-| `glassOpacity` | `number` | `1.0` | The opacity of glass effect (0-1) |
-| `ignoreSafeArea` | `boolean` | `false` | (iOS only) Controls whether the blur or liquid glass effect should ignore all safe area edges or stops once it reaches it |
-| `isInteractive` | `boolean` | `true` | (iOS only) Controls whether the liquid glass effect is interactive. When `false`, the liquid glass effect will not react to touch or movement. Only applicable when `type` is `'liquidGlass'` and iOS 26+. |
+| `ignoreSafeArea` | `boolean` | `false` | (iOS only) Controls whether the blur effect should ignore all safe area edges |
 | `reducedTransparencyFallbackColor` | `string` | `'#FFFFFF'` | Fallback color when reduced transparency is enabled |
 | `style` | `ViewStyle` | `undefined` | Style object for the blur view |
 | `children` | `ReactNode` | `undefined` | Child components to render inside the blur view |
 
-> **Note**: The `BlurType` and `GlassType` are exported types from the library. See [Blur Types](#blur-types) section below for all available values.
+### LiquidGlassView Props
 
-## Blur Types
+All props are optional and have sensible defaults.
 
-The following blur types are supported:
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `glassType` | `GlassType` | `'clear'` | The type of glass effect (iOS 26+ only) |
+| `glassTintColor` | `string` | `'clear'` | The tint color for glass effect. Accepts hex colors or color names |
+| `glassOpacity` | `number` | `1.0` | The opacity of glass effect (0-1) |
+| `isInteractive` | `boolean` | `true` | (iOS 26+ only) Controls whether the liquid glass effect is interactive and reacts to touch |
+| `ignoreSafeArea` | `boolean` | `false` | (iOS only) Controls whether the glass effect should ignore all safe area edges |
+| `reducedTransparencyFallbackColor` | `string` | `'#FFFFFF'` | Fallback color when reduced transparency is enabled or on older iOS versions |
+| `style` | `ViewStyle` | `undefined` | Style object for the glass view |
+| `children` | `ReactNode` | `undefined` | Child components to render inside the glass view |
+
+> **Note**: The `BlurType` and `GlassType` are exported types from the library. See [Blur Types](#blur-types) and [Glass Types](#glass-types) sections below for all available values.
+
+> **Platform Note**: `LiquidGlassView` automatically falls back to `BlurView` on Android and iOS versions older than iOS 26.
+
+## Blur Types (BlurView)
+
+The following blur types are supported for `BlurView`:
 
 ### iOS & Android
 - `'light'` - Light blur effect
@@ -489,36 +405,66 @@ The following blur types are supported:
 - `'systemThickMaterial'` - Thick material (iOS 13+)
 - `'systemChromeMaterial'` - Chrome material (iOS 13+)
 
+## Glass Types (LiquidGlassView)
+
+The following glass types are supported for `LiquidGlassView` on iOS 26+:
+
+- `'clear'` - Clear glass effect (default)
+- `'regular'` - Regular glass effect with more pronounced appearance
+
+> **Note**: On Android and iOS versions older than iOS 26, `LiquidGlassView` automatically falls back to an enhanced blur effect that approximates the glass appearance.
+
 ## Platform Differences
 
 ### iOS
-On iOS, this component has been completely rewritten using **SwiftUI** for modern performance and features:
 
-- **iOS 26+**: Uses native `UIGlassEffect` API for true liquid glass effects with customizable tint colors and opacity
-- **iOS 13-25**: Uses enhanced `UIVisualEffectView` with precise blur intensity control
+Both components have been completely rewritten using **SwiftUI** for modern performance and features:
+
+#### BlurView
+- **iOS 13+**: Uses native `UIVisualEffectView` with precise blur intensity control
 - **Older iOS**: Graceful fallback to standard blur effects
 - **SwiftUI Integration**: Leverages SwiftUI's declarative UI for better performance and maintainability
 
-### Android
-On Android, the component uses the BlurView library to provide real blur effects with hardware acceleration. The implementation supports multiple blur algorithms and gracefully falls back to translucent overlay approximation on devices with limited graphics capabilities.
+#### LiquidGlassView
+- **iOS 26+**: Uses native `UIGlassEffect` API for true liquid glass effects with customizable tint colors and opacity
+- **iOS < 26**: Automatically falls back to `BlurView` with enhanced blur effects
+- **SwiftUI Implementation**: Full hardware-accelerated glass effects with interactive touch support
 
-**⚠️ Liquid Glass Limitation**: Liquid glass effects (`type="liquidGlass"`) are **iOS 26+ exclusive**. On Android, they automatically fall back to enhanced blur with tint overlay to approximate the visual effect.
+### Android
+
+#### BlurView
+The component uses the QmBlurView library to provide real blur effects with hardware acceleration. The implementation supports multiple blur algorithms and gracefully falls back to translucent overlay approximation on devices with limited graphics capabilities.
+
+#### LiquidGlassView
+**⚠️ Platform Limitation**: Liquid glass effects are **iOS 26+ exclusive**. On Android, `LiquidGlassView` automatically falls back to `BlurView` with enhanced blur and tint overlay to approximate the visual effect.
 
 ## Accessibility
 
-The component automatically respects the "Reduce Transparency" accessibility setting:
+Both components automatically respect the "Reduce Transparency" accessibility setting:
 
+### BlurView
 - **iOS**: When reduce transparency is enabled, the blur view is hidden and a fallback view with solid color is shown
 - **Android**: The fallback color is always used as the base for the blur approximation
 
-You can customize the fallback color using the `reducedTransparencyFallbackColor` prop.
+### LiquidGlassView
+- **iOS 26+**: When reduce transparency is enabled, the liquid glass effect is hidden and a fallback view with solid color is shown
+- **iOS < 26 & Android**: Automatically falls back to `BlurView` behavior
+
+You can customize the fallback color using the `reducedTransparencyFallbackColor` prop on both components.
 
 ## TypeScript Support
 
-This package includes full TypeScript definitions:
+This package includes full TypeScript definitions for both components:
 
 ```tsx
-import { BlurView, BlurType, GlassType, BlurViewProps } from '@sbaiahmed1/react-native-blur';
+import { 
+  BlurView, 
+  LiquidGlassView,
+  BlurType, 
+  GlassType, 
+  BlurViewProps,
+  LiquidGlassViewProps 
+} from '@sbaiahmed1/react-native-blur';
 
 // BlurType is exported for type checking
 const blurType: BlurType = 'systemMaterial';
@@ -527,27 +473,40 @@ const blurType: BlurType = 'systemMaterial';
 const glassType: GlassType = 'regular';
 
 // BlurViewProps for component props
-interface MyComponentProps {
+interface MyBlurComponentProps {
   blurProps: BlurViewProps;
 }
 
-// Example with all liquid glass properties
-const liquidGlassProps: BlurViewProps = {
-  type: 'liquidGlass',
+// LiquidGlassViewProps for glass component props
+interface MyGlassComponentProps {
+  glassProps: LiquidGlassViewProps;
+}
+
+// Example with BlurView properties
+const blurProps: BlurViewProps = {
+  blurType: 'systemMaterial',
+  blurAmount: 50,
+  reducedTransparencyFallbackColor: '#FFFFFF',
+};
+
+// Example with LiquidGlassView properties
+const liquidGlassProps: LiquidGlassViewProps = {
   glassType: 'regular',
   glassTintColor: '#007AFF',
   glassOpacity: 0.8,
+  isInteractive: true,
 };
 ```
 
 ## Example App
 
-The package includes a comprehensive example app that demonstrates all blur types, liquid glass effects, and practical use cases. The example app features:
+The package includes a comprehensive example app that demonstrates both components with all their features. The example app features:
 
-- **Main Demo**: Interactive blur type selector with live preview
-- **Liquid Glass Examples**: Showcase of iOS 26+ glass effects with customizable properties
-- **Practical Use Cases**: Real-world examples like cards, modals, and overlays
-- **Comparison Views**: Side-by-side comparisons of different effects
+- **BlurView Demo**: Interactive blur type selector with live preview of all blur types
+- **LiquidGlassView Demo**: Showcase of iOS 26+ glass effects with customizable properties
+- **Practical Use Cases**: Real-world examples like cards, modals, and overlays using both components
+- **Comparison Views**: Side-by-side comparisons between BlurView and LiquidGlassView effects
+- **Platform Fallbacks**: Visual demonstrations of how effects degrade gracefully on older platforms
 
 To run the example:
 
@@ -562,20 +521,44 @@ yarn android
 
 ## Performance Considerations
 
+### BlurView
 - **iOS**:
   - **SwiftUI Implementation**: Enhanced performance with declarative UI updates
-  - **Liquid Glass (iOS 26+)**: Hardware-accelerated glass effects with minimal performance impact
-  - **Blur Effects**: Native blur effects are hardware-accelerated and performant
-  - **Smart Fallbacks**: Automatic degradation ensures smooth performance on older devices
-- **Android**: Real blur effects are hardware-accelerated with fallback to lightweight overlay when needed
+  - **Native Blur Effects**: Hardware-accelerated `UIVisualEffectView` for performant rendering
+  - **Precise Control**: Adjustable blur intensity with smooth animations
+- **Android**: 
+  - Real blur effects are hardware-accelerated with QmBlurView
+  - Fallback to lightweight overlay when needed on limited devices
+
+### LiquidGlassView
+- **iOS 26+**:
+  - **Hardware-Accelerated Glass**: Native `UIGlassEffect` API with minimal performance impact
+  - **Interactive Effects**: Smooth touch interactions without performance degradation
+  - **SwiftUI Powered**: Optimized declarative UI updates
+- **iOS < 26 & Android**: 
+  - Automatic fallback to `BlurView` with enhanced blur effects
+  - Same performance characteristics as `BlurView`
+
+### General Tips
 - Avoid using too many blur/glass views simultaneously on lower-end devices
 - Consider using `reducedTransparencyFallbackColor` for better accessibility
-- Liquid glass effects automatically fall back to enhanced blur on Android and older iOS versions
+- `LiquidGlassView` automatically falls back to `BlurView` on unsupported platforms
+- Both components are optimized for React Native's new architecture (Fabric)
 
-## What's New in v0.3.0
+## What's New in v4.0.0
+
+> **⚠️ Breaking Changes**: v4.0.0 introduces a major API redesign. See [Breaking Changes](#️-breaking-changes-in-v400) section above for migration guide.
+
+### 🎯 Component Separation (BREAKING CHANGE)
+- **Two Specialized Components**: Split single `BlurView` into dedicated `BlurView` and `LiquidGlassView` components
+- **Removed `type` prop**: No more switching between blur/liquidGlass modes - use the appropriate component instead
+- **Cleaner APIs**: Each component has focused props without mixing blur and glass properties
+- **Better Architecture**: True separation of concerns following React best practices
+- **Improved Type Safety**: Separate TypeScript definitions prevent incompatible prop combinations
 
 ### 🌊 Liquid Glass Effects (iOS 26+)
 - Revolutionary glass effects using Apple's new UIGlassEffect API
+- Dedicated `LiquidGlassView` component for glass-specific effects
 - Customizable glass types: `clear` and `regular`
 - Adjustable tint colors and opacity for stunning visual effects
 - Automatic fallback to enhanced blur on older iOS versions and Android
@@ -587,16 +570,17 @@ yarn android
 - Improved blur intensity control with precise animation handling
 
 ### 📱 Enhanced Example App
-- New liquid glass demonstration section
+- Separate demonstrations for BlurView and LiquidGlassView
 - Interactive property controls for real-time customization
 - Practical use case examples (cards, modals, overlays)
-- Comparison views for different effect types
+- Comparison views showing both components side by side
 
 ### 🛠️ Developer Experience
-- Full TypeScript support for all new properties
+- Full TypeScript support with separate prop types for each component (`BlurViewProps`, `LiquidGlassViewProps`)
+- Cleaner, more intuitive API design
 - Improved component layout handling
 - Better accessibility support with smart fallbacks
-- Enhanced documentation and examples
+- Enhanced documentation with breaking changes guide
 
 ## Contributing
 
