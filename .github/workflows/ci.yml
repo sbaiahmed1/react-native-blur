@@ -154,6 +154,10 @@ jobs:
           # Clear any cached gems that might have wrong architecture
           # Clean Gemfile.lock to force fresh dependency resolution
           rm -f Gemfile.lock
+          # Clear rbenv gem cache to prevent json gem compatibility issues
+          rm -rf ~/.rbenv/versions/*/lib/ruby/gems/*/cache/json-2.16.0.gem
+          rm -rf ~/.rbenv/versions/*/lib/ruby/gems/*/gems/json-2.16.0
+          rm -rf ~/.rbenv/versions/*/lib/ruby/gems/*/extensions/*/json-2.16.0
 
       - name: Setup
         uses: ./.github/actions/setup
