@@ -246,7 +246,14 @@ using namespace facebook::react;
   // Copy corner radius from the Fabric view to the inner glass view (Callstack pattern)
   _liquidGlassView.layer.cornerRadius = self.layer.cornerRadius;
   _liquidGlassView.layer.cornerCurve = self.layer.cornerCurve;
-  _liquidGlassView.layer.masksToBounds = YES;
+  
+  // On iOS 26+, don't clip bounds to allow interactive glass animations to be visible
+  // The glass effect view handles its own clipping via cornerConfiguration
+  if (@available(iOS 26.0, *)) {
+    _liquidGlassView.layer.masksToBounds = NO;
+  } else {
+    _liquidGlassView.layer.masksToBounds = YES;
+  }
 }
 
 - (void)updateLayoutMetrics:(const LayoutMetrics &)layoutMetrics oldLayoutMetrics:(const LayoutMetrics &)oldLayoutMetrics
