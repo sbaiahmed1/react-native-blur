@@ -115,58 +115,24 @@ jobs:
         run: |
           yarn turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}"
 
-  build-ios:
-    runs-on: self-hosted
+    build-ios:
+    runs-on: macos-latest
+
     env:
+      XCODE_VERSION: 26
       TURBO_CACHE_DIR: .turbo/ios
+      RCT_USE_RN_DEP: 1
+      RCT_USE_PREBUILT_RNCORE: 1
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Ruby environment for runner
-        run: |
-          # Reset Ruby environment to prevent architecture conflicts
-          if command -v rbenv &> /dev/null; then
-            rbenv rehash
-          fi
-          # Ensure we're using the system Ruby or correct architecture
-          ruby --version
-          gem --version
-          # Clear bundler config that might cause issues
-          bundle config --delete build.json || true
-          bundle config --delete force_ruby_platform || true
-          # Set bundler to use system gems path
-          bundle config --local path vendor/bundle
-          # Remove problematic json gem versions that don't compile with Ruby 3.2.2
-          gem uninstall json -v 2.16.0 --force --ignore-dependencies || true
-          gem uninstall json -a -x --force || true
-          
-      - name: Clean iOS build artifacts and Ruby gems
-        run: |
-          cd example
-          # Clean Ruby vendor bundle to prevent architecture conflicts
-          rm -rf vendor/bundle
-          rm -rf .bundle
-          # Clean iOS build artifacts
-          rm -rf ios/build
-          rm -rf ios/Pods
-          rm -rf ios/Podfile.lock
-          # Clean Xcode derived data
-          rm -rf ~/Library/Developer/Xcode/DerivedData
-          # Force reinstall gems with correct architecture for runner
-          # Clear any cached gems that might have wrong architecture
-          # Clean Gemfile.lock to force fresh dependency resolution
-          rm -f Gemfile.lock
-          # Clear rbenv gem cache to prevent json gem compatibility issues
-          rm -rf ~/.rbenv/versions/*/lib/ruby/gems/*/cache/json-2.16.0.gem
-          rm -rf ~/.rbenv/versions/*/lib/ruby/gems/*/gems/json-2.16.0
-          rm -rf ~/.rbenv/versions/*/lib/ruby/gems/*/extensions/*/json-2.16.0
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup
         uses: ./.github/actions/setup
 
       - name: Cache turborepo for iOS
-        uses: actions/cache@v4
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ${{ env.TURBO_CACHE_DIR }}
           key: ${{ runner.os }}-turborepo-ios-${{ hashFiles('yarn.lock') }}
@@ -181,36 +147,19 @@ jobs:
             echo "turbo_cache_hit=1" >> $GITHUB_ENV
           fi
 
-      - name: Restore cocoapods
+      - name: Use appropriate Xcode version
         if: env.turbo_cache_hit != 1
-        id: cocoapods-cache
-        uses: actions/cache/restore@v4
+        uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
         with:
-          path: |
-            **/ios/Pods
-          key: ${{ runner.os }}-cocoapods-${{ hashFiles('example/ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cocoapods-
+          xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Install cocoapods
         if: env.turbo_cache_hit != 1 && steps.cocoapods-cache.outputs.cache-hit != 'true'
         run: |
           cd example
-          # Update bundler to latest version
-          gem install bundler
-          # Pre-install compatible json gem to avoid version 2.16.0
-          gem install json -v 2.7.2
-          # Now install dependencies
           bundle install
+          bundle exec pod repo update --verbose
           bundle exec pod install --project-directory=ios
-
-      - name: Cache cocoapods
-        if: env.turbo_cache_hit != 1 && steps.cocoapods-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            **/ios/Pods
-          key: ${{ steps.cocoapods-cache.outputs.cache-key }}
 
       - name: Build example for iOS
         run: |
