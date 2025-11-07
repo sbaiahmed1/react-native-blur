@@ -137,6 +137,9 @@ jobs:
           bundle config --delete force_ruby_platform || true
           # Set bundler to use system gems path
           bundle config --local path vendor/bundle
+          # Remove problematic json gem versions that don't compile with Ruby 3.2.2
+          gem uninstall json -v 2.16.0 --force --ignore-dependencies || true
+          gem uninstall json -a -x --force || true
           
       - name: Clean iOS build artifacts and Ruby gems
         run: |
@@ -193,6 +196,11 @@ jobs:
         if: env.turbo_cache_hit != 1 && steps.cocoapods-cache.outputs.cache-hit != 'true'
         run: |
           cd example
+          # Update bundler to latest version
+          gem install bundler
+          # Pre-install compatible json gem to avoid version 2.16.0
+          gem install json -v 2.7.2
+          # Now install dependencies
           bundle install
           bundle exec pod install --project-directory=ios
 
