@@ -115,7 +115,7 @@ jobs:
         run: |
           yarn turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}"
 
-    build-ios:
+  build-ios:
     runs-on: macos-latest
 
     env:
