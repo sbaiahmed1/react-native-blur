@@ -12,7 +12,7 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <Tab.Navigator
-        tabBar={(props) => <BlurTabBar {...props} />}
+        tabBar={props => <BlurTabBar {...props} />}
         screenOptions={{
           headerShown: false,
         }}

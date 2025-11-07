@@ -23,12 +23,12 @@ const ComparisonExamples = () => {
   ];
 
   const nextCard = () => {
-    setCurrentCardIndex((prev) => (prev + 1) % blurCards.length);
+    setCurrentCardIndex(prev => (prev + 1) % blurCards.length);
   };
 
   const prevCard = () => {
     setCurrentCardIndex(
-      (prev) => (prev - 1 + blurCards.length) % blurCards.length
+      prev => (prev - 1 + blurCards.length) % blurCards.length
     );
   };
 
@@ -75,7 +75,7 @@ const ComparisonExamples = () => {
       <View style={styles.intensitySlider}>
         <Text style={styles.controlLabel}>Blur Intensity</Text>
         <View style={styles.sliderTrack}>
-          {[10, 20, 40, 60, 80, 100].map((intensity) => (
+          {[10, 20, 40, 60, 80, 100].map(intensity => (
             <TouchableOpacity
               key={intensity}
               onPress={() => setSelectedIntensity(intensity)}

@@ -28,7 +28,7 @@ export default function ExamplesScreen() {
         <Text style={styles.header}>Blur Examples</Text>
 
         <View style={styles.grid}>
-          {BLUR_TYPES.map((blur) => (
+          {BLUR_TYPES.map(blur => (
             <BlurView
               key={blur.type}
               blurType={blur.type as any}
@@ -45,7 +45,7 @@ export default function ExamplesScreen() {
 
         <Text style={styles.sectionTitle}>Blur Intensity</Text>
 
-        {[20, 40, 60, 80, 100].map((amount) => (
+        {[20, 40, 60, 80, 100].map(amount => (
           <BlurView
             key={amount}
             blurType="light"

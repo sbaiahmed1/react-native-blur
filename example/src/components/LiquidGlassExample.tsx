@@ -71,7 +71,7 @@ const LiquidGlassExample = ({
         </LiquidGlassView>
 
         <View style={styles.glassTypeSelector}>
-          {['clear', 'regular'].map((glassType) => (
+          {['clear', 'regular'].map(glassType => (
             <TouchableOpacity
               key={glassType}
               onPress={() =>
@@ -110,7 +110,7 @@ const LiquidGlassExample = ({
         </LiquidGlassView>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {glassColors.map((colorItem) => (
+          {glassColors.map(colorItem => (
             <TouchableOpacity
               key={colorItem.name}
               onPress={() => setGlassTintColor(colorItem.color)}
@@ -145,7 +145,7 @@ const LiquidGlassExample = ({
         </LiquidGlassView>
 
         <View style={styles.opacitySlider}>
-          {[0.2, 0.4, 0.6, 0.8, 1.0].map((opacity) => (
+          {[0.2, 0.4, 0.6, 0.8, 1.0].map(opacity => (
             <TouchableOpacity
               key={opacity}
               onPress={() => setGlassOpacity(opacity)}

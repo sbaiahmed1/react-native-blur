@@ -7,7 +7,7 @@ export default function LiquidGlassScreen() {
   const [currentImageIndex, setCurrentImageIndex] = useState(2);
 
   const cycleBackground = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % DEMO_IMAGES.length);
+    setCurrentImageIndex(prev => (prev + 1) % DEMO_IMAGES.length);
   };
 
   return (

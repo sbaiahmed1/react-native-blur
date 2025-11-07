@@ -41,7 +41,7 @@ const MainExample = ({ cycleBackground }: { cycleBackground: () => void }) => {
         </BlurView>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {BLUR_TYPES.map((type) => (
+          {BLUR_TYPES.map(type => (
             <TouchableOpacity
               key={type}
               onPress={() => setSelectedBlurType(type)}
@@ -69,7 +69,7 @@ const MainExample = ({ cycleBackground }: { cycleBackground: () => void }) => {
         </BlurView>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {[5, 10, 20, 30, 50, 75, 100].map((amount) => (
+          {[5, 10, 20, 30, 50, 75, 100].map(amount => (
             <TouchableOpacity
               key={amount}
               onPress={() => setBlurAmount(amount)}

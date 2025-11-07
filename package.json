@@ -32,7 +32,6 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace @sbaiahmed1/react-native-blur-example",
     "test": "jest",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
