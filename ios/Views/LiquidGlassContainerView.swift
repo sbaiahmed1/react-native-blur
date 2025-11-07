@@ -64,6 +64,10 @@ import UIKit
     let effectView = UIVisualEffectView()
     effectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     effectView.frame = bounds
+    
+    // Don't clip bounds to allow interactive glass animations to be visible
+    effectView.clipsToBounds = false
+    
     addSubview(effectView)
     self.glassEffectView = effectView
     
@@ -74,30 +78,6 @@ import UIKit
   
   @objc public func setBorderRadius(_ radius: CGFloat) {
     allBorderRadius = radius
-    topLeftRadius = radius
-    topRightRadius = radius
-    bottomLeftRadius = radius
-    bottomRightRadius = radius
-    updateBorderRadius()
-  }
-  
-  @objc public func setBorderTopLeftRadius(_ radius: CGFloat) {
-    topLeftRadius = radius
-    updateBorderRadius()
-  }
-  
-  @objc public func setBorderTopRightRadius(_ radius: CGFloat) {
-    topRightRadius = radius
-    updateBorderRadius()
-  }
-  
-  @objc public func setBorderBottomLeftRadius(_ radius: CGFloat) {
-    bottomLeftRadius = radius
-    updateBorderRadius()
-  }
-  
-  @objc public func setBorderBottomRightRadius(_ radius: CGFloat) {
-    bottomRightRadius = radius
     updateBorderRadius()
   }
 
@@ -129,17 +109,16 @@ import UIKit
     } else {
       backgroundColor = reducedTransparencyFallbackColor
       layer.cornerRadius = allBorderRadius
-      layer.masksToBounds = true
     }
   }
 
   private func updateBorderRadius() {
     if #available(iOS 26.0, *) {
       #if compiler(>=6.2)
-      let topLeft = UICornerRadius(floatLiteral: Double(topLeftRadius))
-      let topRight = UICornerRadius(floatLiteral: Double(topRightRadius))
-      let bottomLeft = UICornerRadius(floatLiteral: Double(bottomLeftRadius))
-      let bottomRight = UICornerRadius(floatLiteral: Double(bottomRightRadius))
+      let topLeft = UICornerRadius(floatLiteral: Double(allBorderRadius))
+      let topRight = UICornerRadius(floatLiteral: Double(allBorderRadius))
+      let bottomLeft = UICornerRadius(floatLiteral: Double(allBorderRadius))
+      let bottomRight = UICornerRadius(floatLiteral: Double(allBorderRadius))
       
       glassEffectView?.cornerConfiguration = .corners(
         topLeftRadius: topLeft,
@@ -153,7 +132,6 @@ import UIKit
       #endif
     } else {
       layer.cornerRadius = allBorderRadius
-      layer.masksToBounds = true
     }
   }
 
