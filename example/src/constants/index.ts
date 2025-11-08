@@ -15,6 +15,16 @@ export const BLUR_TYPES: BlurType[] = [
   'systemMaterial',
   'systemThickMaterial',
   'systemChromeMaterial',
+  'systemUltraThinMaterialLight',
+  'systemThinMaterialLight',
+  'systemMaterialLight',
+  'systemThickMaterialLight',
+  'systemChromeMaterialLight',
+  'systemUltraThinMaterialDark',
+  'systemThinMaterialDark',
+  'systemMaterialDark',
+  'systemThickMaterialDark',
+  'systemChromeMaterialDark',
 ];
 
 export const DEMO_IMAGES = [
