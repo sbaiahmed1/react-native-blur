@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   tab: {
-    width: '20%',
+    width: '15%',
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 4,
