@@ -30,6 +30,26 @@ func blurStyleFromString(_ styleString: String) -> UIBlurEffect.Style {
     return .systemThickMaterial
   case "systemChromeMaterial":
     return .systemChromeMaterial
+  case "systemUltraThinMaterialLight":
+    return .systemUltraThinMaterialLight
+  case "systemThinMaterialLight":
+    return .systemThinMaterialLight
+  case "systemMaterialLight":
+    return .systemMaterialLight
+  case "systemThickMaterialLight":
+    return .systemThickMaterialLight
+  case "systemChromeMaterialLight":
+    return .systemChromeMaterialLight
+  case "systemUltraThinMaterialDark":
+    return .systemUltraThinMaterialDark
+  case "systemThinMaterialDark":
+    return .systemThinMaterialDark
+  case "systemMaterialDark":
+    return .systemMaterialDark
+  case "systemThickMaterialDark":
+    return .systemThickMaterialDark
+  case "systemChromeMaterialDark":
+    return .systemChromeMaterialDark
   default:
     return .extraLight
   }
