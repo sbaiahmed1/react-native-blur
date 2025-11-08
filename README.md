@@ -409,6 +409,16 @@ The following blur types are supported for `BlurView`:
 - `'systemMaterial'` - Material (iOS 13+)
 - `'systemThickMaterial'` - Thick material (iOS 13+)
 - `'systemChromeMaterial'` - Chrome material (iOS 13+)
+- `'systemUltraThinMaterialLight'` - Ultra thin light material (iOS 13+)
+- `'systemThinMaterialLight'` - Thin light material (iOS 13+)
+- `'systemMaterialLight'` - Light material (iOS 13+)
+- `'systemThickMaterialLight'` - Thick light material (iOS 13+)
+- `'systemChromeMaterialLight'` - Chrome light material (iOS 13+)
+- `'systemUltraThinMaterialDark'` - Ultra thin dark material (iOS 13+)
+- `'systemThinMaterialDark'` - Thin dark material (iOS 13+)
+- `'systemMaterialDark'` - Dark material (iOS 13+)
+- `'systemThickMaterialDark'` - Thick dark material (iOS 13+)
+- `'systemChromeMaterialDark'` - Chrome dark material (iOS 13+)
 
 ## Glass Types (LiquidGlassView)
 
