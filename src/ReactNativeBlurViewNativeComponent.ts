@@ -16,7 +16,17 @@ export type BlurType =
   | 'systemThinMaterial'
   | 'systemMaterial'
   | 'systemThickMaterial'
-  | 'systemChromeMaterial';
+  | 'systemChromeMaterial'
+  | 'systemUltraThinMaterialLight'
+  | 'systemThinMaterialLight'
+  | 'systemMaterialLight'
+  | 'systemThickMaterialLight'
+  | 'systemChromeMaterialLight'
+  | 'systemUltraThinMaterialDark'
+  | 'systemThinMaterialDark'
+  | 'systemMaterialDark'
+  | 'systemThickMaterialDark'
+  | 'systemChromeMaterialDark';
 
 interface NativeProps extends ViewProps {
   blurAmount?: WithDefault<Double, 10.0>;
