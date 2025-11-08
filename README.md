@@ -131,8 +131,9 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
 ## Features
 
-- � **Two Specialized Components**: 
+- � **Three Specialized Components**:
   - `BlurView` - Dedicated blur effects component with multiple blur types
+  - `ProgressiveBlurView` - Variable/gradient blur transitions (iOS only)
   - `LiquidGlassView` - Separate component for iOS 26+ liquid glass effects
 - �🌊 **Liquid Glass Effects**: Revolutionary glass effects using iOS 26+ UIGlassEffect API
 - 🎨 **Multiple Blur Types**: Support for various blur styles including system materials on iOS
@@ -247,7 +248,7 @@ The implementation automatically handles different Android versions:
 
 ## Usage
 
-The library now provides **two specialized components** for different visual effects:
+The library now provides **three specialized components** for different visual effects:
 
 ### BlurView - Standard Blur Effects
 
@@ -303,6 +304,57 @@ function MyComponent() {
     </BlurView>
   );
 }
+```
+
+### ProgressiveBlurView - Variable/Gradient Blur (iOS Only)
+
+Use `ProgressiveBlurView` for smooth, gradient blur transitions. **Note:** This component is **iOS only** - it gracefully falls back to a regular view on Android.
+
+```tsx
+import React from 'react';
+import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
+
+function GradientBlurComponent() {
+  return (
+    <ProgressiveBlurView
+      blurType="light"
+      blurAmount={30}
+      direction="blurredTopClearBottom"
+      startOffset={0}
+      style={{ height: 200 }}
+    >
+      <Text>Progressive blur from top (blurred) to bottom (clear)</Text>
+    </ProgressiveBlurView>
+  );
+}
+```
+
+#### Locked Content Example
+
+Perfect for paywall/premium content:
+
+```tsx
+<View style={{ position: 'relative' }}>
+  <Text>Long content here...</Text>
+
+  {/* Progressive blur overlay */}
+  <ProgressiveBlurView
+    blurType="light"
+    blurAmount={20}
+    direction="blurredBottomClearTop"
+    startOffset={0.2}
+    style={{
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: 200,
+    }}
+  >
+    <Text>🔒 Unlock to Read More</Text>
+    <Button title="Purchase" />
+  </ProgressiveBlurView>
+</View>
 ```
 
 ### LiquidGlassView - Liquid Glass Effects (iOS 26+)
@@ -371,6 +423,22 @@ All props are optional and have sensible defaults.
 | `reducedTransparencyFallbackColor` | `string` | `'#FFFFFF'` | Fallback color when reduced transparency is enabled |
 | `style` | `ViewStyle` | `undefined` | Style object for the blur view |
 | `children` | `ReactNode` | `undefined` | Child components to render inside the blur view |
+
+### ProgressiveBlurView Props
+
+All props are optional and have sensible defaults.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `blurType` | `BlurType` | `'regular'` | The type of blur effect to apply |
+| `blurAmount` | `number` | `20.0` | Maximum blur radius in pixels |
+| `direction` | `'blurredTopClearBottom' \| 'blurredBottomClearTop'` | `'blurredTopClearBottom'` | Direction of the blur gradient |
+| `startOffset` | `number` | `0.0` | Where the gradient starts (0.0 to 1.0) |
+| `reducedTransparencyFallbackColor` | `string` | `'#FFFFFF'` | Fallback color when reduced transparency is enabled |
+| `style` | `ViewStyle` | `undefined` | Style object for the blur view |
+| `children` | `ReactNode` | `undefined` | Child components to render inside the blur view |
+
+> **Platform Note**: `ProgressiveBlurView` is **iOS only**. On Android, it renders as a regular `View` without blur effect.
 
 ### LiquidGlassView Props
 
@@ -618,6 +686,11 @@ MIT
 
 ## Credits
 
-QMBlur library: https://github.com/QmDeve/QmBlurView
+**Progressive Blur Implementation:**
+- VariableBlur by [@nikstar](https://github.com/nikstar): https://github.com/nikstar/VariableBlur
+- Original concept by [@jtrivedi](https://github.com/jtrivedi): https://github.com/jtrivedi/VariableBlurView
+
+**Android Blur:**
+- QMBlur library: https://github.com/QmDeve/QmBlurView
 
 Built with [create-react-native-library](https://github.com/callstack/react-native-builder-bob)
