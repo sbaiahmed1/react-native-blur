@@ -178,10 +178,10 @@ export default function ProgressiveBlurScreen() {
 
           {/* Progressive blur overlay from bottom */}
           <ProgressiveBlurView
-            blurType="light"
-            blurAmount={20}
+            blurType="xlight"
+            blurAmount={5}
             direction="blurredBottomClearTop"
-            startOffset={0.2}
+            startOffset={0}
             style={styles.lockedOverlay}
           >
             <View style={styles.unlockPrompt}>
