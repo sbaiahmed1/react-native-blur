@@ -15,7 +15,6 @@ const BLUR_TYPES = [
   { name: 'Extra Dark', type: 'extraDark' },
   { name: 'Regular', type: 'regular' },
   { name: 'Prominent', type: 'prominent' },
-  { name: 'Extra Dark', type: 'extraDark' },
   { name: 'System Material', type: 'systemMaterial' },
   { name: 'System Thick Material', type: 'systemThickMaterial' },
   { name: 'System Chrome Material', type: 'systemChromeMaterial' },

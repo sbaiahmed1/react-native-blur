@@ -43,7 +43,7 @@ enum class BlurType(val overlayColor: Int) {
         "prominent" -> PROMINENT
         "systemultrathinmaterial" -> SYSTEM_ULTRA_THIN_MATERIAL
         "systemultrathinmateriallight" -> SYSTEM_ULTRA_THIN_MATERIAL_LIGHT
-        "systemultrathinmaterialdark" -> SYSTEM_ULTRA_THIN_MATERIAL_D
+        "systemultrathinmaterialdark" -> SYSTEM_ULTRA_THIN_MATERIAL_DARK
         "systemthinmaterial" -> SYSTEM_THIN_MATERIAL
         "systemthinmateriallight" -> SYSTEM_THIN_MATERIAL_LIGHT
         "systemthinmaterialdark" -> SYSTEM_THIN_MATERIAL_DARK
@@ -56,7 +56,7 @@ enum class BlurType(val overlayColor: Int) {
         "systemchromematerial" -> SYSTEM_CHROME_MATERIAL
         "systemchromemateriallight" -> SYSTEM_CHROME_MATERIAL_LIGHT
         "systemchromematerialdark" -> SYSTEM_CHROME_MATERIAL_DARK
-        else -> LIGHT // default fallback
+        else -> XLIGHT // default fallback
       }
     }
   }

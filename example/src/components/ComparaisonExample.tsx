@@ -20,6 +20,16 @@ const ComparisonExamples = () => {
     { type: 'systemMaterial', emoji: '🎭' },
     { type: 'systemThickMaterial', emoji: '🌌' },
     { type: 'systemChromeMaterial', emoji: '🪞' },
+    { type: 'systemUltraThinMaterialLight', emoji: '❄️' },
+    { type: 'systemThinMaterialLight', emoji: '💡' },
+    { type: 'systemMaterialLight', emoji: '📄' },
+    { type: 'systemThickMaterialLight', emoji: '🌌' },
+    { type: 'systemChromeMaterialLight', emoji: '🪞' },
+    { type: 'systemUltraThinMaterialDark', emoji: '🌑' },
+    { type: 'systemThinMaterialDark', emoji: '🌒' },
+    { type: 'systemMaterialDark', emoji: '🌔' },
+    { type: 'systemThickMaterialDark', emoji: '🌓' },
+    { type: 'systemChromeMaterialDark', emoji: '🌕' },
   ];
 
   const nextCard = () => {

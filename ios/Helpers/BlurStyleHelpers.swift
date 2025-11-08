@@ -51,7 +51,7 @@ func blurStyleFromString(_ styleString: String) -> UIBlurEffect.Style {
   case "systemChromeMaterialDark":
     return .systemChromeMaterialDark
   default:
-    return .light
+    return .extraLight
   }
 }
 
