@@ -31,7 +31,7 @@ class ReactNativeBlurViewManager : SimpleViewManager<ReactNativeBlurView>(),
 
   @ReactProp(name = "blurType")
   override fun setBlurType(view: ReactNativeBlurView?, blurType: String?) {
-    view?.setBlurType(blurType ?: "light")
+    view?.setBlurType(blurType ?: "xlight")
   }
 
   @ReactProp(name = "blurAmount")
