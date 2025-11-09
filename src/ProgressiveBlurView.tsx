@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Platform } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { ViewStyle, StyleProp } from 'react-native';
 import ReactNativeProgressiveBlurView, {
   type BlurType,
@@ -65,14 +65,14 @@ export interface ProgressiveBlurViewProps {
 }
 
 /**
- * A progressive blur view component that provides variable/gradient blur effects (iOS only).
+ * A progressive blur view component that provides variable/gradient blur effects.
  *
  * This component applies a blur effect that gradually changes intensity across the view,
  * creating a smooth gradient from fully blurred to clear (or vice versa).
  *
  * **Platform Support:**
  * - iOS: Full support using private Core Animation filters
- * - Android: Not supported - renders children without blur effect
+ * - Android: Supported using QmBlurView's ProgressiveBlurView
  *
  * This component uses the same positioning pattern as BlurView where the blur
  * effect is positioned absolutely behind the content.
@@ -114,12 +114,6 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
   children,
   ...props
 }) => {
-  // Platform check - only render blur on iOS
-  if (Platform.OS !== 'ios') {
-    // On non-iOS platforms, just render children without blur
-    return <View style={style}>{children}</View>;
-  }
-
   // If no children, render the blur view directly (for background use)
   if (React.Children.count(children) === 0) {
     return (
@@ -148,7 +142,6 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
         style={StyleSheet.absoluteFill}
         {...props}
       />
-      {/* Content positioned relatively on top */}
       <View style={styles.children}>{children}</View>
     </View>
   );
