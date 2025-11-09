@@ -135,7 +135,7 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
 - � **Three Specialized Components**:
   - `BlurView` - Dedicated blur effects component with multiple blur types
-  - `ProgressiveBlurView` - Variable/gradient blur transitions (iOS only)
+  - `ProgressiveBlurView` - Variable/gradient blur transitions (iOS & Android)
   - `LiquidGlassView` - Separate component for iOS 26+ liquid glass effects
 - �🌊 **Liquid Glass Effects**: Revolutionary glass effects using iOS 26+ UIGlassEffect API
 - 🎨 **Multiple Blur Types**: Support for various blur styles including system materials on iOS
@@ -314,9 +314,9 @@ function MyComponent() {
 }
 ```
 
-### ProgressiveBlurView - Variable/Gradient Blur (iOS Only)
+### ProgressiveBlurView - Variable/Gradient Blur
 
-Use `ProgressiveBlurView` for smooth, gradient blur transitions. **Note:** This component is **iOS only** - it gracefully falls back to a regular view on Android.
+Use `ProgressiveBlurView` for smooth, gradient blur transitions. This component works on both **iOS** and **Android**.
 
 ```tsx
 import React from 'react';
@@ -446,7 +446,9 @@ All props are optional and have sensible defaults.
 | `style`                            | `ViewStyle`                                          | `undefined`               | Style object for the blur view                      |
 | `children`                         | `ReactNode`                                          | `undefined`               | Child components to render inside the blur view     |
 
-> **Platform Note**: `ProgressiveBlurView` is **iOS only**. On Android, it renders as a regular `View` without blur effect.
+> **Platform Note**: `ProgressiveBlurView` works on both **iOS** and **Android**.
+> - **iOS**: Uses private Core Animation filters for variable blur effects
+> - **Android**: Extends QMBlur's BlurView with custom gradient masking to create progressive blur effect
 
 ### LiquidGlassView Props
 
