@@ -9,12 +9,31 @@ import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { DEMO_IMAGES } from '../constants';
 
 const BLUR_TYPES = [
+  { name: 'X Light', type: 'xlight' },
   { name: 'Light', type: 'light' },
   { name: 'Dark', type: 'dark' },
   { name: 'Regular', type: 'regular' },
   { name: 'Prominent', type: 'prominent' },
   { name: 'Extra Dark', type: 'extraDark' },
   { name: 'System Material', type: 'systemMaterial' },
+  { name: 'System Thick Material', type: 'systemThickMaterial' },
+  { name: 'System Chrome Material', type: 'systemChromeMaterial' },
+  {
+    name: 'System Ultra Thin Material Light',
+    type: 'systemUltraThinMaterialLight',
+  },
+  { name: 'System Thin Material Light', type: 'systemThinMaterialLight' },
+  { name: 'System Material Light', type: 'systemMaterialLight' },
+  { name: 'System Thick Material Light', type: 'systemThickMaterialLight' },
+  { name: 'System Chrome Material Light', type: 'systemChromeMaterialLight' },
+  {
+    name: 'System Ultra Thin Material Dark',
+    type: 'systemUltraThinMaterialDark',
+  },
+  { name: 'System Thin Material Dark', type: 'systemThinMaterialDark' },
+  { name: 'System Material Dark', type: 'systemMaterialDark' },
+  { name: 'System Thick Material Dark', type: 'systemThickMaterialDark' },
+  { name: 'System Chrome Material Dark', type: 'systemChromeMaterialDark' },
 ];
 
 export default function ExamplesScreen() {

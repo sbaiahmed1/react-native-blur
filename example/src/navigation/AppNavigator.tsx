@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import ExamplesScreen from '../screens/ExamplesScreen';
 import LiquidGlassScreen from '../screens/LiquidGlassScreen';
+import ProgressiveBlurScreen from '../screens/ProgressiveBlurScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import BlurTabBar from './BlurTabBar';
 
@@ -36,6 +37,13 @@ export default function AppNavigator() {
           component={LiquidGlassScreen}
           options={{
             tabBarLabel: '🌊 Liquid',
+          }}
+        />
+        <Tab.Screen
+          name="Progressive"
+          component={ProgressiveBlurScreen}
+          options={{
+            tabBarLabel: '🎨 Progressive',
           }}
         />
         <Tab.Screen

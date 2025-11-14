@@ -70,9 +70,6 @@ android/keystores/debug.keystore
 !.yarn/sdks
 !.yarn/versions
 
-# Expo
-.expo/
-
 # Turborepo
 .turbo/
 
@@ -105,7 +102,6 @@ nitrogen/
 *.sublime-workspace
 
 # OS generated files
-.DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
@@ -134,7 +130,6 @@ coverage/
 .npm
 
 # Optional eslint cache
-.eslintcache
 
 # Microbundle cache
 .rpt2_cache/
@@ -172,7 +167,6 @@ temp/
 
 
 # IDEs
-.vscode/
-.idea/
 .cursor/
 .trae/
+.claude
