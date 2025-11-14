@@ -1,31 +1,42 @@
 package com.sbaiahmed1.reactnativeblur
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Shader
 import android.util.AttributeSet
 import android.util.Log
-import com.qmdeve.blurview.widget.ProgressiveBlurView
+import android.widget.FrameLayout
+import com.qmdeve.blurview.widget.BlurView
 import androidx.core.graphics.toColorInt
 
 /**
  * Android implementation of React Native ProgressiveBlurView component.
- * Provides progressive/gradient blur effects using the QmBlurView library's ProgressiveBlurView.
- *
- * ProgressiveBlurView creates a gradient blur effect that transitions from blurred to clear,
- * similar to iOS's variable blur using Core Animation filters.
+ * Uses a combination of normal blur (BlurView) + linear gradient mask to create
+ * a progressive blur effect that transitions from blurred to clear.
+ * 
+ * This approach is more reliable than using the library's ProgressiveBlurView,
+ * which has limited control over gradient direction and appearance.
  */
-class ReactNativeProgressiveBlurView : ProgressiveBlurView {
+class ReactNativeProgressiveBlurView : FrameLayout {
+  private var blurView: BlurView? = null
+  private val gradientPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+  
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
   private var currentOverlayColor = Color.TRANSPARENT
   private var currentDirection = "topToBottom"
+  private var currentStartOffset = 0.0f
   private var hasExplicitBackground: Boolean = false
 
   companion object {
     private const val TAG = "ReactNativeProgressiveBlur"
-    // QmBlurView's practical maximum blur radius is 25
     private const val MAX_BLUR_RADIUS = 25f
     private const val DEFAULT_BLUR_RADIUS = 10f
-    private const val DEBUG = true // Set to true for debug builds
+    private const val DEBUG = true
 
     // Cross-platform blur amount constants
     private const val MIN_BLUR_AMOUNT = 0f
@@ -47,9 +58,6 @@ class ReactNativeProgressiveBlurView : ProgressiveBlurView {
 
     /**
      * Maps blur amount (0-100) to Android blur radius (0-25).
-     * This ensures cross-platform consistency while respecting Android's limitations.
-     * @param amount The blur amount from 0-100
-     * @return The corresponding blur radius from 0-25
      */
     private fun mapBlurAmountToRadius(amount: Float): Float {
       if (amount.isNaN() || amount.isInfinite()) {
@@ -57,145 +65,137 @@ class ReactNativeProgressiveBlurView : ProgressiveBlurView {
         return DEFAULT_BLUR_RADIUS
       }
       val clampedAmount = amount.coerceIn(MIN_BLUR_AMOUNT, MAX_BLUR_AMOUNT)
-      return (clampedAmount / MAX_BLUR_AMOUNT) * MAX_BLUR_RADIUS
+      return (clampedAmount / MAX_BLUR_RADIUS) * MAX_BLUR_RADIUS
     }
   }
 
-  constructor(context: Context?) : super(context, null) {
+  constructor(context: Context) : super(context) {
     initializeProgressiveBlur()
   }
 
-  constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
+  constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
     initializeProgressiveBlur()
   }
 
   /**
-   * Initialize the progressive blur view with default settings.
-   * Uses reflection to work around QmBlurView library limitations.
+   * Initialize the progressive blur view with blur + gradient approach.
    */
   private fun initializeProgressiveBlur() {
     try {
-      // CRITICAL FINDINGS from decompiled source:
-      // 1. setOverlayColor() is a NO-OP (empty method) - must use reflection!
-      // 2. setGradientDirection() only accepts values 1-2, rejects 0 and 3
-      // 3. Direction constants: BOTTOM_TO_TOP=0, TOP_TO_BOTTOM=1, RIGHT_TO_LEFT=2, LEFT_TO_RIGHT=3
-      //
-      // We MUST use reflection to set mOverlayColor and mGradientDirection
+      // Create and add the blur view as a child
+      blurView = BlurView(context, null).apply {
+        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+        setBlurRadius(currentBlurRadius)
+        setOverlayColor(currentOverlayColor)
+        setBackgroundColor(Color.TRANSPARENT)
+      }
+      addView(blurView)
 
-      val initialRadius = DEFAULT_BLUR_RADIUS
-      // Use BOTTOM_TO_TOP (0) to get blur at top (QmBlurView behavior is inverted)
-      val initialDirection = 0 // BOTTOM_TO_TOP constant -> produces blur at top (blurredTopClearBottom)
-      val initialOverlay = BlurType.REGULAR.overlayColor
+      // Set up the gradient paint
+      gradientPaint.style = Paint.Style.FILL
+      setWillNotDraw(false) // Enable onDraw for gradient overlay
+      
+      // Set transparent background for the container
+      super.setBackgroundColor(Color.TRANSPARENT)
 
-      // setBlurRadius works correctly
-      super.setBlurRadius(initialRadius)
-
-      // MUST use reflection for these since public setters are broken:
-      setFieldViaReflection("mGradientDirection", initialDirection)
-      setFieldViaReflection("mOverlayColor", initialOverlay)
-      setFieldViaReflection("mBlurRadius", initialRadius) // Double-check
-
-      // Store current values
-      currentBlurRadius = initialRadius
-      currentOverlayColor = initialOverlay
-      currentDirection = "topToBottom"
-
-      logDebug("Initialized: radius=$initialRadius, direction=$initialDirection, overlay=${Integer.toHexString(initialOverlay)}")
-
-      // Trigger initial draw
-      invalidate()
+      logDebug("Initialized progressive blur with blur + gradient approach")
+      updateGradient()
 
     } catch (e: Exception) {
       logError("Failed to initialize progressive blur view: ${e.message}", e)
-      // View will still be created but may not render correctly
+    }
+  }
+
+  override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    super.onSizeChanged(w, h, oldw, oldh)
+    if (w > 0 && h > 0) {
+      updateGradient()
     }
   }
 
   /**
-   * Set a private field via reflection.
-   * REQUIRED because ProgressiveBlurView's setOverlayColor() is a NO-OP
-   * and setGradientDirection() rejects valid direction values!
-   * 
-   * @param fieldName The name of the private field to set
-   * @param value The value to assign to the field
+   * Update the gradient shader based on current direction and startOffset.
    */
-  @Synchronized
-  private fun setFieldViaReflection(fieldName: String, value: Any) {
+  private fun updateGradient() {
+    if (width <= 0 || height <= 0) {
+      return
+    }
+
     try {
-      val field = this.javaClass.superclass?.getDeclaredField(fieldName)
-      if (field == null) {
-        logError("Field $fieldName not found in superclass")
-        return
+      val (x0, y0, x1, y1) = when (currentDirection) {
+        "bottomToTop" -> {
+          // Blur at bottom, clear at top
+          val offsetPixels = height * currentStartOffset
+          floatArrayOf(0f, height.toFloat(), 0f, offsetPixels)
+        }
+        "topToBottom" -> {
+          // Blur at top, clear at bottom (default)
+          val offsetPixels = height * currentStartOffset
+          floatArrayOf(0f, offsetPixels, 0f, height.toFloat())
+        }
+        "leftToRight" -> {
+          val offsetPixels = width * currentStartOffset
+          floatArrayOf(offsetPixels, 0f, width.toFloat(), 0f)
+        }
+        "rightToLeft" -> {
+          val offsetPixels = width * currentStartOffset
+          floatArrayOf(width.toFloat(), 0f, offsetPixels, 0f)
+        }
+        else -> floatArrayOf(0f, 0f, 0f, height.toFloat())
       }
-      field.isAccessible = true
-      field.set(this, value)
-      logDebug("✓ Set $fieldName = $value via reflection")
-    } catch (e: NoSuchFieldException) {
-      logError("✗ Field $fieldName does not exist: ${e.message}", e)
-    } catch (e: IllegalAccessException) {
-      logError("✗ Cannot access field $fieldName: ${e.message}", e)
+
+      // Create gradient: fully transparent -> fully opaque
+      // This masks the blur: opaque = blur visible, transparent = blur hidden (clear)
+      val gradient = LinearGradient(
+        x0, y0, x1, y1,
+        intArrayOf(Color.TRANSPARENT, Color.WHITE),
+        floatArrayOf(0f, 1f),
+        Shader.TileMode.CLAMP
+      )
+      
+      gradientPaint.shader = gradient
+      
+      logDebug("Updated gradient: direction=$currentDirection, start=($x0,$y0), end=($x1,$y1), offset=$currentStartOffset")
+      invalidate()
+      
     } catch (e: Exception) {
-      logError("✗ Could not set $fieldName via reflection: ${e.message}", e)
+      logError("Failed to update gradient: ${e.message}", e)
     }
   }
 
-  override fun onAttachedToWindow() {
-    super.onAttachedToWindow()
-    // Re-apply settings when attached
-    post {
-      try {
-        super.setBlurRadius(currentBlurRadius)
-        setFieldViaReflection("mBlurRadius", currentBlurRadius)
-        setFieldViaReflection("mGradientDirection", mapDirectionToConstant(currentDirection))
-        setFieldViaReflection("mOverlayColor", currentOverlayColor)
-        invalidate()
-        logDebug("Reapplied settings after attach")
-      } catch (e: Exception) {
-        logError("Failed to reapply settings: ${e.message}", e)
-      }
+  override fun dispatchDraw(canvas: Canvas) {
+    if (width <= 0 || height <= 0) {
+      super.dispatchDraw(canvas)
+      return
     }
-  }
 
-  override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-    super.onLayout(changed, left, top, right, bottom)
-    logDebug("onLayout: changed=$changed, dimensions=${right-left}x${bottom-top}")
-
-    if (changed && width > 0 && height > 0) {
-      // View has dimensions now, force redraw
-      post {
-        invalidate()
-        logDebug("Invalidated after layout")
-      }
-    }
-  }
-
-  override fun onDraw(canvas: android.graphics.Canvas) {
-    logDebug("onDraw called! canvas=$canvas, width=$width, height=$height")
-    super.onDraw(canvas)
-    logDebug("onDraw completed")
-  }
-
-  override fun draw(canvas: android.graphics.Canvas) {
-    logDebug("draw called! canvas=$canvas")
-    super.draw(canvas)
+    // Use a layer to apply the gradient mask
+    val saveCount = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
+    
+    // Draw the blur view
+    super.dispatchDraw(canvas)
+    
+    // Apply gradient mask using DST_IN to make the blur gradually transparent
+    gradientPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+    canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), gradientPaint)
+    gradientPaint.xfermode = null
+    
+    canvas.restoreToCount(saveCount)
   }
 
   /**
    * Override setBackgroundColor to handle background preservation.
-   * @param color The background color to apply
    */
   override fun setBackgroundColor(color: Int) {
     logDebug("setBackgroundColor called: $color")
-
-    // Store flag if background is explicitly set
+    
     if (color != Color.TRANSPARENT) {
       hasExplicitBackground = true
       logDebug("Stored explicit background color: $color")
     }
 
-    // Apply background color over blur if explicitly set
     if (hasExplicitBackground && color != Color.TRANSPARENT) {
-      logDebug("Applying background color over blur: $color")
+      logDebug("Applying background color: $color")
       super.setBackgroundColor(color)
     } else {
       logDebug("Keeping transparent background for blur effect")
@@ -205,7 +205,6 @@ class ReactNativeProgressiveBlurView : ProgressiveBlurView {
 
   /**
    * Called when the view is detached from a window.
-   * Performs cleanup to prevent memory leaks.
    */
   override fun onDetachedFromWindow() {
     super.onDetachedFromWindow()
@@ -213,40 +212,13 @@ class ReactNativeProgressiveBlurView : ProgressiveBlurView {
   }
 
   /**
-   * Cleanup method to reset state.
-   * Helps prevent memory leaks and ensures clean state.
+   * Cleanup method to prevent memory leaks.
    */
   fun cleanup() {
     hasExplicitBackground = false
     removeCallbacks(null)
+    blurView = null
     logDebug("View cleaned up")
-  }
-
-  /**
-   * Maps direction string to ProgressiveBlurView direction constant.
-   * Based on empirical testing with QmBlurView:
-   * - BOTTOM_TO_TOP = 0: Produces blur at TOP, clear at bottom (inverted from name!)
-   * - TOP_TO_BOTTOM = 1: Produces blur at BOTTOM, clear at top (inverted from name!)
-   * - RIGHT_TO_LEFT = 2
-   * - LEFT_TO_RIGHT = 3
-   * 
-   * CRITICAL: QmBlurView's gradient mask behavior is INVERTED from its constant names!
-   * To match iOS behavior, we must swap the mapping.
-   * 
-   * Note: Only directions 0 and 1 are reliably supported by the library.
-   */
-  private fun mapDirectionToConstant(direction: String): Int {
-    return when (direction.lowercase()) {
-      // SWAPPED to match iOS behavior (QmBlurView's constants are inverted)
-      "bottomtotop" -> 1 // Want blur at bottom? Use TOP_TO_BOTTOM constant!
-      "toptobottom" -> 0 // Want blur at top? Use BOTTOM_TO_TOP constant!
-      "lefttoright" -> 3 // DIRECTION_LEFT_TO_RIGHT (may not work correctly)
-      "righttoleft" -> 2 // DIRECTION_RIGHT_TO_LEFT (may not work correctly)
-      else -> {
-        logWarning("Unknown direction constant: $direction, using default TOP_TO_BOTTOM")
-        1 // default: DIRECTION_TOP_TO_BOTTOM
-      }
-    }
   }
 
   /**
@@ -258,8 +230,7 @@ class ReactNativeProgressiveBlurView : ProgressiveBlurView {
     logDebug("setBlurAmount: $amount -> $currentBlurRadius")
 
     try {
-      super.setBlurRadius(currentBlurRadius)
-      setFieldViaReflection("mBlurRadius", currentBlurRadius)
+      blurView?.setBlurRadius(currentBlurRadius)
       invalidate()
     } catch (e: Exception) {
       logError("Failed to set blur radius: ${e.message}", e)
@@ -271,27 +242,20 @@ class ReactNativeProgressiveBlurView : ProgressiveBlurView {
    * @param direction The direction string: "blurredTopClearBottom" or "blurredBottomClearTop"
    */
   fun setDirection(direction: String) {
-    // CRITICAL: Map React Native direction strings to QmBlurView constants
-    // React Native prop naming: "blurred[POSITION]Clear[POSITION]" - WHERE the blur IS
-    // QmBlurView constants: "[FROM]_TO_[TO]" - WHERE the gradient GOES
-    //
-    // "blurredTopClearBottom" = blur IS at top -> use TOP_TO_BOTTOM (1)
-    // "blurredBottomClearTop" = blur IS at bottom -> use BOTTOM_TO_TOP (0)
     currentDirection = when (direction.lowercase()) {
       "blurredbottomcleartop", "bottomtotop", "bottom" -> "bottomToTop"
       "blurredtopclearbottom", "toptobottom", "top" -> "topToBottom"
+      "blurredlefttoclearright", "lefttoright", "left" -> "leftToRight"
+      "blurredrightoclearleft", "righttoleft", "right" -> "rightToLeft"
       else -> {
         logWarning("Unknown direction: $direction, defaulting to topToBottom")
         "topToBottom"
       }
     }
-    val directionConstant = mapDirectionToConstant(currentDirection)
-    logDebug("setDirection: $direction -> $currentDirection -> constant=$directionConstant")
+    logDebug("setDirection: $direction -> $currentDirection")
 
     try {
-      // MUST use reflection - setGradientDirection() rejects values 0 and 3!
-      setFieldViaReflection("mGradientDirection", directionConstant)
-      invalidate()
+      updateGradient()
     } catch (e: Exception) {
       logError("Failed to set gradient direction: ${e.message}", e)
     }
@@ -299,53 +263,18 @@ class ReactNativeProgressiveBlurView : ProgressiveBlurView {
 
   /**
    * Set the start offset for the progressive blur.
-   * Note: QmBlurView's ProgressiveBlurView doesn't support startOffset natively.
-   * This is a no-op for Android compatibility with iOS API.
-   * @param offset The offset value (0.0 to 1.0) - ignored on Android
+   * Controls where the gradient transition begins.
+   * 
+   * @param offset The offset value (0.0 to 1.0) - where 0 starts immediately, 1 delays to the end
    */
   fun setStartOffset(offset: Float) {
-    // QmBlurView's ProgressiveBlurView doesn't have a layers or offset API
-    // The gradient is always applied across the full view
-    logDebug("setStartOffset: $offset (no-op on Android - ProgressiveBlurView always uses full view)")
-  }
-
-  /**
-   * Enum representing different blur types with their corresponding overlay colors.
-   * Maps iOS blur types to Android overlay colors to approximate the visual appearance.
-   */
-  enum class BlurType(val overlayColor: Int) {
-    XLIGHT(Color.argb(25, 255, 255, 255)),
-    LIGHT(Color.argb(40, 255, 255, 255)),
-    DARK(Color.argb(60, 0, 0, 0)),
-    EXTRA_DARK(Color.argb(80, 0, 0, 0)),
-    REGULAR(Color.argb(50, 255, 255, 255)),
-    PROMINENT(Color.argb(70, 255, 255, 255)),
-    SYSTEM_ULTRA_THIN_MATERIAL(Color.argb(20, 255, 255, 255)),
-    SYSTEM_THIN_MATERIAL(Color.argb(35, 255, 255, 255)),
-    SYSTEM_MATERIAL(Color.argb(50, 255, 255, 255)),
-    SYSTEM_THICK_MATERIAL(Color.argb(65, 255, 255, 255)),
-    SYSTEM_CHROME_MATERIAL(Color.argb(45, 240, 240, 240));
-
-    companion object {
-      /**
-       * Get BlurType from string, with fallback to LIGHT for unknown types.
-       */
-      fun fromString(type: String): BlurType {
-        return when (type.lowercase()) {
-          "xlight" -> XLIGHT
-          "light" -> LIGHT
-          "dark" -> DARK
-          "extradark" -> EXTRA_DARK
-          "regular" -> REGULAR
-          "prominent" -> PROMINENT
-          "systemultrathinmaterial" -> SYSTEM_ULTRA_THIN_MATERIAL
-          "systemthinmaterial" -> SYSTEM_THIN_MATERIAL
-          "systemmaterial" -> SYSTEM_MATERIAL
-          "systemthickmaterial" -> SYSTEM_THICK_MATERIAL
-          "systemchromematerial" -> SYSTEM_CHROME_MATERIAL
-          else -> LIGHT // default fallback
-        }
-      }
+    currentStartOffset = offset.coerceIn(0.0f, 1.0f)
+    logDebug("setStartOffset: $offset -> clamped to $currentStartOffset")
+    
+    try {
+      updateGradient()
+    } catch (e: Exception) {
+      logError("Failed to update startOffset: ${e.message}", e)
     }
   }
 
@@ -359,8 +288,7 @@ class ReactNativeProgressiveBlurView : ProgressiveBlurView {
     logDebug("setBlurType: $type -> ${blurType.name} -> ${Integer.toHexString(currentOverlayColor)}")
 
     try {
-      // MUST use reflection - setOverlayColor() is a NO-OP!
-      setFieldViaReflection("mOverlayColor", currentOverlayColor)
+      blurView?.setOverlayColor(currentOverlayColor)
       invalidate()
     } catch (e: Exception) {
       logError("Failed to set overlay color: ${e.message}", e)
@@ -369,9 +297,6 @@ class ReactNativeProgressiveBlurView : ProgressiveBlurView {
 
   /**
    * Set the fallback color for reduced transparency accessibility mode.
-   * Note: Android doesn't have a direct equivalent to iOS's "Reduce Transparency" setting,
-   * so this is stored for future use but not currently applied.
-   * 
    * @param color The color string in hex format (e.g., "#FF0000") or null to clear
    */
   fun setReducedTransparencyFallbackColor(color: String?) {
@@ -383,12 +308,7 @@ class ReactNativeProgressiveBlurView : ProgressiveBlurView {
     try {
       val fallbackColor = color.toColorInt()
       logDebug("setReducedTransparencyFallbackColor: $color -> ${Integer.toHexString(fallbackColor)}")
-      
-      // Store the fallback color but don't apply it unless accessibility settings require it
       // Android doesn't have a direct equivalent to iOS's "Reduce Transparency" setting
-      // that we can easily check. The blur effect should remain the primary visual.
-      // Future enhancement: Check Android accessibility settings and apply fallback if needed
-      
     } catch (e: IllegalArgumentException) {
       logWarning("Invalid color format for reduced transparency fallback: $color - ${e.message}")
     } catch (e: Exception) {
