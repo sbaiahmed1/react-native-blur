@@ -4,22 +4,11 @@ import {
   StyleSheet,
   ImageBackground,
   ScrollView,
-  Platform,
 } from 'react-native';
 import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
 import { DEMO_IMAGES } from '../constants';
 
 export default function ProgressiveBlurScreen() {
-  if (Platform.OS !== 'ios') {
-    return (
-      <View style={styles.unsupportedContainer}>
-        <Text style={styles.unsupportedText}>
-          Progressive Blur is only available on iOS
-        </Text>
-      </View>
-    );
-  }
-
   return (
     <ImageBackground
       source={{ uri: DEMO_IMAGES[2] }}
@@ -178,10 +167,10 @@ export default function ProgressiveBlurScreen() {
 
           {/* Progressive blur overlay from bottom */}
           <ProgressiveBlurView
-            blurType="xlight"
-            blurAmount={5}
+            blurType="prominent"
+            blurAmount={20}
             direction="blurredBottomClearTop"
-            startOffset={0}
+            startOffset={0.6}
             style={styles.lockedOverlay}
           >
             <View style={styles.unlockPrompt}>
@@ -270,7 +259,6 @@ const styles = StyleSheet.create({
   progressiveBlurCard: {
     height: 200,
     borderRadius: 16,
-    overflow: 'hidden',
     justifyContent: 'space-between',
     padding: 20,
   },
@@ -362,7 +350,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 250,
+    top: 0,
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingBottom: 40,

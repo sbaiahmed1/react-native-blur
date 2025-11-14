@@ -125,13 +125,15 @@ class ReactNativeProgressiveBlurView : FrameLayout {
       val (x0, y0, x1, y1) = when (currentDirection) {
         "bottomToTop" -> {
           // Blur at bottom, clear at top
+          // point0 (TRANSPARENT/clear) at top, point1 (WHITE/blur) at bottom adjusted by offset
           val offsetPixels = height * currentStartOffset
-          floatArrayOf(0f, height.toFloat(), 0f, offsetPixels)
+          floatArrayOf(0f, 0f, 0f, height - offsetPixels)
         }
         "topToBottom" -> {
           // Blur at top, clear at bottom (default)
+          // point0 (TRANSPARENT/clear) at bottom, point1 (WHITE/blur) at top adjusted by offset
           val offsetPixels = height * currentStartOffset
-          floatArrayOf(0f, offsetPixels, 0f, height.toFloat())
+          floatArrayOf(0f, height.toFloat(), 0f, offsetPixels)
         }
         "leftToRight" -> {
           val offsetPixels = width * currentStartOffset
