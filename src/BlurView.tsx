@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import type { ViewStyle, StyleProp } from 'react-native';
 import ReactNativeBlurView, {
   type BlurType,
@@ -96,7 +96,24 @@ export const BlurView: React.FC<BlurViewProps> = ({
     );
   }
 
-  // If children exist, use the absolute positioning pattern
+  // If children exist, use the style default for Android
+  if (Platform.OS === 'android') {
+    return (
+      <View style={[styles.container, style]}>
+        <ReactNativeBlurView
+          ignoreSafeArea={ignoreSafeArea}
+          blurType={blurType}
+          blurAmount={blurAmount}
+          reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+          {...props}
+        >
+          <View style={styles.children}>{children}</View>
+        </ReactNativeBlurView>
+      </View>
+    );
+  }
+
+  // If children exist, use the absolute positioning pattern for iOS and others
   return (
     <View style={[styles.container, style]}>
       {/* Blur effect positioned absolutely behind content */}
@@ -108,7 +125,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
         style={StyleSheet.absoluteFill}
         {...props}
       />
-      {/* Content positioned relatively on top */}
+      {/* Content positioned relatively on top when device is not Android */}
       <View style={styles.children}>{children}</View>
     </View>
   );

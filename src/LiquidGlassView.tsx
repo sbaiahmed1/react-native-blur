@@ -103,11 +103,10 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
   children,
   ...props
 }) => {
+  const isIos = Platform.OS === 'ios';
+
   // Only render on iOS 26+ (fallback otherwise)
-  if (
-    Platform.OS !== 'ios' ||
-    (Platform.OS === 'ios' && parseInt(Platform.Version, 10) < 26)
-  ) {
+  if (!isIos || (isIos && Number.parseInt(String(Platform.Version), 10) < 26)) {
     console.warn(
       'LiquidGlassView is only supported on iOS. Rendering children without glass effect.'
     );
