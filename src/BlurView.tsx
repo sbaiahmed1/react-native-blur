@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Children } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import type { ViewStyle, StyleProp } from 'react-native';
 import ReactNativeBlurView, {
@@ -82,31 +82,22 @@ export const BlurView: React.FC<BlurViewProps> = ({
   ignoreSafeArea = false,
   ...props
 }) => {
+  const commonProps: BlurViewProps = {
+    blurType,
+    blurAmount,
+    ignoreSafeArea,
+    reducedTransparencyFallbackColor,
+  };
+
   // If no children, render the blur view directly (for background use)
-  if (React.Children.count(children) === 0) {
-    return (
-      <ReactNativeBlurView
-        ignoreSafeArea={ignoreSafeArea}
-        blurType={blurType}
-        blurAmount={blurAmount}
-        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-        style={style}
-        {...props}
-      />
-    );
+  if (!Children.count(children)) {
+    return <ReactNativeBlurView style={style} {...commonProps} {...props} />;
   }
 
   // If children exist, use the style default for Android
   if (Platform.OS === 'android') {
     return (
-      <ReactNativeBlurView
-        ignoreSafeArea={ignoreSafeArea}
-        blurType={blurType}
-        blurAmount={blurAmount}
-        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-        style={style}
-        {...props}
-      >
+      <ReactNativeBlurView style={style} {...commonProps} {...props}>
         <View style={styles.children}>{children}</View>
       </ReactNativeBlurView>
     );
@@ -117,11 +108,8 @@ export const BlurView: React.FC<BlurViewProps> = ({
     <View style={[styles.container, style]}>
       {/* Blur effect positioned absolutely behind content */}
       <ReactNativeBlurView
-        ignoreSafeArea={ignoreSafeArea}
-        blurType={blurType}
-        blurAmount={blurAmount}
-        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
         style={StyleSheet.absoluteFill}
+        {...commonProps}
         {...props}
       />
       {/* Content positioned relatively on top when device is not Android */}
