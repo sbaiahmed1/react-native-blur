@@ -99,17 +99,16 @@ export const BlurView: React.FC<BlurViewProps> = ({
   // If children exist, use the style default for Android
   if (Platform.OS === 'android') {
     return (
-      <View style={[styles.container, style]}>
-        <ReactNativeBlurView
-          ignoreSafeArea={ignoreSafeArea}
-          blurType={blurType}
-          blurAmount={blurAmount}
-          reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-          {...props}
-        >
-          <View style={styles.children}>{children}</View>
-        </ReactNativeBlurView>
-      </View>
+      <ReactNativeBlurView
+        ignoreSafeArea={ignoreSafeArea}
+        blurType={blurType}
+        blurAmount={blurAmount}
+        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+        style={style}
+        {...props}
+      >
+        <View style={styles.children}>{children}</View>
+      </ReactNativeBlurView>
     );
   }
 

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
 import android.util.Log
+import android.util.TypedValue
 import com.qmdeve.blurview.widget.BlurViewGroup
 import androidx.core.graphics.toColorInt
 
@@ -79,7 +80,7 @@ class ReactNativeBlurView : BlurViewGroup {
       // setBlurRadius takes Float, setOverlayColor takes Int, setCornerRadius takes Float (in dp)
       super.setBlurRadius(currentBlurRadius)
       super.setOverlayColor(currentOverlayColor)
-      super.setCornerRadius(currentCornerRadius)
+      updateCornerRadius()
 
       // Set transparent background to prevent visual artifacts
       super.setBackgroundColor(Color.TRANSPARENT)
@@ -287,6 +288,37 @@ class ReactNativeBlurView : BlurViewGroup {
           logError("Failed to restore blur overlay: ${e.message}", e)
         }
       }
+    }
+  }
+
+  /**
+   * Set the border radius from React Native StyleSheet.
+   * React Native provides values in logical pixels (dp), which we convert for the native view.
+   * @param radius The border radius value in dp
+   */
+  fun setBorderRadius(radius: Float) {
+    currentCornerRadius = radius
+    logDebug("setBorderRadius: $radius dp")
+    updateCornerRadius()
+  }
+
+  /**
+   * Convert pixels to density-independent pixels and update the corner radius.
+   * QmBlurView's setCornerRadius expects values in pixels, and React Native already
+   * provides values in dp, so we need to convert from dp to pixels.
+   */
+  private fun updateCornerRadius() {
+    try {
+      // Convert from dp (React Native) to pixels (Android)
+      val radiusInPixels = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        currentCornerRadius,
+        context.resources.displayMetrics
+      )
+      super.setCornerRadius(radiusInPixels)
+      logDebug("Updated corner radius: ${currentCornerRadius}dp -> ${radiusInPixels}px")
+    } catch (e: Exception) {
+      logError("Failed to update corner radius: ${e.message}", e)
     }
   }
 }

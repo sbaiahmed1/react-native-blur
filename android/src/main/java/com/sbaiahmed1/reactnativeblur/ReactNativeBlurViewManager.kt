@@ -69,6 +69,11 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
     view?.setIsInteractive(isInteractive)
   }
 
+  @ReactProp(name = "borderRadius")
+  override fun setBorderRadius(view: ReactNativeBlurView?, borderRadius: Float) {
+    view?.setBorderRadius(borderRadius)
+  }
+
   @ReactProp(name = "ignoreSafeArea")
   override fun setIgnoreSafeArea(view: ReactNativeBlurView?, ignoreSafeArea: Boolean) {
     // no-op
