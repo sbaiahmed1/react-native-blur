@@ -4,7 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
 import android.util.Log
-import com.qmdeve.blurview.widget.BlurView
+import com.qmdeve.blurview.widget.BlurViewGroup
 import androidx.core.graphics.toColorInt
 
 /**
@@ -14,7 +14,7 @@ import androidx.core.graphics.toColorInt
  * QmBlurView is a high-performance blur library that uses native blur algorithms
  * implemented with underlying Native calls for optimal performance.
  */
-class ReactNativeBlurView : BlurView {
+class ReactNativeBlurView : BlurViewGroup {
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
   private var currentOverlayColor = Color.TRANSPARENT
   private var currentCornerRadius = 0f
