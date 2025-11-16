@@ -1,6 +1,6 @@
 # @sbaiahmed1/react-native-blur
 
-A modern React Native library providing **two specialized components** for advanced visual effects: `BlurView` for native blur effects and `LiquidGlassView` for cutting-edge liquid glass effects on iOS 26+ (with Android fallback to enhanced blur).
+A modern React Native library providing **three specialized components** for advanced visual effects: `BlurView` for native blur effects, `LiquidGlassView` for cutting-edge liquid glass effects on iOS 26+ (with Android fallback to enhanced blur) and `ProgressiveBlurView` for smooth, variable blur transitions.`
 
 > **📦 Current Version: 4.0.0** | **⚠️ Breaking Changes**: If upgrading from 3.x, see [Breaking Changes](#️-breaking-changes-in-v400) section.
 
@@ -315,6 +315,8 @@ function MyComponent() {
 ```
 
 ### ProgressiveBlurView - Variable/Gradient Blur
+
+NOTE: Progressive blur offset works different between android and iOS
 
 Use `ProgressiveBlurView` for smooth, gradient blur transitions. This component works on both **iOS** and **Android**.
 
