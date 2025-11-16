@@ -115,13 +115,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   blurCard: {
-    width: '48%',
+    width: '100%',
     padding: 16,
     marginBottom: 12,
     borderRadius: 12,
-    overflow: 'hidden',
     minHeight: 100,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   blurCardTitle: {
     fontSize: 16,
@@ -138,6 +138,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 12,
     overflow: 'hidden',
+    width: '100%',
+    alignItems: 'center',
   },
   intensityText: {
     fontSize: 16,

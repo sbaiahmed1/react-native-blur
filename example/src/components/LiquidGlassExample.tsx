@@ -266,6 +266,8 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     marginBottom: 15,
+    width: '100%',
+    alignItems: 'center',
   },
   selectorTitle: {
     fontSize: 18,
@@ -406,6 +408,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderRadius: 20,
     height: 300,
+    overflow: 'hidden',
   },
   glassCardBackground: {
     flex: 1,
@@ -449,6 +452,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderRadius: 20,
     height: 180,
+    overflow: 'hidden',
   },
   glassModalBackground: {
     position: 'absolute',
