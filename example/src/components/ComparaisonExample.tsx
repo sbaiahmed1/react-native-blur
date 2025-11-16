@@ -20,6 +20,16 @@ const ComparisonExamples = () => {
     { type: 'systemMaterial', emoji: '🎭' },
     { type: 'systemThickMaterial', emoji: '🌌' },
     { type: 'systemChromeMaterial', emoji: '🪞' },
+    { type: 'systemUltraThinMaterialLight', emoji: '❄️' },
+    { type: 'systemThinMaterialLight', emoji: '💡' },
+    { type: 'systemMaterialLight', emoji: '📄' },
+    { type: 'systemThickMaterialLight', emoji: '🌌' },
+    { type: 'systemChromeMaterialLight', emoji: '🪞' },
+    { type: 'systemUltraThinMaterialDark', emoji: '🌑' },
+    { type: 'systemThinMaterialDark', emoji: '🌒' },
+    { type: 'systemMaterialDark', emoji: '🌔' },
+    { type: 'systemThickMaterialDark', emoji: '🌓' },
+    { type: 'systemChromeMaterialDark', emoji: '🌕' },
   ];
 
   const nextCard = () => {
@@ -27,15 +37,15 @@ const ComparisonExamples = () => {
   };
 
   const prevCard = () => {
-    setCurrentCardIndex(
-      prev => (prev - 1 + blurCards.length) % blurCards.length
-    );
+    const cardsLength = blurCards.length;
+    setCurrentCardIndex(prev => (prev - 1 + cardsLength) % cardsLength);
   };
 
   const currentCard = blurCards[currentCardIndex] || {
     type: 'light',
     emoji: '☀️',
   };
+
   return (
     <View style={styles.comparisonContainer}>
       <Text style={styles.sectionTitle}>Blur Effect Showcase</Text>

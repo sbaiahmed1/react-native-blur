@@ -152,46 +152,6 @@ class ReactNativeBlurView : BlurViewGroup {
   }
 
   /**
-   * Enum representing different blur types with their corresponding overlay colors.
-   * Maps iOS blur types to Android overlay colors to approximate the visual appearance.
-   */
-  enum class BlurType(val overlayColor: Int) {
-    XLIGHT(Color.argb(25, 255, 255, 255)),
-    LIGHT(Color.argb(40, 255, 255, 255)),
-    DARK(Color.argb(60, 0, 0, 0)),
-    EXTRA_DARK(Color.argb(80, 0, 0, 0)),
-    REGULAR(Color.argb(50, 255, 255, 255)),
-    PROMINENT(Color.argb(70, 255, 255, 255)),
-    SYSTEM_ULTRA_THIN_MATERIAL(Color.argb(20, 255, 255, 255)),
-    SYSTEM_THIN_MATERIAL(Color.argb(35, 255, 255, 255)),
-    SYSTEM_MATERIAL(Color.argb(50, 255, 255, 255)),
-    SYSTEM_THICK_MATERIAL(Color.argb(65, 255, 255, 255)),
-    SYSTEM_CHROME_MATERIAL(Color.argb(45, 240, 240, 240));
-
-    companion object {
-      /**
-       * Get BlurType from string, with fallback to LIGHT for unknown types.
-       */
-      fun fromString(type: String): BlurType {
-        return when (type.lowercase()) {
-          "xlight" -> XLIGHT
-          "light" -> LIGHT
-          "dark" -> DARK
-          "extradark" -> EXTRA_DARK
-          "regular" -> REGULAR
-          "prominent" -> PROMINENT
-          "systemultrathinmaterial" -> SYSTEM_ULTRA_THIN_MATERIAL
-          "systemthinmaterial" -> SYSTEM_THIN_MATERIAL
-          "systemmaterial" -> SYSTEM_MATERIAL
-          "systemthickmaterial" -> SYSTEM_THICK_MATERIAL
-          "systemchromematerial" -> SYSTEM_CHROME_MATERIAL
-          else -> LIGHT // default fallback
-        }
-      }
-    }
-  }
-
-  /**
    * Set the blur type which determines the overlay color.
    * @param type The blur type string (case-insensitive)
    */
