@@ -98,7 +98,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
   if (Platform.OS === 'android') {
     return (
       <ReactNativeBlurView style={style} {...commonProps} {...props}>
-        <View style={styles.children}>{children}</View>
+        {children}
       </ReactNativeBlurView>
     );
   }

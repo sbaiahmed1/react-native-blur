@@ -44,31 +44,6 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
     view?.setReducedTransparencyFallbackColor(reducedTransparencyFallbackColor)
   }
 
-  @ReactProp(name = "glassTintColor")
-  fun setGlassTintColor(view: ReactNativeBlurView?, glassTintColor: String?) {
-    view?.setGlassTintColor(glassTintColor)
-  }
-
-  @ReactProp(name = "glassOpacity")
-  fun setGlassOpacity(view: ReactNativeBlurView?, glassOpacity: Double) {
-    view?.setGlassOpacity(glassOpacity.toFloat())
-  }
-
-  @ReactProp(name = "type")
-  fun setType(view: ReactNativeBlurView?, type: String?) {
-    view?.setType(type ?: "blur")
-  }
-
-  @ReactProp(name = "glassType")
-  fun setGlassType(view: ReactNativeBlurView?, glassType: String?) {
-    view?.setGlassType(glassType ?: "clear")
-  }
-
-  @ReactProp(name = "isInteractive")
-  fun setIsInteractive(view: ReactNativeBlurView?, isInteractive: Boolean) {
-    view?.setIsInteractive(isInteractive)
-  }
-
   @ReactProp(name = "borderRadius")
   override fun setBorderRadius(view: ReactNativeBlurView?, borderRadius: Float) {
     view?.setBorderRadius(borderRadius)
@@ -87,6 +62,14 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
     super.onDropViewInstance(view)
     // Call cleanup to reset state and prevent white screen artifacts
     view.cleanup()
+  }
+
+  /**
+   * Indicates that React Native's Yoga layout should handle child positioning.
+   * Returns false to let React Native manage the layout of children.
+   */
+  override fun needsCustomLayoutForChildren(): Boolean {
+    return false
   }
 
   companion object {
