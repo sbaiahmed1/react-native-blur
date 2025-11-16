@@ -361,4 +361,32 @@ class ReactNativeBlurView : BlurViewGroup {
       logError("Failed to update corner radius: ${e.message}", e)
     }
   }
+
+  /**
+   * Override onLayout to properly position children according to React Native's Yoga layout.
+   * This prevents children from stacking on top of each other and ensures they follow
+   * the flexbox layout calculated by React Native.
+   * 
+   * React Native's Yoga layout system calculates positions for all children, but we need
+   * to explicitly apply those positions in onLayout. Without this, BlurViewGroup's default
+   * FrameLayout-like behavior would stack all children at (0,0).
+   */
+  override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+    // Position each child according to its layout calculated by React Native's Yoga
+    for (i in 0 until childCount) {
+      val child = getChildAt(i)
+      if (child.visibility != GONE) {
+        // React Native stores the calculated layout in the view's properties
+        // We just need to apply them by calling layout() with the correct coordinates
+        val childLeft = child.left
+        val childTop = child.top
+        val childRight = child.right
+        val childBottom = child.bottom
+        
+        child.layout(childLeft, childTop, childRight, childBottom)
+        
+        logDebug("Laid out child $i at ($childLeft, $childTop, $childRight, $childBottom)")
+      }
+    }
+  }
 }
