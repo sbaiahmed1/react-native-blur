@@ -173,10 +173,8 @@ using namespace facebook::react;
 
   // Update blurType if it has changed
   if (oldViewProps.blurType != newViewProps.blurType) {
-    if (newViewProps.blurType != facebook::react::ReactNativeBlurViewBlurType::Xlight) {
-      NSString *blurTypeString = [[NSString alloc] initWithUTF8String:toString(newViewProps.blurType).c_str()];
-      [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withBlurType:blurTypeString];
-    }
+    NSString *blurTypeString = [[NSString alloc] initWithUTF8String:toString(newViewProps.blurType).c_str()];
+    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withBlurType:blurTypeString];
   }
 
   // Update reducedTransparencyFallbackColor if it has changed
