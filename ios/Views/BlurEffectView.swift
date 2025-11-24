@@ -46,9 +46,9 @@ class BlurEffectView: UIVisualEffectView {
     // Set intensity
     animator?.fractionComplete = intensity
     // Stop the animation at the current state
-    DispatchQueue.main.async {
-      self.animator?.stopAnimation(true)
-      self.animator?.finishAnimation(at: .current)
+    DispatchQueue.main.async { [weak self] in
+      self?.animator?.stopAnimation(true)
+      self?.animator?.finishAnimation(at: .current)
     }
   }
 
