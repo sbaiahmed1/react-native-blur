@@ -53,8 +53,9 @@ class BlurEffectView: UIVisualEffectView {
   }
 
   deinit {
-    animator?.stopAnimation(true)
-    animator?.finishAnimation(at: .current)
+    guard let animator = animator, animator.state == .active else { return }
+    animator.stopAnimation(true)
+    animator.finishAnimation(at: .current)
   }
 }
 
