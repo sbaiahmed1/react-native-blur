@@ -2408,7 +2408,7 @@ PODS:
     - React-perflogger (= 0.82.1)
     - React-utils (= 0.82.1)
     - SocketRocket
-  - ReactNativeBlur (4.0.1):
+  - ReactNativeBlur (4.1.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -2811,7 +2811,7 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: a45ef34bb22dc1c9b2ac1f74167d9a28af961176
   ReactCodegen: 878add6c7d8ff8cea87697c44d29c03b79b6f2d9
   ReactCommon: 804dc80944fa90b86800b43c871742ec005ca424
-  ReactNativeBlur: 1051be432269287a620be51ff3e4c17446a4dac4
+  ReactNativeBlur: 06c658c5c164a079cd0ebc111ed71f9420db18ec
   RNScreens: d821082c6dd1cb397cc0c98b026eeafaa68be479
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: 689c8e04277f3ad631e60fe2a08e41d411daf8eb
