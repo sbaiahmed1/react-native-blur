@@ -2,7 +2,7 @@ import {
   LiquidGlassView,
   LiquidGlassContainer,
 } from '@sbaiahmed1/react-native-blur';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   ImageBackground,
   Image,
   StyleSheet,
+  Animated,
 } from 'react-native';
 import { glassColors } from '../constants';
 
@@ -25,6 +26,22 @@ const LiquidGlassExample = ({
   const [glassTintColor, setGlassTintColor] = useState('#007AFF');
   const [glassOpacity, setGlassOpacity] = useState(0.8);
   const [containerSpacing, setContainerSpacing] = useState(20);
+  const translateX = useRef(new Animated.Value(0)).current;
+
+  const animateCirclesCloser = () => {
+    Animated.sequence([
+      Animated.timing(translateX, {
+        toValue: -50,
+        duration: 2000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateX, {
+        toValue: 30,
+        duration: 2000,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
 
   return (
     <View style={styles.liquidGlassContainer}>
@@ -196,17 +213,31 @@ const LiquidGlassExample = ({
             glassOpacity={0.3}
             style={styles.glassContainerContent}
           >
-            <Text style={styles.selectorTitle}>Glass Opacity</Text>
+            <Text style={styles.selectorTitle}>Circle 1</Text>
           </LiquidGlassView>
-          <LiquidGlassView
-            glassType="clear"
-            glassTintColor="#000000"
-            glassOpacity={0.3}
-            style={styles.glassContainerContent}
+          <Animated.View
+            style={{
+              transform: [{ translateX }],
+            }}
           >
-            <Text style={styles.selectorTitle}>Glass Opacity</Text>
-          </LiquidGlassView>
+            <LiquidGlassView
+              glassType="clear"
+              glassTintColor="#000000"
+              glassOpacity={0.3}
+              style={styles.glassContainerContent}
+            >
+              <Text style={styles.selectorTitle}>Circle 2</Text>
+            </LiquidGlassView>
+          </Animated.View>
         </LiquidGlassContainer>
+
+        {/* Animate Button */}
+        <TouchableOpacity
+          style={styles.animateButton}
+          onPress={animateCirclesCloser}
+        >
+          <Text style={styles.animateButtonText}>✨ Animate Circles</Text>
+        </TouchableOpacity>
 
         {/* Spacing Selector */}
         <View style={styles.spacingSelector}>
@@ -574,10 +605,11 @@ const styles = StyleSheet.create({
   },
   // Liquid Glass Container Styles
   containerDemo: {
-    minHeight: 150,
+    minHeight: 200,
     marginBottom: 15,
     flexDirection: 'row',
-    gap: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   containerContent: {
     padding: 25,
@@ -631,10 +663,27 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   glassContainerContent: {
+    width: 120,
+    height: 120,
     padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 100,
+    borderRadius: 60,
+  },
+  animateButton: {
+    backgroundColor: 'rgba(0, 122, 255, 0.8)',
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    borderRadius: 15,
+    alignItems: 'center',
+    marginVertical: 15,
+    borderWidth: 2,
+    borderColor: '#007AFF',
+  },
+  animateButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
