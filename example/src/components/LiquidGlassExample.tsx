@@ -1,4 +1,7 @@
-import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+import {
+  LiquidGlassView,
+  LiquidGlassContainer,
+} from '@sbaiahmed1/react-native-blur';
 import { useState } from 'react';
 import {
   View,
@@ -21,6 +24,7 @@ const LiquidGlassExample = ({
   >('clear');
   const [glassTintColor, setGlassTintColor] = useState('#007AFF');
   const [glassOpacity, setGlassOpacity] = useState(0.8);
+  const [containerSpacing, setContainerSpacing] = useState(20);
 
   return (
     <View style={styles.liquidGlassContainer}>
@@ -164,6 +168,62 @@ const LiquidGlassExample = ({
                   {Math.round(opacity * 100)}%
                 </Text>
               </LiquidGlassView>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Liquid Glass Container with Spacing */}
+      <View style={styles.selectorContainer}>
+        <LiquidGlassView
+          glassType="clear"
+          glassTintColor="#000000"
+          glassOpacity={0.3}
+          style={styles.selectorHeader}
+        >
+          <Text style={styles.selectorTitle}>
+            🌊 Liquid Glass Container (iOS 26+)
+          </Text>
+        </LiquidGlassView>
+
+        <LiquidGlassContainer
+          spacing={containerSpacing}
+          style={styles.containerDemo}
+        >
+          <LiquidGlassView
+            glassType="clear"
+            glassTintColor="#000000"
+            glassOpacity={0.3}
+            style={styles.glassContainerContent}
+          >
+            <Text style={styles.selectorTitle}>Glass Opacity</Text>
+          </LiquidGlassView>
+          <LiquidGlassView
+            glassType="clear"
+            glassTintColor="#000000"
+            glassOpacity={0.3}
+            style={styles.glassContainerContent}
+          >
+            <Text style={styles.selectorTitle}>Glass Opacity</Text>
+          </LiquidGlassView>
+        </LiquidGlassContainer>
+
+        {/* Spacing Selector */}
+        <View style={styles.spacingSelector}>
+          {[0, 10, 20, 30, 40].map(spacing => (
+            <TouchableOpacity
+              key={spacing}
+              onPress={() => setContainerSpacing(spacing)}
+              style={styles.spacingButton}
+            >
+              <View
+                style={[
+                  styles.spacingButtonContent,
+                  containerSpacing === spacing && styles.selectedSpacing,
+                ]}
+              >
+                <Text style={styles.spacingText}>{spacing}px</Text>
+              </View>
             </TouchableOpacity>
           ))}
         </View>
@@ -511,6 +571,70 @@ const styles = StyleSheet.create({
     color: '#333',
     textAlign: 'center',
     lineHeight: 20,
+  },
+  // Liquid Glass Container Styles
+  containerDemo: {
+    minHeight: 150,
+    marginBottom: 15,
+    flexDirection: 'row',
+    gap: 5,
+  },
+  containerContent: {
+    padding: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  containerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  containerText: {
+    fontSize: 14,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 10,
+    lineHeight: 20,
+  },
+  containerInfo: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '600',
+    marginTop: 5,
+  },
+  spacingSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+  spacingButton: {
+    flex: 1,
+    marginHorizontal: 2,
+  },
+  spacingButtonContent: {
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  selectedSpacing: {
+    backgroundColor: 'rgba(0, 122, 255, 0.2)',
+    borderColor: '#007AFF',
+  },
+  spacingText: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+  glassContainerContent: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 100,
   },
 });
 

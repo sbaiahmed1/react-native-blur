@@ -165,7 +165,8 @@
       "componentProvider": {
         "ReactNativeBlurView": "ReactNativeBlurView",
         "ReactNativeLiquidGlassView": "ReactNativeLiquidGlassView",
-        "ReactNativeProgressiveBlurView": "ReactNativeProgressiveBlurView"
+        "ReactNativeProgressiveBlurView": "ReactNativeProgressiveBlurView",
+        "ReactNativeLiquidGlassContainer": "ReactNativeLiquidGlassContainer"
       }
     }
   },

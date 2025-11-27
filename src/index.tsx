@@ -15,3 +15,8 @@ export type { ProgressiveBlurDirection } from './ReactNativeProgressiveBlurViewN
 
 export { ProgressiveBlurView } from './ProgressiveBlurView';
 export type { ProgressiveBlurViewProps } from './ProgressiveBlurView';
+
+export { default as ReactNativeLiquidGlassContainer } from './ReactNativeLiquidGlassContainerNativeComponent';
+
+export { LiquidGlassContainer } from './LiquidGlassContainer';
+export type { LiquidGlassContainerProps } from './LiquidGlassContainer';
