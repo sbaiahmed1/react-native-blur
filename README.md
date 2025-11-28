@@ -245,7 +245,7 @@ The library uses native Android blur with automatic platform detection. No addit
 > 📦 **Dependency**: The library uses [QmBlurView](https://github.com/QmDeve/QmBlurView) from Maven Central:
 >
 > ```gradle
-> implementation 'com.qmdeve:QmBlurView:1.0.4.3'
+> implementation 'com.qmdeve:QmBlurView:1.0.5-Beta01'
 > ```
 
 The implementation automatically handles different Android versions:
@@ -449,6 +449,7 @@ All props are optional and have sensible defaults.
 | `children`                         | `ReactNode`                                          | `undefined`               | Child components to render inside the blur view     |
 
 > **Platform Note**: `ProgressiveBlurView` works on both **iOS** and **Android**.
+>
 > - **iOS**: Uses private Core Animation filters for variable blur effects
 > - **Android**: Extends QMBlur's BlurView with custom gradient masking to create progressive blur effect
 
