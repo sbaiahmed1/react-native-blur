@@ -1,8 +1,8 @@
 # @sbaiahmed1/react-native-blur
 
-A modern React Native library providing **three specialized components** for advanced visual effects: `BlurView` for native blur effects, `LiquidGlassView` for cutting-edge liquid glass effects on iOS 26+ (with Android fallback to enhanced blur) and `ProgressiveBlurView` for smooth, variable blur transitions.`
+A modern React Native library providing **four specialized components** for advanced visual effects: `BlurView` for native blur effects, `LiquidGlassView` for cutting-edge liquid glass effects on iOS 26+ (with Android fallback to enhanced blur), `LiquidGlassContainer` for iOS 26+ glass container effects with configurable spacing, and `ProgressiveBlurView` for smooth, variable blur transitions.
 
-> **📦 Current Version: 4.0.0** | **⚠️ Breaking Changes**: If upgrading from 3.x, see [Breaking Changes](#️-breaking-changes-in-v400) section.
+> **⚠️ Breaking Changes**: If upgrading from 3.x, see [Breaking Changes](#️-breaking-changes-in-v400) section.
 
 <div align="center">
   <p>
@@ -133,15 +133,16 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
 ## Features
 
-- � **Three Specialized Components**:
+- ✨ **Four Specialized Components**:
   - `BlurView` - Dedicated blur effects component with multiple blur types
   - `ProgressiveBlurView` - Variable/gradient blur transitions (iOS & Android)
   - `LiquidGlassView` - Separate component for iOS 26+ liquid glass effects
+  - `LiquidGlassContainer` - iOS 26+ glass container with configurable spacing for grouping glass elements
 - �🌊 **Liquid Glass Effects**: Revolutionary glass effects using iOS 26+ UIGlassEffect API
 - 🎨 **Multiple Blur Types**: Support for various blur styles including system materials on iOS
 - 📱 **Cross-Platform**: Works on both iOS and Android
 - ♿ **Accessibility**: Automatic fallback for reduced transparency settings
-- 🔧 **TypeScript**: Full TypeScript support with proper type definitions for both components
+- 🔧 **TypeScript**: Full TypeScript support with proper type definitions for all components
 - 🚀 **Turbo Module**: Built with React Native's new architecture (Fabric)
 - 🎯 **Customizable**: Adjustable blur intensity, glass tint colors, and opacity
 - 💡 **Performance Optimized**: Uses hardware acceleration for smooth rendering
@@ -153,12 +154,12 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
 ### Key Advantages
 
-- **Two Specialized Components**: Separate `BlurView` and `LiquidGlassView` components for clean architecture
-- **Liquid Glass Effects**: Only library with iOS 26+ UIGlassEffect support
+- **Four Specialized Components**: Separate `BlurView`, `LiquidGlassView`, `LiquidGlassContainer`, and `ProgressiveBlurView` components for clean architecture
+- **Liquid Glass Effects**: Only library with iOS 26+ UIGlassEffect and UIGlassContainerEffect support
 - **Real Android Blur**: Hardware-accelerated blur on Android (not overlay)
 - **New Architecture**: Built for Fabric/Turbo Modules
 - **Modern Stack**: SwiftUI for iOS, Kotlin for Android
-- **Full TypeScript**: Complete type definitions for both components
+- **Full TypeScript**: Complete type definitions for all components
 
 ### vs. @react-native-community/blur
 
@@ -256,7 +257,7 @@ The implementation automatically handles different Android versions:
 
 ## Usage
 
-The library now provides **three specialized components** for different visual effects:
+The library now provides **four specialized components** for different visual effects:
 
 ### BlurView - Standard Blur Effects
 
@@ -417,9 +418,91 @@ function InteractiveGlass() {
 }
 ```
 
+### LiquidGlassContainer - Glass Container Effects (iOS 26+)
+
+Use `LiquidGlassContainer` to create a glass container with configurable spacing between glass elements. This component uses iOS 26+ `UIGlassContainerEffect` to create beautiful grouped glass effects.
+
+**Note:** This component automatically falls back to a regular View on Android and older iOS versions.
+
+#### Basic Usage
+
+```tsx
+import React from 'react';
+import { LiquidGlassContainer, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+
+function GlassContainerExample() {
+  return (
+    <LiquidGlassContainer spacing={20} style={{ flex: 1 }}>
+      <LiquidGlassView
+        glassType="clear"
+        glassTintColor="#000000"
+        glassOpacity={0.3}
+        style={{ width: 120, height: 120, borderRadius: 60 }}
+      >
+        <Text>Circle 1</Text>
+      </LiquidGlassView>
+      <LiquidGlassView
+        glassType="clear"
+        glassTintColor="#000000"
+        glassOpacity={0.3}
+        style={{ width: 120, height: 120, borderRadius: 60 }}
+      >
+        <Text>Circle 2</Text>
+      </LiquidGlassView>
+    </LiquidGlassContainer>
+  );
+}
+```
+
+#### Animated Glass Container
+
+```tsx
+import React, { useRef } from 'react';
+import { Animated } from 'react-native';
+import { LiquidGlassContainer, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+
+function AnimatedGlassContainer() {
+  const translateX = useRef(new Animated.Value(0)).current;
+
+  const animateElements = () => {
+    Animated.sequence([
+      Animated.timing(translateX, {
+        toValue: -50,
+        duration: 2000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateX, {
+        toValue: 30,
+        duration: 2000,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  return (
+    <LiquidGlassContainer spacing={30} style={{ flexDirection: 'row' }}>
+      <LiquidGlassView
+        glassType="clear"
+        style={{ width: 100, height: 100, borderRadius: 50 }}
+      >
+        <Text>Static</Text>
+      </LiquidGlassView>
+      <Animated.View style={{ transform: [{ translateX }] }}>
+        <LiquidGlassView
+          glassType="clear"
+          style={{ width: 100, height: 100, borderRadius: 50 }}
+        >
+          <Text>Animated</Text>
+        </LiquidGlassView>
+      </Animated.View>
+    </LiquidGlassContainer>
+  );
+}
+```
+
 ## Props
 
-The library now provides two separate components with their own props:
+The library now provides four separate components with their own props:
 
 ### BlurView Props
 
@@ -468,9 +551,21 @@ All props are optional and have sensible defaults.
 | `style`                            | `ViewStyle` | `undefined` | Style object for the glass view                                                            |
 | `children`                         | `ReactNode` | `undefined` | Child components to render inside the glass view                                           |
 
+### LiquidGlassContainer Props
+
+All props are optional and have sensible defaults.
+
+| Prop       | Type        | Default     | Description                                                                                          |
+| ---------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------- |
+| `spacing`  | `number`    | `0`         | (iOS 26+ only) The spacing value between glass elements in the container                            |
+| `style`    | `ViewStyle` | `undefined` | Style object for the glass container                                                                 |
+| `children` | `ReactNode` | `undefined` | Child components to render inside the glass container (typically `LiquidGlassView` components)       |
+
 > **Note**: The `BlurType` and `GlassType` are exported types from the library. See [Blur Types](#blur-types) and [Glass Types](#glass-types) sections below for all available values.
 
 > **Platform Note**: `LiquidGlassView` automatically falls back to `BlurView` on Android and iOS versions older than iOS 26.
+
+> **Platform Note**: `LiquidGlassContainer` automatically falls back to a regular `View` on Android and iOS versions older than iOS 26.
 
 ## Blur Types (BlurView)
 
@@ -537,7 +632,7 @@ The component uses the QmBlurView library to provide real blur effects with hard
 
 ## Accessibility
 
-Both components automatically respect the "Reduce Transparency" accessibility setting:
+All components automatically respect the "Reduce Transparency" accessibility setting:
 
 ### BlurView
 
@@ -549,20 +644,29 @@ Both components automatically respect the "Reduce Transparency" accessibility se
 - **iOS 26+**: When reduce transparency is enabled, the liquid glass effect is hidden and a fallback view with solid color is shown
 - **iOS < 26 & Android**: Automatically falls back to `BlurView` behavior
 
-You can customize the fallback color using the `reducedTransparencyFallbackColor` prop on both components.
+### LiquidGlassContainer
+
+- **iOS 26+**: When reduce transparency is enabled, falls back to regular View
+- **iOS < 26 & Android**: Always renders as regular View
+
+You can customize the fallback color using the `reducedTransparencyFallbackColor` prop on `BlurView` and `LiquidGlassView` components.
 
 ## TypeScript Support
 
-This package includes full TypeScript definitions for both components:
+This package includes full TypeScript definitions for all components:
 
 ```tsx
 import {
   BlurView,
   LiquidGlassView,
+  LiquidGlassContainer,
+  ProgressiveBlurView,
   BlurType,
   GlassType,
   BlurViewProps,
   LiquidGlassViewProps,
+  LiquidGlassContainerProps,
+  ProgressiveBlurViewProps,
 } from '@sbaiahmed1/react-native-blur';
 
 // BlurType is exported for type checking
@@ -581,6 +685,11 @@ interface MyGlassComponentProps {
   glassProps: LiquidGlassViewProps;
 }
 
+// LiquidGlassContainerProps for glass container props
+interface MyGlassContainerProps {
+  containerProps: LiquidGlassContainerProps;
+}
+
 // Example with BlurView properties
 const blurProps: BlurViewProps = {
   blurType: 'systemMaterial',
@@ -595,16 +704,23 @@ const liquidGlassProps: LiquidGlassViewProps = {
   glassOpacity: 0.8,
   isInteractive: true,
 };
+
+// Example with LiquidGlassContainer properties
+const liquidGlassContainerProps: LiquidGlassContainerProps = {
+  spacing: 20,
+};
 ```
 
 ## Example App
 
-The package includes a comprehensive example app that demonstrates both components with all their features. The example app features:
+The package includes a comprehensive example app that demonstrates all components with all their features. The example app features:
 
 - **BlurView Demo**: Interactive blur type selector with live preview of all blur types
 - **LiquidGlassView Demo**: Showcase of iOS 26+ glass effects with customizable properties
-- **Practical Use Cases**: Real-world examples like cards, modals, and overlays using both components
-- **Comparison Views**: Side-by-side comparisons between BlurView and LiquidGlassView effects
+- **LiquidGlassContainer Demo**: Interactive demonstrations of glass container spacing with animated examples
+- **ProgressiveBlurView Demo**: Variable blur gradient examples for different use cases
+- **Practical Use Cases**: Real-world examples like cards, modals, and overlays using all components
+- **Comparison Views**: Side-by-side comparisons between different effect types
 - **Platform Fallbacks**: Visual demonstrations of how effects degrade gracefully on older platforms
 
 To run the example:
@@ -640,12 +756,32 @@ yarn android
   - Automatic fallback to `BlurView` with enhanced blur effects
   - Same performance characteristics as `BlurView`
 
+### LiquidGlassContainer
+
+- **iOS 26+**:
+  - **Native Container Effects**: Uses `UIGlassContainerEffect` API for efficient glass grouping
+  - **Optimized Spacing**: Hardware-accelerated spacing calculations
+  - **Animation Ready**: Smooth animations with no performance impact
+- **iOS < 26 & Android**:
+  - Lightweight View fallback with minimal overhead
+
 ### General Tips
 
 - Avoid using too many blur/glass views simultaneously on lower-end devices
 - Consider using `reducedTransparencyFallbackColor` for better accessibility
-- `LiquidGlassView` automatically falls back to `BlurView` on unsupported platforms
-- Both components are optimized for React Native's new architecture (Fabric)
+- `LiquidGlassView` and `LiquidGlassContainer` automatically fall back on unsupported platforms
+- All components are optimized for React Native's new architecture (Fabric)
+
+## What's New in v4.1.2
+
+### 🌊 LiquidGlassContainer Component (NEW)
+
+- **New Component**: `LiquidGlassContainer` for iOS 26+ glass container effects
+- Uses iOS 26+ `UIGlassContainerEffect` API for grouping glass elements
+- Configurable spacing between glass elements with the `spacing` prop
+- Perfect for creating interactive, grouped glass interfaces
+- Automatic fallback to regular View on Android and older iOS versions
+- Fully integrated with animated components for dynamic effects
 
 ## What's New in v4.0.0
 
@@ -653,7 +789,7 @@ yarn android
 
 ### 🎯 Component Separation (BREAKING CHANGE)
 
-- **Two Specialized Components**: Split single `BlurView` into dedicated `BlurView` and `LiquidGlassView` components
+- **Four Specialized Components**: Split single `BlurView` into dedicated `BlurView`, `LiquidGlassView`, `LiquidGlassContainer`, and `ProgressiveBlurView` components
 - **Removed `type` prop**: No more switching between blur/liquidGlass modes - use the appropriate component instead
 - **Cleaner APIs**: Each component has focused props without mixing blur and glass properties
 - **Better Architecture**: True separation of concerns following React best practices
@@ -663,6 +799,7 @@ yarn android
 
 - Revolutionary glass effects using Apple's new UIGlassEffect API
 - Dedicated `LiquidGlassView` component for glass-specific effects
+- Dedicated `LiquidGlassContainer` component for grouping glass elements with spacing
 - Customizable glass types: `clear` and `regular`
 - Adjustable tint colors and opacity for stunning visual effects
 - Automatic fallback to enhanced blur on older iOS versions and Android
@@ -676,14 +813,15 @@ yarn android
 
 ### 📱 Enhanced Example App
 
-- Separate demonstrations for BlurView and LiquidGlassView
+- Separate demonstrations for BlurView, LiquidGlassView, LiquidGlassContainer, and ProgressiveBlurView
 - Interactive property controls for real-time customization
 - Practical use case examples (cards, modals, overlays)
-- Comparison views showing both components side by side
+- Comparison views showing different components side by side
+- Animated examples demonstrating LiquidGlassContainer spacing effects
 
 ### 🛠️ Developer Experience
 
-- Full TypeScript support with separate prop types for each component (`BlurViewProps`, `LiquidGlassViewProps`)
+- Full TypeScript support with separate prop types for each component (`BlurViewProps`, `LiquidGlassViewProps`, `LiquidGlassContainerProps`, `ProgressiveBlurViewProps`)
 - Cleaner, more intuitive API design
 - Improved component layout handling
 - Better accessibility support with smart fallbacks
