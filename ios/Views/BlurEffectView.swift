@@ -43,14 +43,19 @@ class BlurEffectView: UIVisualEffectView {
       self?.effect = UIBlurEffect(style: self?.blurStyle ?? .systemMaterial)
     }
 
-    // Set intensity and pause
+    // Set intensity
     animator?.fractionComplete = intensity
-    animator?.pauseAnimation()
+    // Stop the animation at the current state
+    DispatchQueue.main.async { [weak self] in
+      self?.animator?.stopAnimation(true)
+      self?.animator?.finishAnimation(at: .current)
+    }
   }
 
   deinit {
-    animator?.stopAnimation(true)
-    animator?.finishAnimation(at: .current)
+    guard let animator = animator, animator.state == .active else { return }
+    animator.stopAnimation(true)
+    animator.finishAnimation(at: .current)
   }
 }
 
