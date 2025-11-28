@@ -32,8 +32,11 @@ export const LiquidGlassContainer: React.FC<LiquidGlassContainerProps> = ({
   children,
   ...rest
 }) => {
-  if (Platform.OS !== 'ios') {
-    // Fallback to regular View on non-iOS platforms
+  const isCompatibleIOS =
+    Platform.OS === 'ios' && parseInt(Platform.Version as string, 10) >= 26;
+
+  if (!isCompatibleIOS) {
+    // Fallback to regular View on non-iOS platforms or older iOS versions
     return (
       <View style={style} {...rest}>
         {children}
