@@ -611,31 +611,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  containerContent: {
-    padding: 25,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  containerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  containerText: {
-    fontSize: 14,
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 10,
-    lineHeight: 20,
-  },
-  containerInfo: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '600',
-    marginTop: 5,
-  },
   spacingSelector: {
     flexDirection: 'row',
     justifyContent: 'space-around',
