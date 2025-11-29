@@ -11,6 +11,7 @@ import android.graphics.Shader
 import android.util.AttributeSet
 import android.util.Log
 import android.widget.FrameLayout
+import android.view.View.MeasureSpec
 import com.qmdeve.blurview.widget.BlurView
 import androidx.core.graphics.toColorInt
 
@@ -104,6 +105,27 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     } catch (e: Exception) {
       logError("Failed to initialize progressive blur view: ${e.message}", e)
     }
+  }
+
+  override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    val width = MeasureSpec.getSize(widthMeasureSpec)
+    val height = MeasureSpec.getSize(heightMeasureSpec)
+    setMeasuredDimension(width, height)
+
+    // Measure the internal blurView to match the parent size
+    blurView?.measure(
+      MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+      MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
+    )
+  }
+
+  override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+    // Layout the internal blurView to fill the parent
+    val width = right - left
+    val height = bottom - top
+    blurView?.layout(0, 0, width, height)
+
+    // Do NOT call super.onLayout to avoid interfering with React Native children
   }
 
   override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

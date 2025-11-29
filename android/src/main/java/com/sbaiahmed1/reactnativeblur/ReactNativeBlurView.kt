@@ -5,8 +5,11 @@ import android.graphics.Color
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
+import android.view.ViewGroup
 import com.qmdeve.blurview.widget.BlurViewGroup
 import androidx.core.graphics.toColorInt
+
+import android.view.View.MeasureSpec
 
 /**
  * Android implementation of React Native BlurView component.
@@ -80,6 +83,7 @@ class ReactNativeBlurView : BlurViewGroup {
       // setBlurRadius takes Float, setOverlayColor takes Int, setCornerRadius takes Float (in dp)
       super.setBlurRadius(currentBlurRadius)
       super.setOverlayColor(currentOverlayColor)
+      super.setDownsampleFactor(4.0F)
       updateCornerRadius()
 
       // Set transparent background to prevent visual artifacts
@@ -322,31 +326,37 @@ class ReactNativeBlurView : BlurViewGroup {
     }
   }
 
+  override fun generateDefaultLayoutParams(): ViewGroup.LayoutParams {
+    return ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+  }
+
+  override fun generateLayoutParams(attrs: AttributeSet?): ViewGroup.LayoutParams {
+    return ViewGroup.MarginLayoutParams(context, attrs)
+  }
+
+  override fun generateLayoutParams(p: ViewGroup.LayoutParams?): ViewGroup.LayoutParams {
+    return ViewGroup.MarginLayoutParams(p)
+  }
+
+  override fun checkLayoutParams(p: ViewGroup.LayoutParams?): Boolean {
+    return p is ViewGroup.MarginLayoutParams
+  }
+
+  override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    // Trust React Native to provide correct dimensions
+    setMeasuredDimension(
+      MeasureSpec.getSize(widthMeasureSpec),
+      MeasureSpec.getSize(heightMeasureSpec)
+    )
+  }
+
   /**
    * Override onLayout to properly position children according to React Native's Yoga layout.
-   * This prevents children from stacking on top of each other and ensures they follow
-   * the flexbox layout calculated by React Native.
-   * 
-   * React Native's Yoga layout system calculates positions for all children, but we need
-   * to explicitly apply those positions in onLayout. Without this, BlurViewGroup's default
-   * FrameLayout-like behavior would stack all children at (0,0).
    */
   override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-    // Position each child according to its layout calculated by React Native's Yoga
-    for (i in 0 until childCount) {
-      val child = getChildAt(i)
-      if (child.visibility != GONE) {
-        // React Native stores the calculated layout in the view's properties
-        // We just need to apply them by calling layout() with the correct coordinates
-        val childLeft = child.left
-        val childTop = child.top
-        val childRight = child.right
-        val childBottom = child.bottom
-        
-        child.layout(childLeft, childTop, childRight, childBottom)
-        
-        logDebug("Laid out child $i at ($childLeft, $childTop, $childRight, $childBottom)")
-      }
-    }
+    // No-op: Layout is handled by React Native's UIManager.
+    // We override this to prevent the superclass (BlurViewGroup/FrameLayout) from
+    // re-positioning children based on its own logic (e.g. gravity), which would
+    // conflict with React Native's layout.
   }
 }
