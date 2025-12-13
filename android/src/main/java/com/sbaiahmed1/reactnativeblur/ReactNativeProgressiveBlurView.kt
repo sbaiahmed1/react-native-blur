@@ -19,14 +19,14 @@ import androidx.core.graphics.toColorInt
  * Android implementation of React Native ProgressiveBlurView component.
  * Uses a combination of normal blur (BlurView) + linear gradient mask to create
  * a progressive blur effect that transitions from blurred to clear.
- * 
+ *
  * This approach is more reliable than using the library's ProgressiveBlurView,
  * which has limited control over gradient direction and appearance.
  */
 class ReactNativeProgressiveBlurView : FrameLayout {
   private var blurView: BlurView? = null
   private val gradientPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-  
+
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
   private var currentOverlayColor = Color.TRANSPARENT
   private var currentDirection = "topToBottom"
@@ -35,7 +35,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
 
   companion object {
     private const val TAG = "ReactNativeProgressiveBlur"
-    private const val MAX_BLUR_RADIUS = 25f
+    private const val MAX_BLUR_RADIUS = 100f
     private const val DEFAULT_BLUR_RADIUS = 10f
     private const val DEBUG = true
 
@@ -87,7 +87,9 @@ class ReactNativeProgressiveBlurView : FrameLayout {
       blurView = BlurView(context, null).apply {
         layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         setBlurRadius(currentBlurRadius)
-        setOverlayColor(currentOverlayColor)
+        setDownsampleFactor(6.0F)
+        blurRounds = 3
+        overlayColor = currentOverlayColor
         setBackgroundColor(Color.TRANSPARENT)
       }
       addView(blurView)
@@ -95,7 +97,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
       // Set up the gradient paint
       gradientPaint.style = Paint.Style.FILL
       setWillNotDraw(false) // Enable onDraw for gradient overlay
-      
+
       // Set transparent background for the container
       super.setBackgroundColor(Color.TRANSPARENT)
 
@@ -176,12 +178,12 @@ class ReactNativeProgressiveBlurView : FrameLayout {
         floatArrayOf(0f, 1f),
         Shader.TileMode.CLAMP
       )
-      
+
       gradientPaint.shader = gradient
-      
+
       logDebug("Updated gradient: direction=$currentDirection, start=($x0,$y0), end=($x1,$y1), offset=$currentStartOffset")
       invalidate()
-      
+
     } catch (e: Exception) {
       logError("Failed to update gradient: ${e.message}", e)
     }
@@ -195,15 +197,15 @@ class ReactNativeProgressiveBlurView : FrameLayout {
 
     // Use a layer to apply the gradient mask
     val saveCount = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
-    
+
     // Draw the blur view
     super.dispatchDraw(canvas)
-    
+
     // Apply gradient mask using DST_IN to make the blur gradually transparent
     gradientPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
     canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), gradientPaint)
     gradientPaint.xfermode = null
-    
+
     canvas.restoreToCount(saveCount)
   }
 
@@ -212,7 +214,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    */
   override fun setBackgroundColor(color: Int) {
     logDebug("setBackgroundColor called: $color")
-    
+
     if (color != Color.TRANSPARENT) {
       hasExplicitBackground = true
       logDebug("Stored explicit background color: $color")
@@ -288,13 +290,13 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   /**
    * Set the start offset for the progressive blur.
    * Controls where the gradient transition begins.
-   * 
+   *
    * @param offset The offset value (0.0 to 1.0) - where 0 starts immediately, 1 delays to the end
    */
   fun setStartOffset(offset: Float) {
     currentStartOffset = offset.coerceIn(0.0f, 1.0f)
     logDebug("setStartOffset: $offset -> clamped to $currentStartOffset")
-    
+
     try {
       updateGradient()
     } catch (e: Exception) {
@@ -328,7 +330,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
       logDebug("Cleared reduced transparency fallback color")
       return
     }
-    
+
     try {
       val fallbackColor = color.toColorInt()
       logDebug("setReducedTransparencyFallbackColor: $color -> ${Integer.toHexString(fallbackColor)}")

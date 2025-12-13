@@ -31,7 +31,7 @@ class ReactNativeBlurView : BlurViewGroup {
 
   companion object {
     private const val TAG = "ReactNativeBlurView"
-    private const val MAX_BLUR_RADIUS = 25f
+    private const val MAX_BLUR_RADIUS = 100f
     private const val DEFAULT_BLUR_RADIUS = 10f
     private const val DEBUG = false // Set to true for debug builds
 
@@ -83,7 +83,7 @@ class ReactNativeBlurView : BlurViewGroup {
       // setBlurRadius takes Float, setOverlayColor takes Int, setCornerRadius takes Float (in dp)
       super.setBlurRadius(currentBlurRadius)
       super.setOverlayColor(currentOverlayColor)
-      super.setDownsampleFactor(4.0F)
+      super.setDownsampleFactor(6.0F)
       updateCornerRadius()
 
       // Set transparent background to prevent visual artifacts
@@ -326,12 +326,12 @@ class ReactNativeBlurView : BlurViewGroup {
     }
   }
 
-  override fun generateDefaultLayoutParams(): ViewGroup.LayoutParams {
-    return ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+  override fun generateDefaultLayoutParams(): BlurViewGroup.LayoutParams {
+    return BlurViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
   }
 
-  override fun generateLayoutParams(attrs: AttributeSet?): ViewGroup.LayoutParams {
-    return ViewGroup.MarginLayoutParams(context, attrs)
+  override fun generateLayoutParams(attrs: AttributeSet?): BlurViewGroup.LayoutParams {
+    return BlurViewGroup.LayoutParams(context, attrs)
   }
 
   override fun generateLayoutParams(p: ViewGroup.LayoutParams?): ViewGroup.LayoutParams {

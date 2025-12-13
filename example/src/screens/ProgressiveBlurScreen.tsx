@@ -21,7 +21,7 @@ export default function ProgressiveBlurScreen() {
           blurType="light"
           blurAmount={40}
           direction="blurredTopClearBottom"
-          startOffset={0}
+          startOffset={0.3}
           style={styles.headerBlur}
         >
           <View style={styles.headerContent}>
