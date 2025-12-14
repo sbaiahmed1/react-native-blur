@@ -8,6 +8,13 @@ import {
 import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
 import { DEMO_IMAGES } from '../constants';
 
+/**
+ * Demonstrates various ProgressiveBlurView configurations over a full-screen background image.
+ *
+ * Includes a blurred header overlay, top-to-bottom and bottom-to-top gradients, samples of different blur intensities and start offsets, practical header/footer overlays, and a locked-content example with an unlock prompt.
+ *
+ * @returns The React element for the Progressive Blur demo screen.
+ */
 export default function ProgressiveBlurScreen() {
   return (
     <ImageBackground

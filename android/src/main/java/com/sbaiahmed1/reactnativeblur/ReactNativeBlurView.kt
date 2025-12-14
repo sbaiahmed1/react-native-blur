@@ -74,8 +74,11 @@ class ReactNativeBlurView : BlurViewGroup {
   }
 
   /**
-   * Initialize the blur view with default settings.
-   * QmBlurView automatically handles blur rendering without needing setupWith() calls.
+   * Configure the view with the default blur and appearance settings.
+   *
+   * Applies the default blur radius, overlay color, downsample factor, corner radius, and a transparent background so the blur renders correctly.
+   *
+   * Any exceptions thrown during initialization are caught and logged; the method does not propagate errors.
    */
   private fun initializeBlur() {
     try {
@@ -307,9 +310,11 @@ class ReactNativeBlurView : BlurViewGroup {
   }
 
   /**
-   * Convert pixels to density-independent pixels and update the corner radius.
-   * QmBlurView's setCornerRadius expects values in pixels, and React Native already
-   * provides values in dp, so we need to convert from dp to pixels.
+   * Apply the stored corner radius (in dp) to the native blur view as pixels.
+   *
+   * Converts currentCornerRadius from density-independent pixels (dp) to physical pixels
+   * and sets the resulting value on the underlying QmBlurView so the visual corner radius
+   * matches the React Native-provided value.
    */
   private fun updateCornerRadius() {
     try {
@@ -326,14 +331,31 @@ class ReactNativeBlurView : BlurViewGroup {
     }
   }
 
+  /**
+   * Provides default layout parameters sized to match the parent.
+   *
+   * @return A BlurViewGroup.LayoutParams with width and height set to MATCH_PARENT.
+   */
   override fun generateDefaultLayoutParams(): BlurViewGroup.LayoutParams {
     return BlurViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
   }
 
+  /**
+   * Create layout parameters initialized from the provided AttributeSet.
+   *
+   * @param attrs XML attributes used to initialize the layout parameters, or `null` to use defaults.
+   * @return A BlurViewGroup.LayoutParams initialized with this view's context and the given attributes.
+   */
   override fun generateLayoutParams(attrs: AttributeSet?): BlurViewGroup.LayoutParams {
     return BlurViewGroup.LayoutParams(context, attrs)
   }
 
+  /**
+   * Create layout parameters from an existing set.
+   *
+   * @param p The source LayoutParams to copy or adapt; may be null.
+   * @return A new `MarginLayoutParams` initialized from `p`.
+   */
   override fun generateLayoutParams(p: ViewGroup.LayoutParams?): ViewGroup.LayoutParams {
     return ViewGroup.MarginLayoutParams(p)
   }

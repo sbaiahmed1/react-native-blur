@@ -79,7 +79,10 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   }
 
   /**
-   * Initialize the progressive blur view with blur + gradient approach.
+   * Configures and adds the internal BlurView and prepares the gradient paint and view state for progressive blur rendering.
+   *
+   * This sets up the internal blur renderer (radius, downsample factor, rounds, and overlay color), enables drawing for the gradient mask,
+   * ensures the container background is transparent, and updates the gradient shader so the view is ready to render a progressive blur.
    */
   private fun initializeProgressiveBlur() {
     try {
@@ -189,6 +192,14 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     }
   }
 
+  /**
+   * Draws child content and applies a progressive gradient mask over the rendered layer.
+   *
+   * Creates a temporary drawing layer, renders children into it, then applies a DST_IN
+   * gradient mask so the blur is revealed progressively according to the current gradient.
+   *
+   * @param canvas The Canvas to draw into.
+   */
   override fun dispatchDraw(canvas: Canvas) {
     if (width <= 0 || height <= 0) {
       super.dispatchDraw(canvas)
@@ -210,7 +221,11 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   }
 
   /**
-   * Override setBackgroundColor to handle background preservation.
+   * Manage and apply explicit non-transparent background colors while keeping the view transparent when a transparent color is provided to preserve the blur effect.
+   *
+   * If a non-transparent color is passed, the view records that an explicit background exists and applies that color. If a transparent color is passed, the view sets its background to transparent to preserve the blur rendering.
+   *
+   * @param color The background color as an Android ARGB integer.
    */
   override fun setBackgroundColor(color: Int) {
     logDebug("setBackgroundColor called: $color")
@@ -288,10 +303,13 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   }
 
   /**
-   * Set the start offset for the progressive blur.
-   * Controls where the gradient transition begins.
+   * Updates the normalized start offset of the progressive blur gradient.
    *
-   * @param offset The offset value (0.0 to 1.0) - where 0 starts immediately, 1 delays to the end
+   * The offset is interpreted in range 0.0–1.0 and determines where the gradient transition begins
+   * (0.0 starts immediately, 1.0 places the transition at the far edge). The provided value is
+   * clamped to [0.0, 1.0] and the view's gradient is refreshed after assignment.
+   *
+   * @param offset Desired start offset in the range 0.0 to 1.0.
    */
   fun setStartOffset(offset: Float) {
     currentStartOffset = offset.coerceIn(0.0f, 1.0f)
@@ -322,8 +340,11 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   }
 
   /**
-   * Set the fallback color for reduced transparency accessibility mode.
-   * @param color The color string in hex format (e.g., "#FF0000") or null to clear
+   * Configure the fallback color used when reduced transparency accessibility is requested.
+   *
+   * Parses the provided hex color string to an Android color integer and logs the parsed value; if `color` is null or blank the fallback is cleared. Invalid color formats are logged and ignored; the method does not throw.
+   *
+   * @param color The color string in hex format (for example, "#RRGGBB" or "#AARRGGBB"), or `null`/blank to clear the fallback.
    */
   fun setReducedTransparencyFallbackColor(color: String?) {
     if (color.isNullOrBlank()) {
