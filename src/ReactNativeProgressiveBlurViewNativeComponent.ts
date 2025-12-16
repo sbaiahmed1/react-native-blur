@@ -38,6 +38,7 @@ interface NativeProps extends ViewProps {
   direction?: WithDefault<ProgressiveBlurDirection, 'blurredTopClearBottom'>;
   startOffset?: WithDefault<Double, 0.0>;
   reducedTransparencyFallbackColor?: WithDefault<string, '#FFFFFF'>;
+  ignoreAccessibilityFallback?: WithDefault<boolean, false>;
 }
 
 export default codegenNativeComponent<NativeProps>(

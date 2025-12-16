@@ -32,6 +32,7 @@ interface NativeProps extends ViewProps {
   blurAmount?: WithDefault<Double, 10.0>;
   blurType?: WithDefault<BlurType, 'xlight'>;
   reducedTransparencyFallbackColor?: WithDefault<string, '#FFFFFF'>;
+  ignoreAccessibilityFallback?: WithDefault<boolean, false>;
   ignoreSafeArea?: WithDefault<boolean, false>;
 }
 

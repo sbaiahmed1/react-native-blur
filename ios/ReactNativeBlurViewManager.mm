@@ -51,6 +51,12 @@ RCT_CUSTOM_VIEW_PROPERTY(ignoreSafeArea, BOOL, AdvancedBlurView)
   [ReactNativeBlurViewHelper updateBlurView:view withIgnoringSafeArea:ignoreSafeArea];
 }
 
+RCT_CUSTOM_VIEW_PROPERTY(ignoreAccessibilityFallback, BOOL, AdvancedBlurView)
+{
+  BOOL ignoreAccessibilityFallback = json ? [RCTConvert BOOL:json] : NO;
+  [ReactNativeBlurViewHelper updateBlurView:view withIgnoringAccessibilityFallback:ignoreAccessibilityFallback];
+}
+
 // Color parsing helper method (copied from ReactNativeBlurView.mm)
 - (UIColor *)colorFromString:(NSString *)colorString {
   // Input validation

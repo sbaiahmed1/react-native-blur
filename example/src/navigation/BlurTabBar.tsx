@@ -9,7 +9,13 @@ export default function BlurTabBar({
 }: BottomTabBarProps) {
   return (
     <View style={styles.tabBarContainer}>
-      <BlurView blurType="dark" blurAmount={80} style={styles.blurContainer}>
+      <BlurView
+        ignoreAccessibilityFallback
+        ignoreSafeArea
+        blurType="dark"
+        blurAmount={80}
+        style={styles.blurContainer}
+      >
         <View style={styles.tabBar}>
           {state.routes.map((route, index) => {
             const descriptor = descriptors[route.key];

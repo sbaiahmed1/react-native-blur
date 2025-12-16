@@ -24,7 +24,12 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.header}>Welcome to React Native Blur</Text>
 
-        <BlurView blurType="regular" blurAmount={50} style={styles.card}>
+        <BlurView
+          ignoreAccessibilityFallback
+          blurType="regular"
+          blurAmount={50}
+          style={styles.card}
+        >
           <Text style={styles.cardTitle}>🎨 Beautiful Blur Effects</Text>
           <Text style={styles.cardText}>
             Experience stunning blur effects powered by QmBlurView library.

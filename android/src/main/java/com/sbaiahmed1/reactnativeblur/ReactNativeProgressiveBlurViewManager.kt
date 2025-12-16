@@ -65,6 +65,11 @@ class ReactNativeProgressiveBlurViewManager : SimpleViewManager<ReactNativeProgr
     view?.setReducedTransparencyFallbackColor(reducedTransparencyFallbackColor)
   }
 
+  @ReactProp(name = "ignoreAccessibilityFallback")
+  fun setIgnoreAccessibilityFallback(view: ReactNativeProgressiveBlurView?, ignoreAccessibilityFallback: Boolean) {
+    // no-op on Android - this prop is iOS-specific for reduced transparency accessibility setting
+  }
+
   /**
    * Called when view is detached from view hierarchy and allows for cleanup.
    * This prevents the white screen issue during navigation transitions on Android.
