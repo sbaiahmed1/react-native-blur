@@ -163,6 +163,9 @@ using namespace facebook::react;
       [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:fallbackColor];
     }
 
+    // Set initial ignoreAccessibilityFallback from default props
+    [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIgnoringAccessibilityFallback:lgProps.ignoreAccessibilityFallback];
+
     [self addSubview:_liquidGlassView];
   }
   return self;
@@ -212,6 +215,11 @@ using namespace facebook::react;
       UIColor *fallbackColor = [ReactNativeLiquidGlassView colorFromString:fallbackColorString];
       [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:fallbackColor];
     }
+  }
+
+  // Update ignoreAccessibilityFallback if it has changed
+  if (oldViewProps.ignoreAccessibilityFallback != newViewProps.ignoreAccessibilityFallback) {
+    [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIgnoringAccessibilityFallback:newViewProps.ignoreAccessibilityFallback];
   }
 
   // Store the new props

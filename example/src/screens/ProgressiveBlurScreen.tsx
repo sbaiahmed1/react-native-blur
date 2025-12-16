@@ -18,6 +18,7 @@ export default function ProgressiveBlurScreen() {
       {/* Header with Progressive Blur */}
       <View style={styles.headerContainer}>
         <ProgressiveBlurView
+          ignoreAccessibilityFallback
           blurType="light"
           blurAmount={40}
           direction="blurredTopClearBottom"

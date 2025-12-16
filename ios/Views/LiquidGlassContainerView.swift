@@ -43,6 +43,12 @@ import UIKit
     }
   }
 
+  @objc public var ignoreAccessibilityFallback: Bool = false {
+    didSet {
+      updateEffect()
+    }
+  }
+
   // Border radius storage for React Native's style system
   private var topLeftRadius: CGFloat = 0
   private var topRightRadius: CGFloat = 0
@@ -84,18 +90,26 @@ import UIKit
   private func updateEffect() {
     if #available(iOS 26.0, *) {
       #if compiler(>=6.2)
-      let style: UIGlassEffect.Style = glassType == "regular" ? .regular : .clear
-      
-      // Always create a new effect to ensure proper rendering
-      let effect = UIGlassEffect(style: style)
-      effect.tintColor = glassTintColor.withAlphaComponent(glassOpacity)
-      effect.isInteractive = isInteractive
-      
-      glassEffectView?.effect = effect
-      glassEffect = effect
-      currentGlassStyle = glassType
-      
-      updateBorderRadius()
+      // Check if we should show fallback due to accessibility
+      if UIAccessibility.isReduceTransparencyEnabled && !ignoreAccessibilityFallback {
+        backgroundColor = reducedTransparencyFallbackColor
+        glassEffectView?.isHidden = true
+      } else {
+        let style: UIGlassEffect.Style = glassType == "regular" ? .regular : .clear
+        
+        // Always create a new effect to ensure proper rendering
+        let effect = UIGlassEffect(style: style)
+        effect.tintColor = glassTintColor.withAlphaComponent(glassOpacity)
+        effect.isInteractive = isInteractive
+        
+        glassEffectView?.effect = effect
+        glassEffectView?.isHidden = false
+        backgroundColor = .clear
+        glassEffect = effect
+        currentGlassStyle = glassType
+        
+        updateBorderRadius()
+      }
       #endif
     } else {
       // Fallback for iOS < 26
@@ -105,7 +119,14 @@ import UIKit
 
   private func updateFallback() {
     if #available(iOS 26.0, *) {
-      // Do nothing if iOS 26+
+      // Check if we should show fallback even on iOS 26+
+      if UIAccessibility.isReduceTransparencyEnabled && !ignoreAccessibilityFallback {
+        backgroundColor = reducedTransparencyFallbackColor
+        glassEffectView?.isHidden = true
+      } else {
+        glassEffectView?.isHidden = false
+        backgroundColor = .clear
+      }
     } else {
       backgroundColor = reducedTransparencyFallbackColor
       layer.cornerRadius = allBorderRadius

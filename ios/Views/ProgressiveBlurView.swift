@@ -38,6 +38,12 @@ import UIKit
     }
   }
 
+  @objc public var ignoreAccessibilityFallback: Bool = false {
+    didSet {
+      updateBlur()
+    }
+  }
+
   public override init(frame: CGRect) {
     super.init(frame: frame)
     setupView()
@@ -75,7 +81,7 @@ import UIKit
     self.variableBlurView = variableBlur
 
     // Handle reduced transparency
-    if UIAccessibility.isReduceTransparencyEnabled {
+    if UIAccessibility.isReduceTransparencyEnabled && !ignoreAccessibilityFallback {
       variableBlur.isHidden = true
       backgroundColor = reducedTransparencyFallbackColor
     } else {
@@ -101,7 +107,7 @@ import UIKit
     )
 
     // Handle reduced transparency
-    if UIAccessibility.isReduceTransparencyEnabled {
+    if UIAccessibility.isReduceTransparencyEnabled && !ignoreAccessibilityFallback {
       variableBlurView.isHidden = true
       backgroundColor = reducedTransparencyFallbackColor
     } else {

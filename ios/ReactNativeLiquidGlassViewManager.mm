@@ -16,5 +16,6 @@ RCT_EXPORT_VIEW_PROPERTY(glassOpacity, NSNumber)
 RCT_EXPORT_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString)
 RCT_EXPORT_VIEW_PROPERTY(isInteractive, BOOL)
 RCT_EXPORT_VIEW_PROPERTY(ignoreSafeArea, BOOL)
+RCT_EXPORT_VIEW_PROPERTY(ignoreAccessibilityFallback, BOOL)
 
 @end

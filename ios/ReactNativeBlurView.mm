@@ -156,6 +156,9 @@ using namespace facebook::react;
     // Set initial ignoreSafeArea from default props
     [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringSafeArea:bvProps.ignoreSafeArea];
 
+    // Set initial ignoreAccessibilityFallback from default props
+    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringAccessibilityFallback:bvProps.ignoreAccessibilityFallback];
+
     [self addSubview:_advancedBlurView];
   }
   return self;
@@ -189,6 +192,11 @@ using namespace facebook::react;
   // Update ignoreSafeArea if it has changed
   if (oldViewProps.ignoreSafeArea != newViewProps.ignoreSafeArea) {
     [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringSafeArea:newViewProps.ignoreSafeArea];
+  }
+
+  // Update ignoreAccessibilityFallback if it has changed
+  if (oldViewProps.ignoreAccessibilityFallback != newViewProps.ignoreAccessibilityFallback) {
+    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringAccessibilityFallback:newViewProps.ignoreAccessibilityFallback];
   }
 
   // Store the new props

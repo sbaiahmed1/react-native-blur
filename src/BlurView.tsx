@@ -44,6 +44,16 @@ export interface BlurViewProps {
   ignoreSafeArea?: boolean;
 
   /**
+   * @description Override iOS "Reduce Transparency" accessibility fallback behavior
+   * When true, the blur effect will remain active even when "Reduce Transparency" is enabled.
+   * When false (default), the system "Reduce Transparency" setting will be respected and
+   * the blur will be replaced with reducedTransparencyFallbackColor.
+   *
+   * @default false
+   */
+  ignoreAccessibilityFallback?: boolean;
+
+  /**
    * @description Child components to render inside the blur view
    *
    * @default undefined
@@ -80,24 +90,36 @@ export const BlurView: React.FC<BlurViewProps> = ({
   style,
   children,
   ignoreSafeArea = false,
+  ignoreAccessibilityFallback = false,
   ...props
 }) => {
-  const commonProps: BlurViewProps = {
-    blurType,
-    blurAmount,
-    ignoreSafeArea,
-    reducedTransparencyFallbackColor,
-  };
-
   // If no children, render the blur view directly (for background use)
   if (!Children.count(children)) {
-    return <ReactNativeBlurView style={style} {...commonProps} {...props} />;
+    return (
+      <ReactNativeBlurView
+        style={style}
+        blurType={blurType}
+        blurAmount={blurAmount}
+        ignoreSafeArea={ignoreSafeArea}
+        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+        ignoreAccessibilityFallback={ignoreAccessibilityFallback}
+        {...props}
+      />
+    );
   }
 
   // If children exist, use the style default for Android
   if (Platform.OS === 'android') {
     return (
-      <ReactNativeBlurView style={style} {...commonProps} {...props}>
+      <ReactNativeBlurView
+        style={style}
+        blurType={blurType}
+        blurAmount={blurAmount}
+        ignoreSafeArea={ignoreSafeArea}
+        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+        ignoreAccessibilityFallback={ignoreAccessibilityFallback}
+        {...props}
+      >
         {children}
       </ReactNativeBlurView>
     );
@@ -106,13 +128,17 @@ export const BlurView: React.FC<BlurViewProps> = ({
   // If children exist, use the absolute positioning pattern for iOS and others
   return (
     <View style={[styles.container, style]}>
-      {/* Blur effect positioned absolutely behind content */}
+      {/* Blur effect positioned absolutely behind the content */}
       <ReactNativeBlurView
         style={StyleSheet.absoluteFill}
-        {...commonProps}
+        blurType={blurType}
+        blurAmount={blurAmount}
+        ignoreSafeArea={ignoreSafeArea}
+        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+        ignoreAccessibilityFallback={ignoreAccessibilityFallback}
         {...props}
       />
-      {/* Content positioned relatively on top when device is not Android */}
+      {/* Content positioned relatively on top when the device is not Android */}
       <View style={styles.children}>{children}</View>
     </View>
   );

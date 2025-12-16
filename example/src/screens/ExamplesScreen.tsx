@@ -49,6 +49,7 @@ export default function ExamplesScreen() {
         <View style={styles.grid}>
           {BLUR_TYPES.map(blur => (
             <BlurView
+              ignoreAccessibilityFallback
               key={blur.type}
               blurType={blur.type as any}
               blurAmount={50}
@@ -66,6 +67,7 @@ export default function ExamplesScreen() {
 
         {[20, 40, 60, 80, 100].map(amount => (
           <BlurView
+            ignoreAccessibilityFallback
             key={amount}
             blurType="light"
             blurAmount={amount}

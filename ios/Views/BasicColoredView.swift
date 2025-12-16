@@ -11,18 +11,22 @@ struct BasicColoredView: View {
   let reducedTransparencyFallbackColor: UIColor
   let blurIntensity: Double
   let ignoreSafeArea: Bool
+  let ignoreAccessibilityFallback: Bool
 
   let isReducedTransparencyEnabled = UIAccessibility.isReduceTransparencyEnabled
 
   init(blurAmount: Double,
        blurStyle: UIBlurEffect.Style,
        ignoreSafeArea: Bool,
-       reducedTransparencyFallbackColor: UIColor) {
+       reducedTransparencyFallbackColor: UIColor,
+       ignoreAccessibilityFallback: Bool
+  ) {
     self.blurAmount = blurAmount
     self.blurStyle = blurStyle
     self.ignoreSafeArea = ignoreSafeArea
     self.reducedTransparencyFallbackColor = reducedTransparencyFallbackColor
     self.blurIntensity = mapBlurAmountToIntensity(blurAmount)
+    self.ignoreAccessibilityFallback = ignoreAccessibilityFallback
   }
 
   var body: some View {
@@ -31,7 +35,7 @@ struct BasicColoredView: View {
   }
 
   private var content: some View {
-    if isReducedTransparencyEnabled {
+    if isReducedTransparencyEnabled && !ignoreAccessibilityFallback {
       AnyView(
         Rectangle()
           .fill(Color(reducedTransparencyFallbackColor))

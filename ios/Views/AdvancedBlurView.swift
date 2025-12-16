@@ -31,6 +31,12 @@ import UIKit
     }
  }
 
+  @objc public var ignoreAccessibilityFallback: Bool = false {
+    didSet {
+      updateView()
+    }
+ }
+
   public override init(frame: CGRect) {
     super.init(frame: frame)
     setupHostingController()
@@ -61,7 +67,8 @@ import UIKit
       blurAmount: blurAmount,
       blurStyle: blurStyle,
       ignoreSafeArea: ignoreSafeArea,
-      reducedTransparencyFallbackColor: reducedTransparencyFallbackColor
+      reducedTransparencyFallbackColor: reducedTransparencyFallbackColor,
+      ignoreAccessibilityFallback: ignoreAccessibilityFallback
     )
 
     let hosting = UIHostingController(rootView: swiftUIView)

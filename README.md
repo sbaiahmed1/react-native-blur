@@ -508,28 +508,30 @@ The library now provides four separate components with their own props:
 
 All props are optional and have sensible defaults.
 
-| Prop                               | Type        | Default     | Description                                                                   |
-| ---------------------------------- | ----------- | ----------- | ----------------------------------------------------------------------------- |
-| `blurType`                         | `BlurType`  | `'xlight'`  | The type of blur effect to apply                                              |
-| `blurAmount`                       | `number`    | `10.0`      | The intensity of the blur effect (0-100)                                      |
-| `ignoreSafeArea`                   | `boolean`   | `false`     | (iOS only) Controls whether the blur effect should ignore all safe area edges |
-| `reducedTransparencyFallbackColor` | `string`    | `'#FFFFFF'` | Fallback color when reduced transparency is enabled                           |
-| `style`                            | `ViewStyle` | `undefined` | Style object for the blur view                                                |
-| `children`                         | `ReactNode` | `undefined` | Child components to render inside the blur view                               |
+| Prop                               | Type        | Default     | Description                                                                                    |
+| ---------------------------------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------- |
+| `blurType`                         | `BlurType`  | `'xlight'`  | The type of blur effect to apply                                                               |
+| `blurAmount`                       | `number`    | `10.0`      | The intensity of the blur effect (0-100)                                                       |
+| `ignoreSafeArea`                   | `boolean`   | `false`     | (iOS only) Controls whether the blur effect should ignore all safe area edges                  |
+| `reducedTransparencyFallbackColor` | `string`    | `'#FFFFFF'` | Fallback color when reduced transparency is enabled                                            |
+| `ignoreAccessibilityFallback`      | `boolean`   | `false`     | (iOS only) When `true`, shows blur effect even when "Reduce Transparency" is enabled           |
+| `style`                            | `ViewStyle` | `undefined` | Style object for the blur view                                                                 |
+| `children`                         | `ReactNode` | `undefined` | Child components to render inside the blur view                                                |
 
 ### ProgressiveBlurView Props
 
 All props are optional and have sensible defaults.
 
-| Prop                               | Type                                                 | Default                   | Description                                         |
-| ---------------------------------- | ---------------------------------------------------- | ------------------------- | --------------------------------------------------- |
-| `blurType`                         | `BlurType`                                           | `'regular'`               | The type of blur effect to apply                    |
-| `blurAmount`                       | `number`                                             | `20.0`                    | Maximum blur radius in pixels                       |
-| `direction`                        | `'blurredTopClearBottom' \| 'blurredBottomClearTop'` | `'blurredTopClearBottom'` | Direction of the blur gradient                      |
-| `startOffset`                      | `number`                                             | `0.0`                     | Where the gradient starts (0.0 to 1.0)              |
-| `reducedTransparencyFallbackColor` | `string`                                             | `'#FFFFFF'`               | Fallback color when reduced transparency is enabled |
-| `style`                            | `ViewStyle`                                          | `undefined`               | Style object for the blur view                      |
-| `children`                         | `ReactNode`                                          | `undefined`               | Child components to render inside the blur view     |
+| Prop                               | Type                                                 | Default                   | Description                                                                            |
+| ---------------------------------- | ---------------------------------------------------- | ------------------------- | -------------------------------------------------------------------------------------- |
+| `blurType`                         | `BlurType`                                           | `'regular'`               | The type of blur effect to apply                                                       |
+| `blurAmount`                       | `number`                                             | `20.0`                    | Maximum blur radius in pixels                                                          |
+| `direction`                        | `'blurredTopClearBottom' \| 'blurredBottomClearTop'` | `'blurredTopClearBottom'` | Direction of the blur gradient                                                         |
+| `startOffset`                      | `number`                                             | `0.0`                     | Where the gradient starts (0.0 to 1.0)                                                 |
+| `reducedTransparencyFallbackColor` | `string`                                             | `'#FFFFFF'`               | Fallback color when reduced transparency is enabled                                    |
+| `ignoreAccessibilityFallback`      | `boolean`                                            | `false`                   | (iOS only) When `true`, shows blur effect even when "Reduce Transparency" is enabled   |
+| `style`                            | `ViewStyle`                                          | `undefined`               | Style object for the blur view                                                         |
+| `children`                         | `ReactNode`                                          | `undefined`               | Child components to render inside the blur view                                        |
 
 > **Platform Note**: `ProgressiveBlurView` works on both **iOS** and **Android**.
 >
@@ -545,11 +547,12 @@ All props are optional and have sensible defaults.
 | `glassType`                        | `GlassType` | `'clear'`   | The type of glass effect (iOS 26+ only)                                                    |
 | `glassTintColor`                   | `string`    | `'clear'`   | The tint color for glass effect. Accepts hex colors or color names                         |
 | `glassOpacity`                     | `number`    | `1.0`       | The opacity of glass effect (0-1)                                                          |
-| `isInteractive`                    | `boolean`   | `true`      | (iOS 26+ only) Controls whether the liquid glass effect is interactive and reacts to touch |
-| `ignoreSafeArea`                   | `boolean`   | `false`     | (iOS only) Controls whether the glass effect should ignore all safe area edges             |
-| `reducedTransparencyFallbackColor` | `string`    | `'#FFFFFF'` | Fallback color when reduced transparency is enabled or on older iOS versions               |
-| `style`                            | `ViewStyle` | `undefined` | Style object for the glass view                                                            |
-| `children`                         | `ReactNode` | `undefined` | Child components to render inside the glass view                                           |
+| `isInteractive`                    | `boolean`   | `true`      | (iOS 26+ only) Controls whether the liquid glass effect is interactive and reacts to touch  |
+| `ignoreSafeArea`                   | `boolean`   | `false`     | (iOS only) Controls whether the glass effect should ignore all safe area edges              |
+| `reducedTransparencyFallbackColor` | `string`    | `'#FFFFFF'` | Fallback color when reduced transparency is enabled or on older iOS versions                |
+| `ignoreAccessibilityFallback`      | `boolean`   | `false`     | (iOS only) When `true`, shows glass effect even when "Reduce Transparency" is enabled       |
+| `style`                            | `ViewStyle` | `undefined` | Style object for the glass view                                                             |
+| `children`                         | `ReactNode` | `undefined` | Child components to render inside the glass view                                            |
 
 ### LiquidGlassContainer Props
 
@@ -650,6 +653,34 @@ All components automatically respect the "Reduce Transparency" accessibility set
 - **iOS < 26 & Android**: Always renders as regular View
 
 You can customize the fallback color using the `reducedTransparencyFallbackColor` prop on `BlurView` and `LiquidGlassView` components.
+
+### Overriding Accessibility Fallback
+
+In some cases, you may want to show the blur or glass effect even when "Reduce Transparency" is enabled (for example, for decorative effects that don't impact readability). You can use the `ignoreAccessibilityFallback` prop:
+
+> **📱 Platform Note**: `ignoreAccessibilityFallback` is **iOS only**. On Android, this prop has no effect as Android does not have an equivalent "Reduce Transparency" accessibility setting.
+
+```tsx
+// Show blur effect even when "Reduce Transparency" is enabled (iOS only)
+<BlurView
+  blurType="light"
+  blurAmount={20}
+  ignoreAccessibilityFallback={true}
+  reducedTransparencyFallbackColor="#FFFFFF"
+>
+  <Text>This blur will show regardless of accessibility settings</Text>
+</BlurView>
+
+// Same for LiquidGlassView (iOS only)
+<LiquidGlassView
+  glassType="regular"
+  ignoreAccessibilityFallback={true}
+>
+  <Text>Glass effect ignores reduce transparency setting</Text>
+</LiquidGlassView>
+```
+
+> **⚠️ Important**: Use `ignoreAccessibilityFallback` sparingly. Respecting accessibility settings ensures your app is usable by people who have enabled "Reduce Transparency" for better readability or reduced motion sensitivity.
 
 ## TypeScript Support
 

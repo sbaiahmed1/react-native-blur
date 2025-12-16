@@ -53,6 +53,7 @@ const LiquidGlassExample = ({
       {/* Main Liquid Glass Demo */}
       <View style={styles.liquidGlassDemo}>
         <LiquidGlassView
+          ignoreAccessibilityFallback
           glassType={selectedGlassType}
           glassTintColor={glassTintColor}
           glassOpacity={glassOpacity}
@@ -208,9 +209,9 @@ const LiquidGlassExample = ({
           style={styles.containerDemo}
         >
           <LiquidGlassView
+            ignoreAccessibilityFallback
             glassType="clear"
-            glassTintColor="#000000"
-            glassOpacity={0.3}
+            glassOpacity={0.0}
             style={styles.glassContainerContent}
           >
             <Text style={styles.selectorTitle}>Circle 1</Text>
@@ -221,9 +222,9 @@ const LiquidGlassExample = ({
             }}
           >
             <LiquidGlassView
+              ignoreAccessibilityFallback
               glassType="clear"
-              glassTintColor="#000000"
-              glassOpacity={0.3}
+              glassOpacity={0.0}
               style={styles.glassContainerContent}
             >
               <Text style={styles.selectorTitle}>Circle 2</Text>
