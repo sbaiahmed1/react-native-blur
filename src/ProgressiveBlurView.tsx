@@ -50,6 +50,13 @@ export interface ProgressiveBlurViewProps {
   reducedTransparencyFallbackColor?: string;
 
   /**
+   * @description (iOS only) When set to true, shows progressive blur effect even when "Reduce Transparency" is enabled
+   *
+   * @default false
+   */
+  ignoreAccessibilityFallback?: boolean;
+
+  /**
    * @description style object for the progressive blur view
    *
    * @default undefined
@@ -110,6 +117,7 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
   direction = 'blurredTopClearBottom',
   startOffset = 0.0,
   reducedTransparencyFallbackColor = '#FFFFFF',
+  ignoreAccessibilityFallback = false,
   style,
   children,
   ...props
@@ -123,6 +131,7 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
         direction={direction}
         startOffset={startOffset}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+        ignoreAccessibilityFallback={ignoreAccessibilityFallback}
         style={style}
         {...props}
       />
@@ -139,6 +148,7 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
         direction={direction}
         startOffset={startOffset}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+        ignoreAccessibilityFallback={ignoreAccessibilityFallback}
         style={StyleSheet.absoluteFill}
         {...props}
       />

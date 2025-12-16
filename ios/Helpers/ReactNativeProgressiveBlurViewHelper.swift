@@ -36,4 +36,9 @@ import UIKit
   @objc public static func updateProgressiveBlurView(_ blurView: ProgressiveBlurView, withReducedTransparencyFallbackColor reducedTransparencyFallbackColor: UIColor) {
     blurView.reducedTransparencyFallbackColor = reducedTransparencyFallbackColor
   }
+
+  /// Updates the progressive blur view with a new ignoreAccessibilityFallback value.
+  @objc public static func updateProgressiveBlurView(_ blurView: ProgressiveBlurView, withIgnoringAccessibilityFallback ignoreAccessibilityFallback: Bool) {
+    blurView.ignoreAccessibilityFallback = ignoreAccessibilityFallback
+  }
 }

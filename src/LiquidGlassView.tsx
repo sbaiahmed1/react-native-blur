@@ -50,6 +50,12 @@ export interface LiquidGlassViewProps {
   ignoreSafeArea?: boolean;
 
   /**
+   * (iOS only) When set to true, shows glass effect even when "Reduce Transparency" is enabled
+   * @default false
+   */
+  ignoreAccessibilityFallback?: boolean;
+
+  /**
    * Style object for the liquid glass view
    */
   style?: StyleProp<ViewStyle>;
@@ -99,6 +105,7 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
   reducedTransparencyFallbackColor = '#FFFFFF',
   isInteractive = true,
   ignoreSafeArea = false,
+  ignoreAccessibilityFallback = false,
   style,
   children,
   ...props
@@ -111,7 +118,11 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
       'LiquidGlassView is only supported on iOS. Rendering children without glass effect.'
     );
     return (
-      <BlurView blurAmount={70} style={style}>
+      <BlurView
+        ignoreAccessibilityFallback={ignoreAccessibilityFallback}
+        blurAmount={70}
+        style={style}
+      >
         {children}
       </BlurView>
     );
@@ -126,6 +137,7 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
       reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
       isInteractive={isInteractive}
       ignoreSafeArea={ignoreSafeArea}
+      ignoreAccessibilityFallback={ignoreAccessibilityFallback}
       style={style}
       {...props}
     >

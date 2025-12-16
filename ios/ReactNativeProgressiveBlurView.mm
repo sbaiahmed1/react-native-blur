@@ -143,6 +143,9 @@ using namespace facebook::react;
       [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withReducedTransparencyFallbackColor:fallbackColor];
     }
 
+    // Set initial ignoreAccessibilityFallback from default props
+    [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withIgnoringAccessibilityFallback:pbvProps.ignoreAccessibilityFallback];
+
     [self addSubview:_progressiveBlurView];
   }
   return self;
@@ -177,6 +180,11 @@ using namespace facebook::react;
       UIColor *fallbackColor = [ReactNativeProgressiveBlurView colorFromString:fallbackColorString];
       [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withReducedTransparencyFallbackColor:fallbackColor];
     }
+  }
+
+  // Update ignoreAccessibilityFallback if it has changed
+  if (oldViewProps.ignoreAccessibilityFallback != newViewProps.ignoreAccessibilityFallback) {
+    [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withIgnoringAccessibilityFallback:newViewProps.ignoreAccessibilityFallback];
   }
 
   _props = props;

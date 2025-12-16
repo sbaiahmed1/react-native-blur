@@ -41,4 +41,9 @@ import UIKit
   @objc public static func updateLiquidGlassView(_ liquidGlassView: LiquidGlassContainerView, withReducedTransparencyFallbackColor reducedTransparencyFallbackColor: UIColor) {
     liquidGlassView.reducedTransparencyFallbackColor = reducedTransparencyFallbackColor
   }
+
+  /// Updates the liquid glass view with a new ignoreAccessibilityFallback value.
+  @objc public static func updateLiquidGlassView(_ liquidGlassView: LiquidGlassContainerView, withIgnoringAccessibilityFallback ignoreAccessibilityFallback: Bool) {
+    liquidGlassView.ignoreAccessibilityFallback = ignoreAccessibilityFallback
+  }
 }
