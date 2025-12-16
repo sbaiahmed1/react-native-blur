@@ -50,7 +50,8 @@ export interface LiquidGlassViewProps {
   ignoreSafeArea?: boolean;
 
   /**
-   * (iOS only) When set to true, shows glass effect even when "Reduce Transparency" is enabled
+   * (iOS only) When set to true, shows the glass effect even when "Reduce Transparency" is enabled.
+   * Use judiciously as this overrides the user's accessibility preference.
    * @default false
    */
   ignoreAccessibilityFallback?: boolean;
@@ -73,7 +74,7 @@ export interface LiquidGlassViewProps {
  * On older iOS versions or when reduced transparency is enabled, it falls back
  * to a solid color background.
  *
- * **Platform Support:**
+ * **Platform Support: **
  * - iOS 26+: Native glass effect with full functionality
  * - iOS < 26 or Android: Fallback to reducedTransparencyFallbackColor
  *

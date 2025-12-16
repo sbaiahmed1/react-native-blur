@@ -44,10 +44,10 @@ export interface BlurViewProps {
   ignoreSafeArea?: boolean;
 
   /**
-   * @description Manually control whether reduced transparency mode is enabled
-   *
-   * When set to true, the blur will be replaced with reducedTransparencyFallbackColor.
-   * If undefined, the system accessibility setting will be used automatically.
+   * @description Override iOS "Reduce Transparency" accessibility fallback behavior
+   * When true, the blur effect will remain active even when "Reduce Transparency" is enabled.
+   * When false (default), the system "Reduce Transparency" setting will be respected and
+   * the blur will be replaced with reducedTransparencyFallbackColor.
    *
    * @default false
    */

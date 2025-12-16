@@ -55,7 +55,7 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
   }
 
   @ReactProp(name = "ignoreAccessibilityFallback")
-  fun setIgnoreAccessibilityFallback(view: ReactNativeBlurView?, ignoreAccessibilityFallback: Boolean) {
+  override fun setIgnoreAccessibilityFallback(view: ReactNativeBlurView?, ignoreAccessibilityFallback: Boolean) {
     // no-op on Android - this prop is iOS-specific for reduced transparency accessibility setting
   }
 

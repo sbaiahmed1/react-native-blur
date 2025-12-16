@@ -52,6 +52,7 @@ interface NativeProps extends ViewProps {
 
   /**
    * Whether the glass view should ignore accessibility fallback
+   * Platform: iOS only
    * @default false
    */
   ignoreAccessibilityFallback?: WithDefault<boolean, false>;
