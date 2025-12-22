@@ -1,6 +1,6 @@
 import React, { Children } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import type { ViewStyle, StyleProp } from 'react-native';
+import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
 import ReactNativeBlurView, {
   type BlurType,
 } from './ReactNativeBlurViewNativeComponent';
@@ -28,6 +28,13 @@ export interface BlurViewProps {
    * @default '#FFFFFF'
    */
   reducedTransparencyFallbackColor?: string;
+
+  /**
+   * @description The overlay color to apply on top of the blur effect
+   *
+   * @default undefined
+   */
+  overlayColor?: ColorValue;
 
   /**
    * @description style object for the blur view
@@ -77,11 +84,13 @@ export const BlurView: React.FC<BlurViewProps> = ({
   blurType = 'xlight',
   blurAmount = 10,
   reducedTransparencyFallbackColor = '#FFFFFF',
+  overlayColor,
   style,
   children,
   ignoreSafeArea = false,
   ...props
 }) => {
+  const overlay = { backgroundColor: overlayColor };
   const commonProps: BlurViewProps = {
     blurType,
     blurAmount,
@@ -91,13 +100,21 @@ export const BlurView: React.FC<BlurViewProps> = ({
 
   // If no children, render the blur view directly (for background use)
   if (!Children.count(children)) {
-    return <ReactNativeBlurView style={style} {...commonProps} {...props} />;
+    return (
+      <ReactNativeBlurView
+        style={[style, overlay]}
+        {...commonProps}
+        {...props}
+      />
+    );
   }
 
   // If children exist, use the style default for Android
   if (Platform.OS === 'android') {
     return (
       <ReactNativeBlurView style={style} {...commonProps} {...props}>
+        <View style={[StyleSheet.absoluteFill, overlay]} />
+
         {children}
       </ReactNativeBlurView>
     );
@@ -105,7 +122,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
 
   // If children exist, use the absolute positioning pattern for iOS and others
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, style, overlay]}>
       {/* Blur effect positioned absolutely behind content */}
       <ReactNativeBlurView
         style={StyleSheet.absoluteFill}

@@ -39,14 +39,14 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
     view?.setBlurAmount(blurAmount.toFloat())
   }
 
-  @ReactProp(name = "reducedTransparencyFallbackColor")
-  override fun setReducedTransparencyFallbackColor(view: ReactNativeBlurView?, reducedTransparencyFallbackColor: String?) {
-    view?.setReducedTransparencyFallbackColor(reducedTransparencyFallbackColor)
-  }
-
   @ReactProp(name = "borderRadius")
   override fun setBorderRadius(view: ReactNativeBlurView?, borderRadius: Float) {
     view?.setBorderRadius(borderRadius)
+  }
+
+  @ReactProp(name = "reducedTransparencyFallbackColor")
+  override fun setReducedTransparencyFallbackColor(view: ReactNativeBlurView?, reducedTransparencyFallbackColor: String?) {
+    // no-op
   }
 
   @ReactProp(name = "ignoreSafeArea")
