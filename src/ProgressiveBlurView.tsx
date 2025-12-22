@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { Children } from 'react';
 import { StyleSheet, View } from 'react-native';
-import type { ViewStyle, StyleProp } from 'react-native';
+import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
 import ReactNativeProgressiveBlurView, {
   type BlurType,
   type ProgressiveBlurDirection,
@@ -48,6 +48,13 @@ export interface ProgressiveBlurViewProps {
    * @default '#FFFFFF'
    */
   reducedTransparencyFallbackColor?: string;
+
+  /**
+   * @description The overlay color to apply on top of the blur effect
+   *
+   * @default undefined
+   */
+  overlayColor?: ColorValue;
 
   /**
    * @description style object for the progressive blur view
@@ -110,12 +117,15 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
   direction = 'blurredTopClearBottom',
   startOffset = 0.0,
   reducedTransparencyFallbackColor = '#FFFFFF',
+  overlayColor,
   style,
   children,
   ...props
 }) => {
+  const overlay = { backgroundColor: overlayColor };
+
   // If no children, render the blur view directly (for background use)
-  if (React.Children.count(children) === 0) {
+  if (!Children.count(children)) {
     return (
       <ReactNativeProgressiveBlurView
         blurType={blurType}
@@ -123,7 +133,7 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
         direction={direction}
         startOffset={startOffset}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-        style={style}
+        style={[style, overlay]}
         {...props}
       />
     );
@@ -131,7 +141,7 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
 
   // If children exist, use the absolute positioning pattern
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, overlay, style]}>
       {/* Blur effect positioned absolutely behind content */}
       <ReactNativeProgressiveBlurView
         blurType={blurType}
@@ -142,6 +152,7 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
         style={StyleSheet.absoluteFill}
         {...props}
       />
+
       <View style={styles.children}>{children}</View>
     </View>
   );
