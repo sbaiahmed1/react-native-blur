@@ -141,7 +141,7 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
 
   // If children exist, use the absolute positioning pattern
   return (
-    <View style={[styles.container, overlay, style]}>
+    <View style={[styles.container, style, overlay]}>
       {/* Blur effect positioned absolutely behind content */}
       <ReactNativeProgressiveBlurView
         blurType={blurType}
