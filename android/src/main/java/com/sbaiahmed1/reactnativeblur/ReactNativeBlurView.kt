@@ -2,10 +2,15 @@ package com.sbaiahmed1.reactnativeblur
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.Outline
+import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
+import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
+import androidx.annotation.RequiresApi
 import com.qmdeve.blurview.widget.BlurViewGroup
 import androidx.core.graphics.toColorInt
 
@@ -22,8 +27,6 @@ class ReactNativeBlurView : BlurViewGroup {
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
   private var currentOverlayColor = Color.TRANSPARENT
   private var currentCornerRadius = 0f
-  private var originalBackgroundColor: Int? = null
-  private var hasExplicitBackground: Boolean = false
   private var glassTintColor: Int = Color.TRANSPARENT
   private var glassOpacity: Float = 1.0f
   private var viewType: String = "blur"
@@ -84,38 +87,18 @@ class ReactNativeBlurView : BlurViewGroup {
       super.setBlurRadius(currentBlurRadius)
       super.setOverlayColor(currentOverlayColor)
       super.setDownsampleFactor(6.0F)
-      updateCornerRadius()
 
-      // Set transparent background to prevent visual artifacts
-      super.setBackgroundColor(Color.TRANSPARENT)
+      super.clipChildren = true
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        super.setBackgroundColor(currentOverlayColor)
+      }
+
+      updateCornerRadius()
 
       logDebug("QmBlurView initialized with blurRadius: $currentBlurRadius, overlayColor: $currentOverlayColor")
     } catch (e: Exception) {
       logError("Failed to initialize blur view: ${e.message}", e)
-    }
-  }
-
-  /**
-   * Override setBackgroundColor to handle background preservation.
-   * @param color The background color to apply
-   */
-  override fun setBackgroundColor(color: Int) {
-    logDebug("setBackgroundColor called: $color")
-
-    // Store the original background color if it's not transparent
-    if (color != Color.TRANSPARENT) {
-      originalBackgroundColor = color
-      hasExplicitBackground = true
-      logDebug("Stored explicit background color: $color")
-    }
-
-    // Apply background color over blur if explicitly set
-    if (hasExplicitBackground && color != Color.TRANSPARENT) {
-      logDebug("Applying background color over blur: $color")
-      super.setBackgroundColor(color)
-    } else {
-      logDebug("Keeping transparent background for blur effect")
-      super.setBackgroundColor(Color.TRANSPARENT)
     }
   }
 
@@ -133,8 +116,6 @@ class ReactNativeBlurView : BlurViewGroup {
    * Helps prevent memory leaks and ensures clean state.
    */
   fun cleanup() {
-    hasExplicitBackground = false
-    originalBackgroundColor = null
     removeCallbacks(null)
     logDebug("View cleaned up")
   }
@@ -167,31 +148,12 @@ class ReactNativeBlurView : BlurViewGroup {
     try {
       // QmBlurView uses setOverlayColor() to set the tint/overlay color
       super.setOverlayColor(currentOverlayColor)
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        super.setBackgroundColor(currentOverlayColor)
+      }
     } catch (e: Exception) {
       logError("Failed to set overlay color: ${e.message}", e)
-    }
-  }
-
-  /**
-   * Set the fallback color for reduced transparency accessibility mode.
-   * @param color The color string in hex format (e.g., "#FF0000") or null to clear
-   */
-  fun setReducedTransparencyFallbackColor(color: String?) {
-    color?.let {
-      try {
-        val fallbackColor = it.toColorInt()
-        logDebug("setReducedTransparencyFallbackColor: $color -> $fallbackColor (stored but not applied unless accessibility requires it)")
-
-        // Store the fallback color but don't apply it unless accessibility settings require it
-        // For now, we'll just log it since Android doesn't have a direct equivalent to iOS's
-        // "Reduce Transparency" setting that we can easily check
-        // The blur effect should remain the primary visual
-
-      } catch (e: Exception) {
-        logWarning("Invalid color format for reduced transparency fallback: $color")
-      }
-    } ?: run {
-      logDebug("Cleared reduced transparency fallback color")
     }
   }
 
@@ -288,6 +250,10 @@ class ReactNativeBlurView : BlurViewGroup {
         // Restore original blur overlay color
         try {
           super.setOverlayColor(currentOverlayColor)
+
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            super.setBackgroundColor(currentOverlayColor)
+          }
         } catch (e: Exception) {
           logError("Failed to restore blur overlay: ${e.message}", e)
         }
@@ -319,6 +285,18 @@ class ReactNativeBlurView : BlurViewGroup {
         currentCornerRadius,
         context.resources.displayMetrics
       )
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        super.rootView.outlineProvider = object : ViewOutlineProvider() {
+          @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+          override fun getOutline(view: View, outline: Outline?) {
+            outline?.setRoundRect(0, 0, view.width, view.height, radiusInPixels)
+          }
+        }
+
+        super.clipToOutline = true
+      }
+
       super.setCornerRadius(radiusInPixels)
       logDebug("Updated corner radius: ${currentCornerRadius}dp -> ${radiusInPixels}px")
     } catch (e: Exception) {

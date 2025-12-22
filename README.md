@@ -246,7 +246,7 @@ The library uses native Android blur with automatic platform detection. No addit
 > 📦 **Dependency**: The library uses [QmBlurView](https://github.com/QmDeve/QmBlurView) from Maven Central:
 >
 > ```gradle
-> implementation 'com.qmdeve:QmBlurView:1.0.5-Beta01'
+> implementation 'com.qmdeve.blurview:core:1.0.5'
 > ```
 
 The implementation automatically handles different Android versions:
@@ -428,7 +428,10 @@ Use `LiquidGlassContainer` to create a glass container with configurable spacing
 
 ```tsx
 import React from 'react';
-import { LiquidGlassContainer, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+import {
+  LiquidGlassContainer,
+  LiquidGlassView,
+} from '@sbaiahmed1/react-native-blur';
 
 function GlassContainerExample() {
   return (
@@ -459,7 +462,10 @@ function GlassContainerExample() {
 ```tsx
 import React, { useRef } from 'react';
 import { Animated } from 'react-native';
-import { LiquidGlassContainer, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+import {
+  LiquidGlassContainer,
+  LiquidGlassView,
+} from '@sbaiahmed1/react-native-blur';
 
 function AnimatedGlassContainer() {
   const translateX = useRef(new Animated.Value(0)).current;
@@ -508,28 +514,30 @@ The library now provides four separate components with their own props:
 
 All props are optional and have sensible defaults.
 
-| Prop                               | Type        | Default     | Description                                                                   |
-| ---------------------------------- | ----------- | ----------- | ----------------------------------------------------------------------------- |
-| `blurType`                         | `BlurType`  | `'xlight'`  | The type of blur effect to apply                                              |
-| `blurAmount`                       | `number`    | `10.0`      | The intensity of the blur effect (0-100)                                      |
-| `ignoreSafeArea`                   | `boolean`   | `false`     | (iOS only) Controls whether the blur effect should ignore all safe area edges |
-| `reducedTransparencyFallbackColor` | `string`    | `'#FFFFFF'` | Fallback color when reduced transparency is enabled                           |
-| `style`                            | `ViewStyle` | `undefined` | Style object for the blur view                                                |
-| `children`                         | `ReactNode` | `undefined` | Child components to render inside the blur view                               |
+| Prop                               | Type         | Default     | Description                                                                   |
+| ---------------------------------- | ------------ | ----------- | ----------------------------------------------------------------------------- |
+| `blurType`                         | `BlurType`   | `'xlight'`  | The type of blur effect to apply                                              |
+| `blurAmount`                       | `number`     | `10.0`      | The intensity of the blur effect (0-100)                                      |
+| `ignoreSafeArea`                   | `boolean`    | `false`     | (iOS only) Controls whether the blur effect should ignore all safe area edges |
+| `reducedTransparencyFallbackColor` | `string`     | `'#FFFFFF'` | Fallback color when reduced transparency is enabled                           |
+| `overlayColor`                     | `ColorValue` | `undefined` | The overlay color to apply on top of the blur effect                          |
+| `style`                            | `ViewStyle`  | `undefined` | Style object for the blur view                                                |
+| `children`                         | `ReactNode`  | `undefined` | Child components to render inside the blur view                               |
 
 ### ProgressiveBlurView Props
 
 All props are optional and have sensible defaults.
 
-| Prop                               | Type                                                 | Default                   | Description                                         |
-| ---------------------------------- | ---------------------------------------------------- | ------------------------- | --------------------------------------------------- |
-| `blurType`                         | `BlurType`                                           | `'regular'`               | The type of blur effect to apply                    |
-| `blurAmount`                       | `number`                                             | `20.0`                    | Maximum blur radius in pixels                       |
-| `direction`                        | `'blurredTopClearBottom' \| 'blurredBottomClearTop'` | `'blurredTopClearBottom'` | Direction of the blur gradient                      |
-| `startOffset`                      | `number`                                             | `0.0`                     | Where the gradient starts (0.0 to 1.0)              |
-| `reducedTransparencyFallbackColor` | `string`                                             | `'#FFFFFF'`               | Fallback color when reduced transparency is enabled |
-| `style`                            | `ViewStyle`                                          | `undefined`               | Style object for the blur view                      |
-| `children`                         | `ReactNode`                                          | `undefined`               | Child components to render inside the blur view     |
+| Prop                               | Type                                                 | Default                   | Description                                          |
+| ---------------------------------- | ---------------------------------------------------- | ------------------------- | ---------------------------------------------------- |
+| `blurType`                         | `BlurType`                                           | `'regular'`               | The type of blur effect to apply                     |
+| `blurAmount`                       | `number`                                             | `20.0`                    | Maximum blur radius in pixels                        |
+| `direction`                        | `'blurredTopClearBottom' \| 'blurredBottomClearTop'` | `'blurredTopClearBottom'` | Direction of the blur gradient                       |
+| `startOffset`                      | `number`                                             | `0.0`                     | Where the gradient starts (0.0 to 1.0)               |
+| `reducedTransparencyFallbackColor` | `string`                                             | `'#FFFFFF'`               | Fallback color when reduced transparency is enabled  |
+| `overlayColor`                     | `ColorValue`                                         | `undefined`               | The overlay color to apply on top of the blur effect |
+| `style`                            | `ViewStyle`                                          | `undefined`               | Style object for the blur view                       |
+| `children`                         | `ReactNode`                                          | `undefined`               | Child components to render inside the blur view      |
 
 > **Platform Note**: `ProgressiveBlurView` works on both **iOS** and **Android**.
 >
@@ -555,11 +563,11 @@ All props are optional and have sensible defaults.
 
 All props are optional and have sensible defaults.
 
-| Prop       | Type        | Default     | Description                                                                                          |
-| ---------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------------- |
-| `spacing`  | `number`    | `0`         | (iOS 26+ only) The spacing value between glass elements in the container                            |
-| `style`    | `ViewStyle` | `undefined` | Style object for the glass container                                                                 |
-| `children` | `ReactNode` | `undefined` | Child components to render inside the glass container (typically `LiquidGlassView` components)       |
+| Prop       | Type        | Default     | Description                                                                                    |
+| ---------- | ----------- | ----------- | ---------------------------------------------------------------------------------------------- |
+| `spacing`  | `number`    | `0`         | (iOS 26+ only) The spacing value between glass elements in the container                       |
+| `style`    | `ViewStyle` | `undefined` | Style object for the glass container                                                           |
+| `children` | `ReactNode` | `undefined` | Child components to render inside the glass container (typically `LiquidGlassView` components) |
 
 > **Note**: The `BlurType` and `GlassType` are exported types from the library. See [Blur Types](#blur-types) and [Glass Types](#glass-types) sections below for all available values.
 
@@ -695,6 +703,7 @@ const blurProps: BlurViewProps = {
   blurType: 'systemMaterial',
   blurAmount: 50,
   reducedTransparencyFallbackColor: '#FFFFFF',
+  overlayColor: '#FF000040',
 };
 
 // Example with LiquidGlassView properties

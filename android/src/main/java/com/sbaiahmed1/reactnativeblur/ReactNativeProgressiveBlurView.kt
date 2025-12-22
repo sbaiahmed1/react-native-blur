@@ -90,7 +90,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
         setDownsampleFactor(6.0F)
         blurRounds = 3
         overlayColor = currentOverlayColor
-        setBackgroundColor(Color.TRANSPARENT)
+        setBackgroundColor(currentOverlayColor)
       }
       addView(blurView)
 
@@ -210,26 +210,6 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   }
 
   /**
-   * Override setBackgroundColor to handle background preservation.
-   */
-  override fun setBackgroundColor(color: Int) {
-    logDebug("setBackgroundColor called: $color")
-
-    if (color != Color.TRANSPARENT) {
-      hasExplicitBackground = true
-      logDebug("Stored explicit background color: $color")
-    }
-
-    if (hasExplicitBackground && color != Color.TRANSPARENT) {
-      logDebug("Applying background color: $color")
-      super.setBackgroundColor(color)
-    } else {
-      logDebug("Keeping transparent background for blur effect")
-      super.setBackgroundColor(Color.TRANSPARENT)
-    }
-  }
-
-  /**
    * Called when the view is detached from a window.
    */
   override fun onDetachedFromWindow() {
@@ -318,27 +298,6 @@ class ReactNativeProgressiveBlurView : FrameLayout {
       invalidate()
     } catch (e: Exception) {
       logError("Failed to set overlay color: ${e.message}", e)
-    }
-  }
-
-  /**
-   * Set the fallback color for reduced transparency accessibility mode.
-   * @param color The color string in hex format (e.g., "#FF0000") or null to clear
-   */
-  fun setReducedTransparencyFallbackColor(color: String?) {
-    if (color.isNullOrBlank()) {
-      logDebug("Cleared reduced transparency fallback color")
-      return
-    }
-
-    try {
-      val fallbackColor = color.toColorInt()
-      logDebug("setReducedTransparencyFallbackColor: $color -> ${Integer.toHexString(fallbackColor)}")
-      // Android doesn't have a direct equivalent to iOS's "Reduce Transparency" setting
-    } catch (e: IllegalArgumentException) {
-      logWarning("Invalid color format for reduced transparency fallback: $color - ${e.message}")
-    } catch (e: Exception) {
-      logError("Error parsing reduced transparency fallback color: $color", e)
     }
   }
 }

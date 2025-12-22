@@ -62,7 +62,7 @@ class ReactNativeProgressiveBlurViewManager : SimpleViewManager<ReactNativeProgr
     view: ReactNativeProgressiveBlurView?,
     reducedTransparencyFallbackColor: String?
   ) {
-    view?.setReducedTransparencyFallbackColor(reducedTransparencyFallbackColor)
+    // no-op
   }
 
   /**

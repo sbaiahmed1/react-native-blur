@@ -10,19 +10,24 @@ export interface LiquidGlassViewProps {
   /**
    * The type of glass effect to apply
    * Platform: iOS 26+ only
+   *
    * @default 'clear'
    */
-  glassType?: GlassType /**
+  glassType?: GlassType;
+
+  /**
    * The tint color of the glass effect
    * Accepts hex color strings like '#FFFFFF' or color names
    * Platform: iOS 26+ only
+   *
    * @default 'clear'
-   */;
+   */
   glassTintColor?: string;
 
   /**
    * The opacity of the glass effect (0-1)
    * Platform: iOS 26+ only
+   *
    * @default 1.0
    */
   glassOpacity?: number;
@@ -31,6 +36,7 @@ export interface LiquidGlassViewProps {
    * Fallback color when reduced transparency is enabled or on older iOS versions
    * Accepts hex color strings like '#FFFFFF'
    * Platform: iOS only
+   *
    * @default '#FFFFFF'
    */
   reducedTransparencyFallbackColor?: string;
@@ -38,6 +44,7 @@ export interface LiquidGlassViewProps {
   /**
    * Whether the glass view should be interactive
    * Platform: iOS 26+ only
+   *
    * @default true
    */
   isInteractive?: boolean;
@@ -45,6 +52,7 @@ export interface LiquidGlassViewProps {
   /**
    * Whether the glass view should ignore safe area insets
    * Platform: iOS 26+ only
+   *
    * @default false
    */
   ignoreSafeArea?: boolean;
@@ -111,7 +119,12 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
       'LiquidGlassView is only supported on iOS. Rendering children without glass effect.'
     );
     return (
-      <BlurView blurAmount={70} style={style}>
+      <BlurView
+        blurAmount={70}
+        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+        ignoreSafeArea={ignoreSafeArea}
+        style={style}
+      >
         {children}
       </BlurView>
     );
