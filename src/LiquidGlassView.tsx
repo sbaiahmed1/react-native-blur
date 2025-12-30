@@ -118,9 +118,18 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
     console.warn(
       'LiquidGlassView is only supported on iOS. Rendering children without glass effect.'
     );
+
+    // Compute overlay color with opacity for Android native handling
+    const overlayColorWithAlpha =
+      glassTintColor +
+      Math.floor(glassOpacity * 255)
+        .toString(16)
+        .padStart(2, '0');
+
     return (
       <BlurView
         blurAmount={70}
+        overlayColor={overlayColorWithAlpha}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
         ignoreSafeArea={ignoreSafeArea}
         style={style}
