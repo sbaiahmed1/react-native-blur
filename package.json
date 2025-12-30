@@ -1,6 +1,6 @@
 {
   "name": "@sbaiahmed1/react-native-blur",
-  "version": "4.2.2",
+  "version": "4.3.0",
   "description": "React native modern blur view",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
