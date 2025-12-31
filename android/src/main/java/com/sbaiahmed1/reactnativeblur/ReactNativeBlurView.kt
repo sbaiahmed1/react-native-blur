@@ -88,7 +88,7 @@ class ReactNativeBlurView : BlurViewGroup {
       super.setOverlayColor(currentOverlayColor)
       super.setDownsampleFactor(6.0F)
 
-      super.clipChildren = true
+      clipChildren = true
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
         super.setBackgroundColor(currentOverlayColor)
@@ -287,14 +287,14 @@ class ReactNativeBlurView : BlurViewGroup {
       )
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        super.rootView.outlineProvider = object : ViewOutlineProvider() {
+        rootView.outlineProvider = object : ViewOutlineProvider() {
           @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
           override fun getOutline(view: View, outline: Outline?) {
             outline?.setRoundRect(0, 0, view.width, view.height, radiusInPixels)
           }
         }
 
-        super.clipToOutline = true
+        clipToOutline = true
       }
 
       super.setCornerRadius(radiusInPixels)
