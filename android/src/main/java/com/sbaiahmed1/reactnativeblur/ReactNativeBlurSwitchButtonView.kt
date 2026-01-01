@@ -101,6 +101,7 @@ class ReactNativeBlurSwitchButtonView : BlurSwitchButtonView {
    * Helps prevent memory leaks and ensures clean state.
    */
   fun cleanup() {
+    setOnCheckedChangeListener(null)
     onValueChangeListener = null
     logDebug("View cleaned up")
   }
