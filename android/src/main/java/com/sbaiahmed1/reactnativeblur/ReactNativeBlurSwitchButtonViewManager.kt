@@ -46,7 +46,7 @@ class ReactNativeBlurSwitchButtonViewManager : SimpleViewManager<ReactNativeBlur
       try {
         view?.setThumbColor(it.toColorInt())
       } catch (e: Exception) {
-        view?.setThumbColor(Color.WHITE)
+        android.util.Log.w("ReactNativeBlurSwitchButtonViewManager", "Invalid thumbColor: $color", e)
       }
     }
   }
@@ -57,6 +57,7 @@ class ReactNativeBlurSwitchButtonViewManager : SimpleViewManager<ReactNativeBlur
       try {
         view?.setTrackColorOff(it.toColorInt())
       } catch (e: Exception) {
+        android.util.Log.w("ReactNativeBlurSwitchButtonViewManager", "Invalid trackColorOff: $color", e)
       }
     }
   }
@@ -64,10 +65,11 @@ class ReactNativeBlurSwitchButtonViewManager : SimpleViewManager<ReactNativeBlur
   @ReactProp(name = "trackColorOn")
   fun setTrackColorOn(view: ReactNativeBlurSwitchButtonView?, color: String?) {
     color?.let {
-      try {
-        view?.setTrackColorOn(it.toColorInt())
-      } catch (e: Exception) {
-      }
+     try {
+       view?.setTrackColorOn(it.toColorInt())
+     } catch (e: Exception) {
+       android.util.Log.w("ReactNativeBlurSwitchButtonViewManager", "Invalid trackColorOn: $color", e)
+     }
     }
   }
 
