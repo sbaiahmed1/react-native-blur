@@ -98,11 +98,8 @@ export const BlurSwitchButtonView: React.FC<BlurSwitchButtonViewProps> = ({
       <Switch
         value={value}
         onValueChange={onValueChange}
-        thumbColor={thumbColor as string}
-        trackColor={{
-          false: trackColor?.false as string,
-          true: trackColor?.true as string,
-        }}
+        thumbColor={thumbColor}
+        trackColor={trackColor}
         disabled={disabled}
         style={style}
         {...props}
