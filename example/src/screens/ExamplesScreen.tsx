@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { BlurView, BlurSwitchButtonView } from '@sbaiahmed1/react-native-blur';
-import { DEMO_IMAGES } from '../constants';
+import { BLUR_VIEW_SWITCHES, DEMO_IMAGES } from '../constants';
 
 const BLUR_TYPES = [
   { name: 'X Light', type: 'xlight' },
@@ -37,23 +37,11 @@ const BLUR_TYPES = [
   { name: 'System Chrome Material Dark', type: 'systemChromeMaterialDark' },
 ];
 
-const BLUR_VIEW_SWITCHES = [
-  { label: 'Coral Pink', color: '#F43F5E', blurAmount: 18, disabled: true },
-  { label: 'Amber Gold', color: '#F59E0B', blurAmount: 22, disabled: false },
-  { label: 'Teal', color: '#14B8A6', blurAmount: 16, disabled: false },
-  { label: 'Ocean Blue', color: '#0EA5E9', blurAmount: 15 },
-];
-
 export default function ExamplesScreen() {
-  const [switchStates, setSwitchStates] = useState<Record<string, boolean>>({
-    'Coral Pink': false,
-    'Ocean Blue': false,
-    'Royal Purple': true,
-    'Amber Gold': true,
-  });
+  const [switchStates, setSwitchStates] = useState<Record<number, boolean>>({});
 
-  const toggleSwitch = (label: string) => {
-    setSwitchStates(prev => ({ ...prev, [label]: !prev[label] }));
+  const toggleSwitch = (id: number) => {
+    setSwitchStates(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   return (
@@ -68,11 +56,11 @@ export default function ExamplesScreen() {
         <Text style={styles.sectionTitle}>Blur Switch</Text>
         <BlurView blurType="dark" blurAmount={60} style={styles.switchSection}>
           {BLUR_VIEW_SWITCHES.map(item => (
-            <View key={item.label} style={styles.switchRow}>
+            <View key={item.id} style={styles.switchRow}>
               <Text style={styles.switchLabel}>{item.label}</Text>
               <BlurSwitchButtonView
-                value={switchStates[item.label]}
-                onValueChange={() => toggleSwitch(item.label)}
+                value={switchStates[item.id]}
+                onValueChange={() => toggleSwitch(item.id)}
                 blurAmount={item.blurAmount}
                 trackColor={{ true: item.color }}
                 disabled={item.disabled}
