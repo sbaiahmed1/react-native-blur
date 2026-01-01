@@ -164,7 +164,7 @@ class ReactNativeBlurSwitchButtonView : BlurSwitchButtonView {
     logDebug("setBlurAmount: $amount -> $radius")
 
     try {
-      setBlurRadius(radius.coerceAtLeast(1f))
+      setBlurRadius(radius)
     } catch (e: Exception) {
       logError("Failed to set blur radius: ${e.message}", e)
     }
