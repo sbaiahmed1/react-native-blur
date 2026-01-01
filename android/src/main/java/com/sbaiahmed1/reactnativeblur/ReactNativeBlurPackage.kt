@@ -11,6 +11,7 @@ class ReactNativeBlurViewPackage : ReactPackage {
     val viewManagers: MutableList<ViewManager<*, *>> = ArrayList()
     viewManagers.add(ReactNativeBlurViewManager())
     viewManagers.add(ReactNativeProgressiveBlurViewManager())
+    viewManagers.add(ReactNativeBlurSwitchButtonViewManager())
     return viewManagers
   }
 
