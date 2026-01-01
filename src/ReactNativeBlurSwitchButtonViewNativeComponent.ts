@@ -25,12 +25,14 @@ interface NativeProps extends ViewProps {
 
   /**
    * The color of the switch thumb
+   * Platform: iOS only
    * @default '#FFFFFF'
    */
   thumbColor?: WithDefault<string, '#FFFFFF'>;
 
   /**
    * The track color when switch is off
+   * Platform: iOS only
    * @default '#E5E5EA'
    */
   trackColorOff?: WithDefault<string, '#E5E5EA'>;
