@@ -57,7 +57,6 @@ interface NativeProps extends ViewProps {
   onValueChange?: DirectEventHandler<Readonly<ValueChangeEvent>>;
 }
 
-export default codegenNativeComponent<NativeProps>(
-  'ReactNativeBlurSwitchButtonView',
-  { excludedPlatforms: ['iOS'] }
-);
+export default codegenNativeComponent<NativeProps>('ReactNativeBlurSwitch', {
+  excludedPlatforms: ['iOS'],
+});

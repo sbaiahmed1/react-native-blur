@@ -21,8 +21,8 @@ export { default as ReactNativeLiquidGlassContainer } from './ReactNativeLiquidG
 export { LiquidGlassContainer } from './LiquidGlassContainer';
 export type { LiquidGlassContainerProps } from './LiquidGlassContainer';
 
-export { default as ReactNativeBlurSwitchButtonView } from './ReactNativeBlurSwitchButtonViewNativeComponent';
-export type { ValueChangeEvent } from './ReactNativeBlurSwitchButtonViewNativeComponent';
+export { default as ReactNativeBlurSwitch } from './ReactNativeBlurSwitchNativeComponent';
+export type { ValueChangeEvent } from './ReactNativeBlurSwitchNativeComponent';
 
-export { BlurSwitchButtonView } from './BlurSwitchButtonView';
-export type { BlurSwitchButtonViewProps } from './BlurSwitchButtonView';
+export { BlurSwitch } from './BlurSwitch';
+export type { BlurSwitchProps } from './BlurSwitch';

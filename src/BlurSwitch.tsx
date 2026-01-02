@@ -1,9 +1,17 @@
 import React from 'react';
 import { Platform, Switch } from 'react-native';
 import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
-import ReactNativeBlurSwitchButtonView from './ReactNativeBlurSwitchButtonViewNativeComponent';
+import ReactNativeBlurSwitch from './ReactNativeBlurSwitchNativeComponent';
 
-export interface BlurSwitchButtonViewProps {
+const toColorString = (
+  color: ColorValue | undefined,
+  fallback: string
+): string => {
+  if (typeof color === 'string') return color;
+  return fallback;
+};
+
+export interface BlurSwitchProps {
   /**
    * @description The current value of the switch
    *
@@ -64,7 +72,7 @@ export interface BlurSwitchButtonViewProps {
 }
 
 /**
- * A cross-platform blur switch button component.
+ * A cross-platform blur switch component.
  *
  * On iOS, this uses the native Switch component.
  * On Android, this uses QmBlurView's BlurSwitchButtonView for blur effects.
@@ -75,7 +83,7 @@ export interface BlurSwitchButtonViewProps {
  *
  * @example
  * ```tsx
- * <BlurSwitchButtonView
+ * <BlurSwitch
  *   value={isEnabled}
  *   onValueChange={setIsEnabled}
  *   blurAmount={20}
@@ -83,7 +91,7 @@ export interface BlurSwitchButtonViewProps {
  * />
  * ```
  */
-export const BlurSwitchButtonView: React.FC<BlurSwitchButtonViewProps> = ({
+export const BlurSwitch: React.FC<BlurSwitchProps> = ({
   value = false,
   onValueChange,
   blurAmount = 10,
@@ -108,20 +116,20 @@ export const BlurSwitchButtonView: React.FC<BlurSwitchButtonViewProps> = ({
   }
 
   return (
-    <ReactNativeBlurSwitchButtonView
+    <ReactNativeBlurSwitch
       style={[{ width: 65, height: 36 }, style]}
       value={value}
       onValueChange={(event) => {
         onValueChange?.(event.nativeEvent.value);
       }}
       blurAmount={blurAmount}
-      thumbColor={thumbColor as string}
-      trackColorOff={trackColor?.false as string}
-      trackColorOn={trackColor?.true as string}
+      thumbColor={toColorString(thumbColor, '#FFFFFF')}
+      trackColorOff={toColorString(trackColor?.false, '#E5E5EA')}
+      trackColorOn={toColorString(trackColor?.true, '#34C759')}
       disabled={disabled}
       {...props}
     />
   );
 };
 
-export default BlurSwitchButtonView;
+export default BlurSwitch;

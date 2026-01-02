@@ -8,7 +8,7 @@ import android.view.MotionEvent
 import com.qmdeve.blurview.widget.BlurSwitchButtonView
 
 /**
- * Android implementation of React Native BlurSwitchButtonView component.
+ * Android implementation of React Native BlurSwitch component.
  * Provides a blur switch button using the QmBlurView library.
  *
  * QmBlurView is a high-performance blur library that uses native blur algorithms
@@ -18,13 +18,13 @@ import com.qmdeve.blurview.widget.BlurSwitchButtonView
  * automatically calculate the colors for on and off states. The thumbColor and
  * trackColorOff props are not supported by this component.
  */
-class ReactNativeBlurSwitchButtonView : BlurSwitchButtonView {
+class ReactNativeBlurSwitch : BlurSwitchButtonView {
   private var onValueChangeListener: ((Boolean) -> Unit)? = null
   private var currentValue = false
   private var isDisabled = false
 
   companion object {
-    private const val TAG = "ReactNativeBlurSwitchButtonView"
+    private const val TAG = "ReactNativeBlurSwitch"
     private const val DEFAULT_WIDTH_DP = 65f
     private const val DEFAULT_HEIGHT_DP = 36f
     private const val MIN_BLUR_AMOUNT = 0f
@@ -81,7 +81,7 @@ class ReactNativeBlurSwitchButtonView : BlurSwitchButtonView {
           logDebug("Value changed: $isChecked")
         }
       }
-      logDebug("BlurSwitchButtonView initialized")
+      logDebug("BlurSwitch initialized")
     } catch (e: Exception) {
       logError("Failed to initialize switch: ${e.message}", e)
     }
@@ -215,3 +215,4 @@ class ReactNativeBlurSwitchButtonView : BlurSwitchButtonView {
     setMeasuredDimension(width, height)
   }
 }
+
