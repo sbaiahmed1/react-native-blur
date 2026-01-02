@@ -10,15 +10,15 @@ import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.events.RCTEventEmitter
 import androidx.core.graphics.toColorInt
 
-@ReactModule(name = ReactNativeBlurSwitchButtonViewManager.NAME)
-class ReactNativeBlurSwitchButtonViewManager : SimpleViewManager<ReactNativeBlurSwitchButtonView>() {
+@ReactModule(name = ReactNativeBlurSwitchManager.NAME)
+class ReactNativeBlurSwitchManager : SimpleViewManager<ReactNativeBlurSwitch>() {
 
   override fun getName(): String {
     return NAME
   }
 
-  public override fun createViewInstance(context: ThemedReactContext): ReactNativeBlurSwitchButtonView {
-    val view = ReactNativeBlurSwitchButtonView(context)
+  public override fun createViewInstance(context: ThemedReactContext): ReactNativeBlurSwitch {
+    val view = ReactNativeBlurSwitch(context)
 
     view.setOnValueChangeListener { value ->
       context.getJSModule(RCTEventEmitter::class.java)
@@ -31,57 +31,57 @@ class ReactNativeBlurSwitchButtonViewManager : SimpleViewManager<ReactNativeBlur
   }
 
   @ReactProp(name = "value")
-  fun setValue(view: ReactNativeBlurSwitchButtonView?, value: Boolean) {
+  fun setValue(view: ReactNativeBlurSwitch?, value: Boolean) {
     view?.setValue(value)
   }
 
   @ReactProp(name = "blurAmount", defaultDouble = 10.0)
-  fun setBlurAmount(view: ReactNativeBlurSwitchButtonView?, blurAmount: Double) {
+  fun setBlurAmount(view: ReactNativeBlurSwitch?, blurAmount: Double) {
     view?.setBlurAmount(blurAmount.toFloat())
   }
 
   @ReactProp(name = "thumbColor")
-  fun setThumbColor(view: ReactNativeBlurSwitchButtonView?, color: String?) {
+  fun setThumbColor(view: ReactNativeBlurSwitch?, color: String?) {
     color?.let {
       try {
         view?.setThumbColor(it.toColorInt())
       } catch (e: Exception) {
-        android.util.Log.w("ReactNativeBlurSwitchButtonViewManager", "Invalid thumbColor: $color", e)
+        android.util.Log.w("ReactNativeBlurSwitchManager", "Invalid thumbColor: $color", e)
       }
     }
   }
 
   @ReactProp(name = "trackColorOff")
-  fun setTrackColorOff(view: ReactNativeBlurSwitchButtonView?, color: String?) {
+  fun setTrackColorOff(view: ReactNativeBlurSwitch?, color: String?) {
     color?.let {
       try {
         view?.setTrackColorOff(it.toColorInt())
       } catch (e: Exception) {
-        android.util.Log.w("ReactNativeBlurSwitchButtonViewManager", "Invalid trackColorOff: $color", e)
+        android.util.Log.w("ReactNativeBlurSwitchManager", "Invalid trackColorOff: $color", e)
       }
     }
   }
 
   @ReactProp(name = "trackColorOn")
-  fun setTrackColorOn(view: ReactNativeBlurSwitchButtonView?, color: String?) {
+  fun setTrackColorOn(view: ReactNativeBlurSwitch?, color: String?) {
     color?.let {
      try {
        view?.setTrackColorOn(it.toColorInt())
      } catch (e: Exception) {
-       android.util.Log.w("ReactNativeBlurSwitchButtonViewManager", "Invalid trackColorOn: $color", e)
+       android.util.Log.w("ReactNativeBlurSwitchManager", "Invalid trackColorOn: $color", e)
      }
     }
   }
 
   @ReactProp(name = "disabled")
-  fun setDisabled(view: ReactNativeBlurSwitchButtonView?, disabled: Boolean) {
+  fun setDisabled(view: ReactNativeBlurSwitch?, disabled: Boolean) {
     view?.setDisabled(disabled)
   }
 
   /**
    * Called when view is detached from view hierarchy and allows for cleanup.
    */
-  override fun onDropViewInstance(view: ReactNativeBlurSwitchButtonView) {
+  override fun onDropViewInstance(view: ReactNativeBlurSwitch) {
     super.onDropViewInstance(view)
     // Call cleanup to reset state and prevent white screen artifacts
     view.cleanup()
@@ -94,6 +94,7 @@ class ReactNativeBlurSwitchButtonViewManager : SimpleViewManager<ReactNativeBlur
   }
 
   companion object {
-    const val NAME = "ReactNativeBlurSwitchButtonView"
+    const val NAME = "ReactNativeBlurSwitch"
   }
 }
+

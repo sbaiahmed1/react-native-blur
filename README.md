@@ -1,6 +1,6 @@
 # @sbaiahmed1/react-native-blur
 
-A modern React Native library providing **five specialized components** for advanced visual effects: `BlurView` for native blur effects, `LiquidGlassView` for cutting-edge liquid glass effects on iOS 26+ (with Android fallback to enhanced blur), `LiquidGlassContainer` for iOS 26+ glass container effects with configurable spacing, `ProgressiveBlurView` for smooth, variable blur transitions, and `BlurSwitchButtonView` for beautiful blur switch buttons on Android.
+A modern React Native library providing **five specialized components** for advanced visual effects: `BlurView` for native blur effects, `LiquidGlassView` for cutting-edge liquid glass effects on iOS 26+ (with Android fallback to enhanced blur), `LiquidGlassContainer` for iOS 26+ glass container effects with configurable spacing, `ProgressiveBlurView` for smooth, variable blur transitions, and `BlurSwitch` for beautiful blur switch buttons on Android.
 
 > **⚠️ Breaking Changes**: If upgrading from 3.x, see [Breaking Changes](#️-breaking-changes-in-v400) section.
 
@@ -138,7 +138,7 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
   - `ProgressiveBlurView` - Variable/gradient blur transitions (iOS & Android)
   - `LiquidGlassView` - Separate component for iOS 26+ liquid glass effects
   - `LiquidGlassContainer` - iOS 26+ glass container with configurable spacing for grouping glass elements
-  - `BlurSwitchButtonView` - Beautiful blur switch button using QmBlurView (Android)
+  - `BlurSwitch` - Beautiful blur switch button using QmBlurView (Android)
 - �🌊 **Liquid Glass Effects**: Revolutionary glass effects using iOS 26+ UIGlassEffect API
 - 🎨 **Multiple Blur Types**: Support for various blur styles including system materials on iOS
 - 📱 **Cross-Platform**: Works on both iOS and Android
@@ -155,7 +155,7 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
 ### Key Advantages
 
-- **Five Specialized Components**: Separate `BlurView`, `LiquidGlassView`, `LiquidGlassContainer`, `ProgressiveBlurView`, and `BlurSwitchButtonView` components for clean architecture
+- **Five Specialized Components**: Separate `BlurView`, `LiquidGlassView`, `LiquidGlassContainer`, `ProgressiveBlurView`, and `BlurSwitch` components for clean architecture
 - **Liquid Glass Effects**: Only library with iOS 26+ UIGlassEffect and UIGlassContainerEffect support
 - **Real Android Blur**: Hardware-accelerated blur on Android (not overlay)
 - **New Architecture**: Built for Fabric/Turbo Modules
@@ -507,9 +507,9 @@ function AnimatedGlassContainer() {
 }
 ```
 
-### BlurSwitchButtonView - Blur Switch Button (Android)
+### BlurSwitch - Blur Switch Button (Android)
 
-Use `BlurSwitchButtonView` for beautiful switch buttons with blur effects. On Android, this uses QmBlurView's `BlurSwitchButtonView`. On iOS, it falls back to the native `Switch` component.
+Use `BlurSwitch` for beautiful switch buttons with blur effects. On Android, this uses QmBlurView's `BlurSwitchButtonView`. On iOS, it falls back to the native `Switch` component.
 
 > **Note**: On Android, you only need to set the base color (`trackColor.true`), and QmBlurView will automatically calculate the colors for on/off states. The `thumbColor` and `trackColor.false` props are only supported on iOS.
 
@@ -518,7 +518,7 @@ Use `BlurSwitchButtonView` for beautiful switch buttons with blur effects. On An
 ```tsx
 import React, { useState } from 'react';
 import { View, Text } from 'react-native';
-import { BlurSwitchButtonView } from '@sbaiahmed1/react-native-blur';
+import { BlurSwitch } from '@sbaiahmed1/react-native-blur';
 
 function BlurSwitchExample() {
   const [isEnabled, setIsEnabled] = useState(false);
@@ -526,7 +526,7 @@ function BlurSwitchExample() {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
       <Text>Enable Feature</Text>
-      <BlurSwitchButtonView
+      <BlurSwitch
         value={isEnabled}
         onValueChange={setIsEnabled}
         blurAmount={20}
@@ -541,13 +541,13 @@ function BlurSwitchExample() {
 
 ```tsx
 import React, { useState } from 'react';
-import { BlurSwitchButtonView } from '@sbaiahmed1/react-native-blur';
+import { BlurSwitch } from '@sbaiahmed1/react-native-blur';
 
 function CustomBlurSwitch() {
   const [darkMode, setDarkMode] = useState(false);
 
   return (
-    <BlurSwitchButtonView
+    <BlurSwitch
       value={darkMode}
       onValueChange={setDarkMode}
       blurAmount={15}
@@ -561,7 +561,7 @@ function CustomBlurSwitch() {
 #### Disabled State
 
 ```tsx
-<BlurSwitchButtonView
+<BlurSwitch
   value={true}
   onValueChange={() => {}}
   blurAmount={20}
@@ -633,7 +633,7 @@ All props are optional and have sensible defaults.
 | `style`    | `ViewStyle` | `undefined` | Style object for the glass container                                                           |
 | `children` | `ReactNode` | `undefined` | Child components to render inside the glass container (typically `LiquidGlassView` components) |
 
-### BlurSwitchButtonView Props
+### BlurSwitch Props
 
 All props are optional and have sensible defaults.
 
@@ -747,14 +747,14 @@ import {
   LiquidGlassView,
   LiquidGlassContainer,
   ProgressiveBlurView,
-  BlurSwitchButtonView,
+  BlurSwitch,
   BlurType,
   GlassType,
   BlurViewProps,
   LiquidGlassViewProps,
   LiquidGlassContainerProps,
   ProgressiveBlurViewProps,
-  BlurSwitchButtonViewProps,
+  BlurSwitchProps,
 } from '@sbaiahmed1/react-native-blur';
 
 // BlurType is exported for type checking
@@ -799,8 +799,8 @@ const liquidGlassContainerProps: LiquidGlassContainerProps = {
   spacing: 20,
 };
 
-// Example with BlurSwitchButtonView properties
-const blurSwitchProps: BlurSwitchButtonViewProps = {
+// Example with BlurSwitch properties
+const blurSwitchProps: BlurSwitchProps = {
   value: true,
   onValueChange: (value) => console.log(value),
   blurAmount: 20,
@@ -817,7 +817,7 @@ The package includes a comprehensive example app that demonstrates all component
 - **LiquidGlassView Demo**: Showcase of iOS 26+ glass effects with customizable properties
 - **LiquidGlassContainer Demo**: Interactive demonstrations of glass container spacing with animated examples
 - **ProgressiveBlurView Demo**: Variable blur gradient examples for different use cases
-- **BlurSwitchButtonView Demo**: Blur switch buttons with various color configurations
+- **BlurSwitch Demo**: Blur switch buttons with various color configurations
 - **Practical Use Cases**: Real-world examples like cards, modals, and overlays using all components
 - **Comparison Views**: Side-by-side comparisons between different effect types
 - **Platform Fallbacks**: Visual demonstrations of how effects degrade gracefully on older platforms
@@ -888,7 +888,7 @@ yarn android
 
 ### 🎯 Component Separation (BREAKING CHANGE)
 
-- **Five Specialized Components**: Split single `BlurView` into dedicated `BlurView`, `LiquidGlassView`, `LiquidGlassContainer`, `ProgressiveBlurView`, and `BlurSwitchButtonView` components
+- **Five Specialized Components**: Split single `BlurView` into dedicated `BlurView`, `LiquidGlassView`, `LiquidGlassContainer`, `ProgressiveBlurView`, and `BlurSwitch` components
 - **Removed `type` prop**: No more switching between blur/liquidGlass modes - use the appropriate component instead
 - **Cleaner APIs**: Each component has focused props without mixing blur and glass properties
 - **Better Architecture**: True separation of concerns following React best practices
@@ -920,7 +920,7 @@ yarn android
 
 ### 🛠️ Developer Experience
 
-- Full TypeScript support with separate prop types for each component (`BlurViewProps`, `LiquidGlassViewProps`, `LiquidGlassContainerProps`, `ProgressiveBlurViewProps`, `BlurSwitchButtonViewProps`)
+- Full TypeScript support with separate prop types for each component (`BlurViewProps`, `LiquidGlassViewProps`, `LiquidGlassContainerProps`, `ProgressiveBlurViewProps`, `BlurSwitchProps`)
 - Cleaner, more intuitive API design
 - Improved component layout handling
 - Better accessibility support with smart fallbacks

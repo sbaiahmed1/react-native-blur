@@ -6,7 +6,7 @@ import {
   ImageBackground,
   ScrollView,
 } from 'react-native';
-import { BlurView, BlurSwitchButtonView } from '@sbaiahmed1/react-native-blur';
+import { BlurView, BlurSwitch } from '@sbaiahmed1/react-native-blur';
 import { BLUR_VIEW_SWITCHES, DEMO_IMAGES } from '../constants';
 
 const BLUR_TYPES = [
@@ -58,7 +58,7 @@ export default function ExamplesScreen() {
           {BLUR_VIEW_SWITCHES.map(item => (
             <View key={item.id} style={styles.switchRow}>
               <Text style={styles.switchLabel}>{item.label}</Text>
-              <BlurSwitchButtonView
+              <BlurSwitch
                 value={switchStates[item.id]}
                 onValueChange={() => toggleSwitch(item.id)}
                 blurAmount={item.blurAmount}
