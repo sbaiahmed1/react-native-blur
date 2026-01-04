@@ -62,6 +62,21 @@ export default function ProgressiveBlurScreen() {
           </ProgressiveBlurView>
         </View>
 
+        <Text style={styles.sectionTitle}>Center Blur</Text>
+        <View style={styles.exampleContainer}>
+          <ProgressiveBlurView
+            blurType="regular"
+            blurAmount={35}
+            direction="blurredCenterClearTopAndBottom"
+            startOffset={0}
+            style={styles.centerBlurCard}
+          >
+            <Text style={styles.cardText}>Clear at top</Text>
+            <Text style={styles.cardText}>Blurred at center</Text>
+            <Text style={styles.cardText}>Clear at bottom</Text>
+          </ProgressiveBlurView>
+        </View>
+
         <Text style={styles.sectionTitle}>Blur Intensities</Text>
         {[20, 30, 40, 50].map(amount => (
           <View key={amount} style={styles.exampleContainer}>
@@ -268,6 +283,13 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
+  },
+  centerBlurCard: {
+    height: 200,
+    borderRadius: 16,
+    overflow: 'hidden',
+    justifyContent: 'space-between',
     padding: 20,
   },
   offsetCard: {

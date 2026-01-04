@@ -9,11 +9,14 @@ import QuartzCore
 public enum VariableBlurDirection: String {
   case blurredTopClearBottom
   case blurredBottomClearTop
+  case blurredCenterClearTopAndBottom
 
   init(fromString string: String) {
     switch string.lowercased() {
     case "blurredbottomcleartop", "bottomtotop", "bottom":
       self = .blurredBottomClearTop
+    case "blurredcentercleartopandbottom", "center":
+      self = .blurredCenterClearTopAndBottom
     default:
       self = .blurredTopClearBottom
     }
@@ -122,20 +125,100 @@ open class VariableBlurView: UIVisualEffectView {
     startOffset: CGFloat,
     direction: VariableBlurDirection
   ) -> CGImage {
-    // Try smoothLinearGradient for smoother transitions
-    let ciGradientFilter = CIFilter.smoothLinearGradient()
-    ciGradientFilter.color0 = CIColor.black
-    ciGradientFilter.color1 = CIColor.clear
-    ciGradientFilter.point0 = CGPoint(x: 0, y: height)
-    ciGradientFilter.point1 = CGPoint(x: 0, y: startOffset * height)
+    switch direction {
+    case .blurredCenterClearTopAndBottom:
+      return makeCenterGradientImage(
+        width: width,
+        height: height,
+        edgeOffset: startOffset
+      )
+    case .blurredTopClearBottom, .blurredBottomClearTop:
+      // Try smoothLinearGradient for smoother transitions
+      let ciGradientFilter = CIFilter.smoothLinearGradient()
+      ciGradientFilter.color0 = CIColor.black
+      ciGradientFilter.color1 = CIColor.clear
+      ciGradientFilter.point0 = CGPoint(x: 0, y: height)
+      ciGradientFilter.point1 = CGPoint(x: 0, y: startOffset * height)
 
-    if case .blurredBottomClearTop = direction {
-      ciGradientFilter.point0.y = 0
-      ciGradientFilter.point1.y = height - ciGradientFilter.point1.y
+      if case .blurredBottomClearTop = direction {
+        ciGradientFilter.point0.y = 0
+        ciGradientFilter.point1.y = height - ciGradientFilter.point1.y
+      }
+
+      return CIContext().createCGImage(
+        ciGradientFilter.outputImage!,
+        from: CGRect(x: 0, y: 0, width: width, height: height)
+      )!
+    }
+  }
+
+  private func makeCenterGradientImage(
+    width: CGFloat = 100,
+    height: CGFloat = 100,
+    edgeOffset: CGFloat
+  ) -> CGImage {
+    let startEdge = max(min(edgeOffset, 0.2), 0.01)
+    let endEdge = 1 - startEdge
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+
+    let centerLow: CGFloat = 0.5 + startEdge
+    let centerHigh: CGFloat = 0.5 - startEdge
+    let locations: [CGFloat] = [
+      0.0,
+      startEdge,
+      centerLow,
+      centerHigh,
+      endEdge,
+      1.0
+    ]
+
+    let colorComponents: [CGFloat] = [
+      0, 0, 0, 0, // top clear
+      0, 0, 0, 0, // clear until offset
+      0, 0, 0, 1, // ramp up to opaque
+      0, 0, 0, 1, // hold opaque plateau
+      0, 0, 0, 0, // back to clear
+      0, 0, 0, 0  // bottom clear
+    ]
+
+    let context = CGContext(
+      data: nil,
+      width: Int(width),
+      height: Int(height),
+      bitsPerComponent: 8,
+      bytesPerRow: 0,
+      space: colorSpace,
+      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+    )!
+
+    guard let gradient = CGGradient(
+      colorSpace: colorSpace,
+      colorComponents: colorComponents,
+      locations: locations,
+      count: locations.count
+    ) else {
+      return makeFallbackMask(width: width, height: height)
     }
 
+    context.drawLinearGradient(
+      gradient,
+      start: CGPoint(x: 0, y: 0),
+      end: CGPoint(x: 0, y: height),
+      options: []
+    )
+
+    return context.makeImage() ?? makeFallbackMask(width: width, height: height)
+  }
+
+  private func makeFallbackMask(width: CGFloat, height: CGFloat) -> CGImage {
+    let fallback = CIFilter.smoothLinearGradient()
+    fallback.color0 = CIColor.black
+    fallback.color1 = CIColor.clear
+    fallback.point0 = CGPoint(x: 0, y: height)
+    fallback.point1 = CGPoint(x: 0, y: height / 2)
+
     return CIContext().createCGImage(
-      ciGradientFilter.outputImage!,
+      fallback.outputImage!,
       from: CGRect(x: 0, y: 0, width: width, height: height)
     )!
   }
