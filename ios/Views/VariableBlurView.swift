@@ -145,10 +145,18 @@ open class VariableBlurView: UIVisualEffectView {
         ciGradientFilter.point1.y = height - ciGradientFilter.point1.y
       }
 
-      return CIContext().createCGImage(
-        ciGradientFilter.outputImage!,
+      guard let output = ciGradientFilter.outputImage else {
+        return makeFallbackMask(width: width, height: height)
+      }
+
+      guard let cg = CIContext().createCGImage(
+        output,
         from: CGRect(x: 0, y: 0, width: width, height: height)
-      )!
+      ) else {
+        return makeFallbackMask(width: width, height: height)
+      }
+
+      return cg
     }
   }
 
@@ -161,8 +169,8 @@ open class VariableBlurView: UIVisualEffectView {
     let endEdge = 1 - startEdge
     let colorSpace = CGColorSpaceCreateDeviceRGB()
 
-    let centerLow: CGFloat = 0.5 + startEdge
-    let centerHigh: CGFloat = 0.5 - startEdge
+    let centerLow: CGFloat = 0.5
+    let centerHigh: CGFloat = 0.5
     let locations: [CGFloat] = [
       0.0,
       startEdge,
@@ -217,9 +225,44 @@ open class VariableBlurView: UIVisualEffectView {
     fallback.point0 = CGPoint(x: 0, y: height)
     fallback.point1 = CGPoint(x: 0, y: height / 2)
 
-    return CIContext().createCGImage(
-      fallback.outputImage!,
-      from: CGRect(x: 0, y: 0, width: width, height: height)
-    )!
+    if let output = fallback.outputImage,
+       let cg = CIContext().createCGImage(
+         output,
+         from: CGRect(x: 0, y: 0, width: width, height: height)
+       ) {
+      return cg
+    }
+
+    // Last-resort solid mask (fully opaque) to avoid crash loops
+    let colorSpace = CGColorSpaceCreateDeviceGray()
+    let bitmapInfo = CGImageAlphaInfo.none.rawValue
+    guard let context = CGContext(
+      data: nil,
+      width: Int(max(width, 1)),
+      height: Int(max(height, 1)),
+      bitsPerComponent: 8,
+      bytesPerRow: 0,
+      space: colorSpace,
+      bitmapInfo: bitmapInfo
+    ) else {
+      // Should never happen; return a 1x1 opaque pixel
+      return CGImage(
+        width: 1,
+        height: 1,
+        bitsPerComponent: 8,
+        bitsPerPixel: 8,
+        bytesPerRow: 1,
+        space: colorSpace,
+        bitmapInfo: CGBitmapInfo(rawValue: bitmapInfo),
+        provider: CGDataProvider(data: Data([0xFF]) as CFData)!,
+        decode: nil,
+        shouldInterpolate: false,
+        intent: .defaultIntent
+      )!
+    }
+
+    context.setFillColor(CGColor(gray: 0, alpha: 1))
+    context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+    return context.makeImage()!
   }
 }

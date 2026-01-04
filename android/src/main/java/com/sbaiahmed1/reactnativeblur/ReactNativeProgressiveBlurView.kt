@@ -291,7 +291,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
       "blurredtopclearbottom", "toptobottom", "top" -> "topToBottom"
       "blurredcentercleartopandbottom", "center" -> "center"
       "blurredlefttoclearright", "lefttoright", "left" -> "leftToRight"
-      "blurredrightoclearleft", "righttoleft", "right" -> "rightToLeft"
+      "blurredrighttoclearleft", "righttoleft", "right" -> "rightToLeft"
       else -> {
         logWarning("Unknown direction: $direction, defaulting to topToBottom")
         "topToBottom"
