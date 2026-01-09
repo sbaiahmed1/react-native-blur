@@ -82,6 +82,7 @@ import UIKit
   }
 
   private func updateEffect() {
+    // Check if we can use the new API (iOS 26+)
     if #available(iOS 26.0, *) {
       #if compiler(>=6.2)
       let style: UIGlassEffect.Style = glassType == "regular" ? .regular : .clear
@@ -96,6 +97,9 @@ import UIKit
       currentGlassStyle = glassType
       
       updateBorderRadius()
+      #else
+      // Fallback for older compilers (Xcode < 16.x) even on newer iOS
+      updateFallback()
       #endif
     } else {
       // Fallback for iOS < 26
@@ -104,12 +108,34 @@ import UIKit
   }
 
   private func updateFallback() {
-    if #available(iOS 26.0, *) {
-      // Do nothing if iOS 26+
-    } else {
+    // If reduce transparency is enabled, show solid color
+    if UIAccessibility.isReduceTransparencyEnabled {
       backgroundColor = reducedTransparencyFallbackColor
-      layer.cornerRadius = allBorderRadius
+      glassEffectView?.effect = nil
+    } else {
+      backgroundColor = .clear
+      
+      // Map glass types to blur styles for fallback
+      let style: UIBlurEffect.Style
+      switch glassType {
+      case "regular":
+        style = .systemMaterial
+      case "clear":
+        style = .systemUltraThinMaterial
+      default:
+        style = .regular
+      }
+      
+      let effect = UIBlurEffect(style: style)
+      glassEffectView?.effect = effect
+      
+      // Clear any background color on content view
+      glassEffectView?.contentView.backgroundColor = .clear
     }
+    
+    layer.cornerRadius = allBorderRadius
+    glassEffectView?.layer.cornerRadius = allBorderRadius
+    glassEffectView?.layer.masksToBounds = true
   }
 
   private func updateBorderRadius() {
