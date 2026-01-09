@@ -56,8 +56,9 @@ func blurStyleFromString(_ styleString: String) -> UIBlurEffect.Style {
 }
 
 /// Maps string glass type names to Glass effect values (iOS 26.0+)
+#if compiler(>=6.2)
 @available(iOS 26.0, *)
-func glassEffectFromString(_ glassTypeString: String) -> Glass {
+func glassEffectFromString(_ glassTypeString: String) -> UIGlassEffect.Style {
   switch glassTypeString {
   case "regular":
     return .regular
@@ -67,6 +68,7 @@ func glassEffectFromString(_ glassTypeString: String) -> Glass {
     return .clear
   }
 }
+#endif
 
 // MARK: - Blur Amount Mapping
 
