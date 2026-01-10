@@ -166,7 +166,8 @@
         "ReactNativeBlurView": "ReactNativeBlurView",
         "ReactNativeLiquidGlassView": "ReactNativeLiquidGlassView",
         "ReactNativeProgressiveBlurView": "ReactNativeProgressiveBlurView",
-        "ReactNativeLiquidGlassContainer": "ReactNativeLiquidGlassContainer"
+        "ReactNativeLiquidGlassContainer": "ReactNativeLiquidGlassContainer",
+        "ReactNativeVibrancyView": "ReactNativeVibrancyView"
       }
     }
   },
