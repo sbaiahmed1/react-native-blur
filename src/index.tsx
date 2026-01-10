@@ -26,3 +26,7 @@ export type { ValueChangeEvent } from './ReactNativeBlurSwitchNativeComponent';
 
 export { BlurSwitch } from './BlurSwitch';
 export type { BlurSwitchProps } from './BlurSwitch';
+
+export { default as ReactNativeVibrancyView } from './ReactNativeVibrancyViewNativeComponent';
+export { VibrancyView } from './VibrancyView';
+export type { VibrancyViewProps } from './VibrancyView';
