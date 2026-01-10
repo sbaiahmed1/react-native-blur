@@ -26,6 +26,7 @@ export interface ProgressiveBlurViewProps {
    * @description The direction of the progressive blur gradient
    * - 'blurredTopClearBottom': Blur starts at top, clear at bottom
    * - 'blurredBottomClearTop': Blur starts at bottom, clear at top
+   * - 'blurredCenterClearTopAndBottom': Blur peaks at center, clear at both edges
    *
    * @default 'blurredTopClearBottom'
    */
@@ -153,7 +154,7 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
         {...props}
       />
 
-      <View style={styles.children}>{children}</View>
+      {children}
     </View>
   );
 };
@@ -164,9 +165,5 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
     overflow: 'hidden',
-  },
-  children: {
-    position: 'relative',
-    zIndex: 1,
   },
 });
