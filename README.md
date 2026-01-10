@@ -1,6 +1,6 @@
 # @sbaiahmed1/react-native-blur
 
-A modern React Native library providing **five specialized components** for advanced visual effects: `BlurView` for native blur effects, `LiquidGlassView` for cutting-edge liquid glass effects on iOS 26+ (with Android fallback to enhanced blur), `LiquidGlassContainer` for iOS 26+ glass container effects with configurable spacing, `ProgressiveBlurView` for smooth, variable blur transitions, and `BlurSwitch` for beautiful blur switch buttons on Android.
+A modern React Native library providing **six specialized components** for advanced visual effects: `BlurView` for native blur effects, `VibrancyView` for iOS vibrancy effects, `LiquidGlassView` for cutting-edge liquid glass effects on iOS 26+ (with Android fallback to enhanced blur), `LiquidGlassContainer` for iOS 26+ glass container effects with configurable spacing, `ProgressiveBlurView` for smooth, variable blur transitions, and `BlurSwitch` for beautiful blur switch buttons on Android.
 
 > **⚠️ Breaking Changes**: If upgrading from 3.x, see [Breaking Changes](#️-breaking-changes-in-v400) section.
 
@@ -27,6 +27,12 @@ A modern React Native library providing **five specialized components** for adva
 
   <br>
   <em>iOS (left) and Android (right) blur effects in action</em>
+  <br>
+  <br>
+  <video src="demos/vibrancy_iOS.mov" width="300" autoplay loop muted playsinline></video>
+  <br>
+  <em>Vibrancy Effect (iOS only)</em>
+  <br>
   <br>
   <em>Liquid Glass effect in action (iOS 26+ only)</em>
   <br>
@@ -258,7 +264,7 @@ The implementation automatically handles different Android versions:
 
 ## Usage
 
-The library now provides **five specialized components** for different visual effects:
+The library now provides **six specialized components** for different visual effects:
 
 ### BlurView - Standard Blur Effects
 
@@ -316,37 +322,7 @@ function MyComponent() {
 }
 ```
 
-### ProgressiveBlurView - Variable/Gradient Blur
-
-NOTE: Progressive blur offset works different between android and iOS
-
-Use `ProgressiveBlurView` for smooth, gradient blur transitions. This component works on both **iOS** and **Android**.
-
-```tsx
-import React from 'react';
-import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
-
-function GradientBlurComponent() {
-  return (
-    <ProgressiveBlurView
-      blurType="light"
-      blurAmount={30}
-      direction="blurredTopClearBottom"
-      startOffset={0}
-      style={{ height: 200 }}
-    >
-      <Text>Progressive blur from top (blurred) to bottom (clear)</Text>
-    </ProgressiveBlurView>
-  );
-}
-```
-
-#### Locked Content Example
-
-Perfect for paywall/premium content:
-
-```tsx
-<View style={{ position: 'relative' }}>
+### w style={{ position: 'relative' }}>
   <Text>Long content here...</Text>
 
   {/* Progressive blur overlay */}
@@ -588,10 +564,21 @@ All props are optional and have sensible defaults.
 | `style`                            | `ViewStyle`  | `undefined` | Style object for the blur view                                                |
 | `children`                         | `ReactNode`  | `undefined` | Child components to render inside the blur view                               |
 
-### ProgressiveBlurView Props
+### VibrancyView Props
 
 All props are optional and have sensible defaults.
 
+| Prop         | Type         | Default     | Description                                     |
+| ------------ | ------------ | ----------- | ----------------------------------------------- |
+| `blurType`   | `BlurType`   | `'xlight'`  | The type of blur/vibrancy effect to apply       |
+| `blurAmount` | `number`     | `10.0`      | The intensity of the blur effect (0-100)        |
+| `style`      | `ViewStyle`  | `undefined` | Style object for the vibrancy view              |
+| `children`   | `ReactNode`  | `undefined` | Child components to render inside the vibrancy view |
+
+### ProgressiveBlurView Props
+
+All props are optional and have sensible defaults.
+sx
 | Prop                               | Type                                                 | Default                   | Description                                          |
 | ---------------------------------- | ---------------------------------------------------- | ------------------------- | ---------------------------------------------------- |
 | `blurType`                         | `BlurType`                                           | `'regular'`               | The type of blur effect to apply                     |
@@ -700,6 +687,11 @@ Both components have been completely rewritten using **SwiftUI** for modern perf
 - **Older iOS**: Graceful fallback to standard blur effects
 - **SwiftUI Integration**: Leverages SwiftUI's declarative UI for better performance and maintainability
 
+#### VibrancyView
+
+- **iOS**: Uses native `UIVibrancyEffect` to create vibrant content that shines through the blur
+- **Integration**: Works seamlessly with `UIVisualEffectView` hierarchies
+
 #### LiquidGlassView
 
 - **iOS 26+**: Uses native `UIGlassEffect` API for true liquid glass effects with customizable tint colors and opacity
@@ -712,11 +704,7 @@ Both components have been completely rewritten using **SwiftUI** for modern perf
 
 The component uses the QmBlurView library to provide real blur effects with hardware acceleration. The implementation supports multiple blur algorithms and gracefully falls back to translucent overlay approximation on devices with limited graphics capabilities.
 
-#### LiquidGlassView
-
-**⚠️ Platform Limitation**: Liquid glass effects are **iOS 26+ exclusive**. On Android, `LiquidGlassView` automatically falls back to `BlurView` with enhanced blur and tint overlay to approximate the visual effect.
-
-## Accessibility
+#### L+ssibility
 
 All components automatically respect the "Reduce Transparency" accessibility setting:
 
@@ -747,14 +735,16 @@ import {
   LiquidGlassView,
   LiquidGlassContainer,
   ProgressiveBlurView,
-  BlurSwitch,
+  BlurView,
+  VibrancySwitch,
   BlurType,
   GlassType,
   BlurViewProps,
   LiquidGlassViewProps,
   LiquidGlassContainerProps,
   ProgressiveBlurViewProps,
-  BlurSwitchProps,
+  BlurViewProps,
+  VibrancySwitchProps,
 } from '@sbaiahmed1/react-native-blur';
 
 // BlurType is exported for type checking
@@ -766,6 +756,11 @@ const glassType: GlassType = 'regular';
 // BlurViewProps for component props
 interface MyBlurComponentProps {
   blurProps: BlurViewProps;
+}
+
+// VibrancyViewProps for vibrancy component props
+interface MyVibrancyComponentProps {
+  vibrancyProps: VibrancyViewProps;
 }
 
 // LiquidGlassViewProps for glass component props
