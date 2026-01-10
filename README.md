@@ -322,7 +322,37 @@ function MyComponent() {
 }
 ```
 
-### w style={{ position: 'relative' }}>
+### ProgressiveBlurView - Variable/Gradient Blur
+
+NOTE: Progressive blur offset works different between android and iOS
+
+Use `ProgressiveBlurView` for smooth, gradient blur transitions. This component works on both **iOS** and **Android**.
+
+```tsx
+import React from 'react';
+import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
+
+function GradientBlurComponent() {
+  return (
+    <ProgressiveBlurView
+      blurType="light"
+      blurAmount={30}
+      direction="blurredTopClearBottom"
+      startOffset={0}
+      style={{ height: 200 }}
+    >
+      <Text>Progressive blur from top (blurred) to bottom (clear)</Text>
+    </ProgressiveBlurView>
+  );
+}
+```
+
+#### Locked Content Example
+
+Perfect for paywall/premium content:
+
+```tsx
+<View style={{ position: 'relative' }}>
   <Text>Long content here...</Text>
 
   {/* Progressive blur overlay */}
@@ -578,7 +608,7 @@ All props are optional and have sensible defaults.
 ### ProgressiveBlurView Props
 
 All props are optional and have sensible defaults.
-sx
+
 | Prop                               | Type                                                 | Default                   | Description                                          |
 | ---------------------------------- | ---------------------------------------------------- | ------------------------- | ---------------------------------------------------- |
 | `blurType`                         | `BlurType`                                           | `'regular'`               | The type of blur effect to apply                     |
