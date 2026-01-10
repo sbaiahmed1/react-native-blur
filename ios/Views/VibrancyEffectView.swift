@@ -80,9 +80,12 @@ import UIKit
     blurAnimator?.fractionComplete = intensity
 
     // Stop the animation at the current state
-    DispatchQueue.main.async { [weak self] in
-      self?.blurAnimator?.stopAnimation(true)
-      self?.blurAnimator?.finishAnimation(at: .current)
+    DispatchQueue.main.async { [weak self, weak blurAnimator] in
+        // Only stop the animator if it's still the current one
+        guard let self = self, let currentAnimator = self.blurAnimator, currentAnimator === blurAnimator else { return }
+        
+        currentAnimator.stopAnimation(true)
+        currentAnimator.finishAnimation(at: .current)
     }
   }
 
