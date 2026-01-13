@@ -20,3 +20,13 @@ export { default as ReactNativeLiquidGlassContainer } from './ReactNativeLiquidG
 
 export { LiquidGlassContainer } from './LiquidGlassContainer';
 export type { LiquidGlassContainerProps } from './LiquidGlassContainer';
+
+export { default as ReactNativeBlurSwitch } from './ReactNativeBlurSwitchNativeComponent';
+export type { ValueChangeEvent } from './ReactNativeBlurSwitchNativeComponent';
+
+export { BlurSwitch } from './BlurSwitch';
+export type { BlurSwitchProps } from './BlurSwitch';
+
+export { default as ReactNativeVibrancyView } from './ReactNativeVibrancyViewNativeComponent';
+export { VibrancyView } from './VibrancyView';
+export type { VibrancyViewProps } from './VibrancyView';

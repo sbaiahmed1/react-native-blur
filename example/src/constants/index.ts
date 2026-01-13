@@ -43,3 +43,13 @@ export const glassColors = [
   { name: 'Teal', color: '#5AC8FA', emoji: '💎' },
   { name: 'Clear', color: 'clear', emoji: '🔮' },
 ];
+
+export const BLUR_VIEW_SWITCHES = glassColors
+  .filter(item => item.color !== 'clear')
+  .map((item, index) => ({
+    id: index + 1,
+    label: item.name,
+    color: item.color,
+    blurAmount: 15 + index * 2,
+    disabled: index === 0 || index === 1,
+  }));

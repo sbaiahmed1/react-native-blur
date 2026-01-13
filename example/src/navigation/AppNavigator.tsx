@@ -4,6 +4,7 @@ import HomeScreen from '../screens/HomeScreen';
 import ExamplesScreen from '../screens/ExamplesScreen';
 import LiquidGlassScreen from '../screens/LiquidGlassScreen';
 import ProgressiveBlurScreen from '../screens/ProgressiveBlurScreen';
+import VibrancyScreen from '../screens/VibrancyScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import BlurTabBar from './BlurTabBar';
 
@@ -30,6 +31,13 @@ export default function AppNavigator() {
           component={ExamplesScreen}
           options={{
             tabBarLabel: '✨ Examples',
+          }}
+        />
+        <Tab.Screen
+          name="Vibrancy"
+          component={VibrancyScreen}
+          options={{
+            tabBarLabel: '✨ Vibrancy',
           }}
         />
         <Tab.Screen

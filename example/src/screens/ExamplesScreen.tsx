@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -5,8 +6,8 @@ import {
   ImageBackground,
   ScrollView,
 } from 'react-native';
-import { BlurView } from '@sbaiahmed1/react-native-blur';
-import { DEMO_IMAGES } from '../constants';
+import { BlurView, BlurSwitch } from '@sbaiahmed1/react-native-blur';
+import { BLUR_VIEW_SWITCHES, DEMO_IMAGES } from '../constants';
 
 const BLUR_TYPES = [
   { name: 'X Light', type: 'xlight' },
@@ -37,6 +38,12 @@ const BLUR_TYPES = [
 ];
 
 export default function ExamplesScreen() {
+  const [switchStates, setSwitchStates] = useState<Record<number, boolean>>({});
+
+  const toggleSwitch = (id: number) => {
+    setSwitchStates(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   return (
     <ImageBackground
       source={{ uri: DEMO_IMAGES[1] }}
@@ -45,6 +52,24 @@ export default function ExamplesScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.header}>Blur Examples</Text>
+
+        <Text style={styles.sectionTitle}>Blur Switch</Text>
+        <BlurView blurType="dark" blurAmount={60} style={styles.switchSection}>
+          {BLUR_VIEW_SWITCHES.map(item => (
+            <View key={item.id} style={styles.switchRow}>
+              <Text style={styles.switchLabel}>{item.label}</Text>
+              <BlurSwitch
+                value={switchStates[item.id]}
+                onValueChange={() => toggleSwitch(item.id)}
+                blurAmount={item.blurAmount}
+                trackColor={{ true: item.color }}
+                disabled={item.disabled}
+              />
+            </View>
+          ))}
+        </BlurView>
+
+        <Text style={styles.sectionTitle}>Blur Types</Text>
 
         <View style={styles.grid}>
           {BLUR_TYPES.map(blur => (
@@ -107,6 +132,25 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 8,
+  },
+  switchSection: {
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    overflow: 'hidden',
+  },
+  switchRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  switchLabel: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   grid: {
     flexDirection: 'row',
