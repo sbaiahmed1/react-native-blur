@@ -14,6 +14,7 @@ import android.widget.FrameLayout
 import android.view.View.MeasureSpec
 import com.qmdeve.blurview.widget.BlurView
 import androidx.core.graphics.toColorInt
+import kotlin.math.max
 
 /**
  * Android implementation of React Native ProgressiveBlurView component.
@@ -146,42 +147,74 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     }
 
     try {
-      val (x0, y0, x1, y1) = when (currentDirection) {
-        "bottomToTop" -> {
-          // Blur at bottom, clear at top
-          // point0 (TRANSPARENT/clear) at top, point1 (WHITE/blur) at bottom adjusted by offset
-          val offsetPixels = height * currentStartOffset
-          floatArrayOf(0f, 0f, 0f, height - offsetPixels)
-        }
-        "topToBottom" -> {
-          // Blur at top, clear at bottom (default)
-          // point0 (TRANSPARENT/clear) at bottom, point1 (WHITE/blur) at top adjusted by offset
-          val offsetPixels = height * currentStartOffset
-          floatArrayOf(0f, height.toFloat(), 0f, offsetPixels)
-        }
-        "leftToRight" -> {
-          val offsetPixels = width * currentStartOffset
-          floatArrayOf(offsetPixels, 0f, width.toFloat(), 0f)
-        }
-        "rightToLeft" -> {
-          val offsetPixels = width * currentStartOffset
-          floatArrayOf(width.toFloat(), 0f, offsetPixels, 0f)
-        }
-        else -> floatArrayOf(0f, 0f, 0f, height.toFloat())
-      }
+      val gradient = when (currentDirection) {
+        "center" -> {
+          val startEdge = max(currentStartOffset, 0.01f)
+          val endEdge = 1f - startEdge
+          val centerLow = 0.2f + startEdge
+          val centerHigh = 0.8f - startEdge
 
-      // Create gradient: fully transparent -> fully opaque
-      // This masks the blur: opaque = blur visible, transparent = blur hidden (clear)
-      val gradient = LinearGradient(
-        x0, y0, x1, y1,
-        intArrayOf(Color.TRANSPARENT, Color.WHITE),
-        floatArrayOf(0f, 1f),
-        Shader.TileMode.CLAMP
-      )
+          LinearGradient(
+            0f,
+            0f,
+            0f,
+            height.toFloat(),
+            intArrayOf(
+              Color.TRANSPARENT,
+              Color.TRANSPARENT,
+              Color.WHITE,
+              Color.WHITE,
+              Color.TRANSPARENT,
+              Color.TRANSPARENT
+            ),
+            floatArrayOf(
+              0f,
+              startEdge,
+              centerLow,
+              centerHigh,
+              endEdge,
+              1f
+            ),
+            Shader.TileMode.CLAMP
+          )
+        }
+        else -> {
+          val (x0, y0, x1, y1) = when (currentDirection) {
+            "bottomToTop" -> {
+              // Blur at bottom, clear at top
+              // point0 (TRANSPARENT/clear) at top, point1 (WHITE/blur) at bottom adjusted by offset
+              val offsetPixels = height * currentStartOffset
+              floatArrayOf(0f, 0f, 0f, height - offsetPixels)
+            }
+            "topToBottom" -> {
+              // Blur at top, clear at bottom (default)
+              // point0 (TRANSPARENT/clear) at bottom, point1 (WHITE/blur) at top adjusted by offset
+              val offsetPixels = height * currentStartOffset
+              floatArrayOf(0f, height.toFloat(), 0f, offsetPixels)
+            }
+            "leftToRight" -> {
+              val offsetPixels = width * currentStartOffset
+              floatArrayOf(offsetPixels, 0f, width.toFloat(), 0f)
+            }
+            "rightToLeft" -> {
+              val offsetPixels = width * currentStartOffset
+              floatArrayOf(width.toFloat(), 0f, offsetPixels, 0f)
+            }
+            else -> floatArrayOf(0f, 0f, 0f, height.toFloat())
+          }
+
+          LinearGradient(
+            x0, y0, x1, y1,
+            intArrayOf(Color.TRANSPARENT, Color.WHITE),
+            floatArrayOf(0f, 1f),
+            Shader.TileMode.CLAMP
+          )
+        }
+      }
 
       gradientPaint.shader = gradient
 
-      logDebug("Updated gradient: direction=$currentDirection, start=($x0,$y0), end=($x1,$y1), offset=$currentStartOffset")
+      logDebug("Updated gradient: direction=$currentDirection, offset=$currentStartOffset")
       invalidate()
 
     } catch (e: Exception) {
@@ -232,8 +265,13 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    * @param amount The blur amount value (0-100), will be mapped to Android's 0-25 radius range
    */
   fun setBlurAmount(amount: Float) {
-    currentBlurRadius = mapBlurAmountToRadius(amount)
-    logDebug("setBlurAmount: $amount -> $currentBlurRadius")
+    var radius = mapBlurAmountToRadius(amount)
+    if (currentDirection == "center") {
+      // Center direction tends to look stronger; scale it down for parity with iOS
+      radius *= 0.35f
+    }
+    currentBlurRadius = radius
+    logDebug("setBlurAmount: $amount -> $currentBlurRadius (direction=$currentDirection)")
 
     try {
       blurView?.setBlurRadius(currentBlurRadius)
@@ -251,8 +289,9 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     currentDirection = when (direction.lowercase()) {
       "blurredbottomcleartop", "bottomtotop", "bottom" -> "bottomToTop"
       "blurredtopclearbottom", "toptobottom", "top" -> "topToBottom"
+      "blurredcentercleartopandbottom", "center" -> "center"
       "blurredlefttoclearright", "lefttoright", "left" -> "leftToRight"
-      "blurredrightoclearleft", "righttoleft", "right" -> "rightToLeft"
+      "blurredrighttoclearleft", "righttoleft", "right" -> "rightToLeft"
       else -> {
         logWarning("Unknown direction: $direction, defaulting to topToBottom")
         "topToBottom"
