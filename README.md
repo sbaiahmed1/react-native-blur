@@ -347,6 +347,29 @@ function GradientBlurComponent() {
 }
 ```
 
+#### Center Blur (new direction)
+
+`direction="blurredCenterClearTopAndBottom"` creates a long blur body that peaks in the center and fades to clear at both edges.
+
+```tsx
+<ProgressiveBlurView
+  blurType="regular"
+  blurAmount={35}
+  direction="blurredCenterClearTopAndBottom"
+  startOffset={0} // keep 0 for longest blur body; raise toward 0.3 to shorten
+  style={{ height: 220, borderRadius: 16 }}
+>
+  <Text>Clear at top</Text>
+  <Text>Blurred at center</Text>
+  <Text>Clear at bottom</Text>
+</ProgressiveBlurView>
+```
+
+Tips:
+- `startOffset` shifts where the blur plateau begins; 0 = longest body, higher = shorter.
+- `blurAmount` controls peak intensity; center direction balances strength per platform.
+- Works on iOS and Android with matching props.
+
 #### Locked Content Example
 
 Perfect for paywall/premium content:
@@ -613,7 +636,7 @@ All props are optional and have sensible defaults.
 | ---------------------------------- | ---------------------------------------------------- | ------------------------- | ---------------------------------------------------- |
 | `blurType`                         | `BlurType`                                           | `'regular'`               | The type of blur effect to apply                     |
 | `blurAmount`                       | `number`                                             | `20.0`                    | Maximum blur radius in pixels                        |
-| `direction`                        | `'blurredTopClearBottom' \| 'blurredBottomClearTop'` | `'blurredTopClearBottom'` | Direction of the blur gradient                       |
+| `direction`                        | `'blurredTopClearBottom' \| 'blurredBottomClearTop' \| 'blurredCenterClearTopAndBottom'` | `'blurredTopClearBottom'` | Direction of the blur gradient                       |
 | `startOffset`                      | `number`                                             | `0.0`                     | Where the gradient starts (0.0 to 1.0)               |
 | `reducedTransparencyFallbackColor` | `string`                                             | `'#FFFFFF'`               | Fallback color when reduced transparency is enabled  |
 | `overlayColor`                     | `ColorValue`                                         | `undefined`               | The overlay color to apply on top of the blur effect |
