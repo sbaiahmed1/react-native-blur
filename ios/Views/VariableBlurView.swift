@@ -102,10 +102,15 @@ open class VariableBlurView: UIVisualEffectView {
   open override func didMoveToWindow() {
     super.didMoveToWindow()
     guard let window, let backdropLayer = subviews.first?.layer else { return }
-    backdropLayer.setValue(
-      window.traitCollection.displayScale,
-      forKey: "scale"
-    )
+
+    let newScale = window.traitCollection.displayScale
+    let currentScale = backdropLayer.value(forKey: "scale") as? CGFloat
+
+    // Only update scale if it actually changed to prevent unnecessary
+    // recalculations during navigation gestures
+    if currentScale != newScale {
+      backdropLayer.setValue(newScale, forKey: "scale")
+    }
   }
 
   open override func traitCollectionDidChange(
