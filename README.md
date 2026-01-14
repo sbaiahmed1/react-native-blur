@@ -29,9 +29,21 @@ A modern React Native library providing **six specialized components** for advan
   <em>iOS (left) and Android (right) blur effects in action</em>
   <br>
   <br>
-  <video src="demos/vibrancy_iOS.mov" width="300" autoplay loop muted playsinline></video>
+  <a href="demos/vibrancy_iOS.mp4">
+    <img src="https://img.shields.io/badge/▶️_Watch-Vibrancy_Demo-blue?style=for-the-badge" alt="Vibrancy Demo" />
+  </a>
   <br>
-  <em>Vibrancy Effect (iOS only)</em>
+  <em>Vibrancy Effect (iOS only) - Click badge to watch video</em>
+  <br>
+  <br>
+  <a href="demos/Progressive-Blur-iOS.mp4">
+    <img src="https://img.shields.io/badge/▶️_Watch-Progressive_Blur_iOS-purple?style=for-the-badge" alt="Progressive Blur iOS" />
+  </a>
+  <a href="demos/Progressive-Blur-Android.mp4">
+    <img src="https://img.shields.io/badge/▶️_Watch-Progressive_Blur_Android-green?style=for-the-badge" alt="Progressive Blur Android" />
+  </a>
+  <br>
+  <em>Progressive Blur Effect (iOS & Android) - Click badges to watch videos</em>
   <br>
   <br>
   <em>Liquid Glass effect in action (iOS 26+ only)</em>
