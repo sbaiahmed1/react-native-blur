@@ -74,7 +74,7 @@ def kotlin_version = getExtOrDefault("kotlinVersion")
 dependencies {
   implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation 'com.qmdeve.blurview:core:1.1.2'
+  implementation 'com.qmdeve.blurview:core:1.1.3'
 }
 
 react {
