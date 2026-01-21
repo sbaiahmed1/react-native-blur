@@ -265,7 +265,7 @@ The library uses native Android blur with automatic platform detection. No addit
 > 📦 **Dependency**: The library uses [QmBlurView](https://github.com/QmDeve/QmBlurView) from Maven Central:
 >
 > ```gradle
-> implementation 'com.qmdeve.blurview:core:1.0.5'
+> implementation 'com.qmdeve.blurview:core:1.1.3'
 > ```
 
 The implementation automatically handles different Android versions:
