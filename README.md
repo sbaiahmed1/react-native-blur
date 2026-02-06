@@ -53,13 +53,13 @@ A modern React Native library providing **six specialized components** for advan
 
 ## Requirements
 
-| Platform                  | Minimum Version                        |
-| ------------------------- | -------------------------------------- |
-| **iOS**                   | iOS 13.0+                              |
-| **Xcode**                 | Xcode 26.0+ (for liquid glass support) |
-| **React Native**          | 0.68+ (New Architecture)               |
-| **Android**               | API 24+ (Android 7.0)                  |
-| **Android Gradle Plugin** | 8.9.1+                                 |
+| Platform                  | Minimum Version                                       |
+| ------------------------- |-------------------------------------------------------|
+| **iOS**                   | iOS 13.0+                                             |
+| **Xcode**                 | min: Xcode 16; Xcode 26.0+ (for liquid glass support) |
+| **React Native**          | 0.68+ (New Architecture)                              |
+| **Android**               | API 24+ (Android 7.0)                                 |
+| **Android Gradle Plugin** | 8.9.1+                                                |
 
 > ⚠️ **Note**: LiquidGlassView requires Xcode 26.0+ and iOS 26+ for full glass effects. The component automatically falls back to enhanced blur on older versions.
 
