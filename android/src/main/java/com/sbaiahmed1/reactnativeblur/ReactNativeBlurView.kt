@@ -3,15 +3,15 @@ package com.sbaiahmed1.reactnativeblur
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Outline
-import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
-import androidx.annotation.RequiresApi
+import android.view.ViewTreeObserver
 import com.qmdeve.blurview.widget.BlurViewGroup
+import com.qmdeve.blurview.base.BaseBlurViewGroup
 import androidx.core.graphics.toColorInt
 
 import android.view.View.MeasureSpec
@@ -22,6 +22,10 @@ import android.view.View.MeasureSpec
  *
  * QmBlurView is a high-performance blur library that uses native blur algorithms
  * implemented with underlying Native calls for optimal performance.
+ *
+ * Uses reflection to redirect the blur capture root from the activity decor view
+ * to the nearest react-native-screens Screen ancestor, preventing flickering and
+ * wrong frame capture during navigation transitions.
  */
 class ReactNativeBlurView : BlurViewGroup {
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
@@ -31,12 +35,13 @@ class ReactNativeBlurView : BlurViewGroup {
   private var glassOpacity: Float = 1.0f
   private var viewType: String = "blur"
   private var glassType: String = "clear"
+  private var isBlurInitialized: Boolean = false
 
   companion object {
     private const val TAG = "ReactNativeBlurView"
     private const val MAX_BLUR_RADIUS = 100f
     private const val DEFAULT_BLUR_RADIUS = 10f
-    private const val DEBUG = false // Set to true for debug builds
+    private const val DEBUG = false
 
     // Cross-platform blur amount constants
     private const val MIN_BLUR_AMOUNT = 0f
@@ -69,32 +74,149 @@ class ReactNativeBlurView : BlurViewGroup {
   }
 
   constructor(context: Context?) : super(context, null) {
-    initializeBlur()
+    setupView()
   }
 
   constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
-    initializeBlur()
+    setupView()
   }
 
   /**
-   * Initialize the blur view with default settings.
-   * QmBlurView automatically handles blur rendering without needing setupWith() calls.
+   * Initial view setup in constructor - only sets up visual defaults.
+   * Blur initialization is deferred to onAttachedToWindow to ensure the
+   * view hierarchy is fully mounted, preventing flickering and wrong frame capture.
+   */
+  private fun setupView() {
+    super.setBackgroundColor(currentOverlayColor)
+    clipChildren = true
+    clipToOutline = true
+    super.setDownsampleFactor(6.0F)
+  }
+
+  /**
+   * Called when the view is attached to a window.
+   * After QmBlurView's onAttachedToWindow sets the decor view as blur root,
+   * we use reflection to redirect it to the nearest Screen ancestor.
+   * This scopes the blur capture to just the current screen, preventing
+   * navigation transition artifacts.
+   */
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+
+    // Defer the blur root swap to next frame so the view tree is fully mounted
+    post {
+      swapBlurRootToScreenAncestor()
+      initializeBlur()
+    }
+  }
+
+  /**
+   * Uses reflection to redirect QmBlurView's internal blur capture root
+   * from the activity decor view to the nearest react-native-screens Screen ancestor.
+   *
+   * Reflection path: BlurViewGroup.mBaseBlurViewGroup -> BaseBlurViewGroup.mDecorView
+   * Also moves the OnPreDrawListener from the old root to the new one.
+   */
+  private fun swapBlurRootToScreenAncestor() {
+    val newRoot = findOptimalBlurRoot() ?: return
+
+    try {
+      // Step 1: Get BlurViewGroup's private mBaseBlurViewGroup field
+      val blurViewGroupClass = BlurViewGroup::class.java
+      val baseField = blurViewGroupClass.getDeclaredField("mBaseBlurViewGroup")
+      baseField.isAccessible = true
+      val baseBlurViewGroup = baseField.get(this) ?: return
+
+      // Step 2: Get BaseBlurViewGroup's private fields
+      val baseClass = BaseBlurViewGroup::class.java
+
+      val decorViewField = baseClass.getDeclaredField("mDecorView")
+      decorViewField.isAccessible = true
+      val oldDecorView = decorViewField.get(baseBlurViewGroup) as? View
+
+      val preDrawListenerField = baseClass.getDeclaredField("preDrawListener")
+      preDrawListenerField.isAccessible = true
+      val preDrawListener = preDrawListenerField.get(baseBlurViewGroup) as? ViewTreeObserver.OnPreDrawListener
+
+      if (preDrawListener != null && oldDecorView != null) {
+        // Step 3: Remove listener from old root's ViewTreeObserver
+        try {
+          oldDecorView.viewTreeObserver.removeOnPreDrawListener(preDrawListener)
+        } catch (e: Exception) {
+          logDebug("Could not remove old pre-draw listener: ${e.message}")
+        }
+
+        // Step 4: Set new root as mDecorView
+        decorViewField.set(baseBlurViewGroup, newRoot)
+
+        // Step 5: Add listener to new root's ViewTreeObserver
+        newRoot.viewTreeObserver.addOnPreDrawListener(preDrawListener)
+
+        // Step 6: Update mDifferentRoot flag
+        val differentRootField = baseClass.getDeclaredField("mDifferentRoot")
+        differentRootField.isAccessible = true
+        differentRootField.setBoolean(baseBlurViewGroup, newRoot.rootView != this.rootView)
+
+        // Step 7: Force a redraw
+        val forceRedrawField = baseClass.getDeclaredField("mForceRedraw")
+        forceRedrawField.isAccessible = true
+        forceRedrawField.setBoolean(baseBlurViewGroup, true)
+
+        logDebug("Swapped blur root to: ${newRoot.javaClass.simpleName} (was: ${oldDecorView.javaClass.simpleName})")
+      }
+    } catch (e: NoSuchFieldException) {
+      logWarning("Reflection failed - QmBlurView field not found: ${e.message}. Falling back to decor view.")
+    } catch (e: Exception) {
+      logWarning("Failed to swap blur root: ${e.message}. Falling back to decor view.")
+    }
+  }
+
+  /**
+   * Finds the optimal view to use as blur capture root.
+   * Priority: nearest react-native-screens Screen > android.R.id.content > parent
+   */
+  private fun findOptimalBlurRoot(): ViewGroup? {
+    return findNearestScreenAncestor() ?: getContentViewFallback()
+  }
+
+  /**
+   * Walks up the view hierarchy looking for react-native-screens Screen components
+   * using class name detection to avoid hard dependencies on react-native-screens.
+   */
+  private fun findNearestScreenAncestor(): ViewGroup? {
+    var currentParent = this.parent
+    while (currentParent != null) {
+      if (currentParent.javaClass.name == "com.swmansion.rnscreens.Screen") {
+        return currentParent as? ViewGroup
+      }
+      currentParent = currentParent.parent
+    }
+    return null
+  }
+
+  /**
+   * Falls back to android.R.id.content or the activity root view.
+   */
+  private fun getContentViewFallback(): ViewGroup? {
+    try {
+      val activity = context as? android.app.Activity
+      activity?.findViewById<ViewGroup>(android.R.id.content)?.let { return it }
+    } catch (e: Exception) {
+      logDebug("Could not access activity content view: ${e.message}")
+    }
+    return this.parent as? ViewGroup
+  }
+
+  /**
+   * Initialize the blur view with current settings.
+   * Called after the view is attached and the blur root has been swapped.
    */
   private fun initializeBlur() {
     try {
-      // Set initial blur properties using QmBlurView's API
-      // setBlurRadius takes Float, setOverlayColor takes Int, setCornerRadius takes Float (in dp)
       super.setBlurRadius(currentBlurRadius)
       super.setOverlayColor(currentOverlayColor)
-      super.setDownsampleFactor(6.0F)
-
-      clipChildren = true
-
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        super.setBackgroundColor(currentOverlayColor)
-      }
-
       updateCornerRadius()
+      isBlurInitialized = true
 
       logDebug("QmBlurView initialized with blurRadius: $currentBlurRadius, overlayColor: $currentOverlayColor")
     } catch (e: Exception) {
@@ -104,7 +226,8 @@ class ReactNativeBlurView : BlurViewGroup {
 
   /**
    * Called when the view is detached from a window.
-   * Performs cleanup to prevent memory leaks.
+   * Performs cleanup to prevent memory leaks and resets initialization state
+   * so blur is re-initialized on next attach (e.g. navigation transitions).
    */
   override fun onDetachedFromWindow() {
     super.onDetachedFromWindow()
@@ -116,6 +239,7 @@ class ReactNativeBlurView : BlurViewGroup {
    * Helps prevent memory leaks and ensures clean state.
    */
   fun cleanup() {
+    isBlurInitialized = false
     removeCallbacks(null)
     logDebug("View cleaned up")
   }
@@ -129,7 +253,6 @@ class ReactNativeBlurView : BlurViewGroup {
     logDebug("setBlurAmount: $amount -> $currentBlurRadius (mapped from 0-100 to 0-25 range)")
 
     try {
-      // QmBlurView uses setBlurRadius() to set blur intensity
       super.setBlurRadius(currentBlurRadius)
     } catch (e: Exception) {
       logError("Failed to set blur radius: ${e.message}", e)
@@ -146,12 +269,8 @@ class ReactNativeBlurView : BlurViewGroup {
     logDebug("setBlurType: $type -> ${blurType.name}")
 
     try {
-      // QmBlurView uses setOverlayColor() to set the tint/overlay color
+      super.setBackgroundColor(currentOverlayColor)
       super.setOverlayColor(currentOverlayColor)
-
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        super.setBackgroundColor(currentOverlayColor)
-      }
     } catch (e: Exception) {
       logError("Failed to set overlay color: ${e.message}", e)
     }
@@ -249,11 +368,8 @@ class ReactNativeBlurView : BlurViewGroup {
       "blur" -> {
         // Restore original blur overlay color
         try {
+          super.setBackgroundColor(currentOverlayColor)
           super.setOverlayColor(currentOverlayColor)
-
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            super.setBackgroundColor(currentOverlayColor)
-          }
         } catch (e: Exception) {
           logError("Failed to restore blur overlay: ${e.message}", e)
         }
@@ -286,16 +402,12 @@ class ReactNativeBlurView : BlurViewGroup {
         context.resources.displayMetrics
       )
 
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        rootView.outlineProvider = object : ViewOutlineProvider() {
-          @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-          override fun getOutline(view: View, outline: Outline?) {
-            outline?.setRoundRect(0, 0, view.width, view.height, radiusInPixels)
-          }
+      outlineProvider = object : ViewOutlineProvider() {
+        override fun getOutline(view: View, outline: Outline?) {
+          outline?.setRoundRect(0, 0, view.width, view.height, radiusInPixels)
         }
-
-        clipToOutline = true
       }
+      clipToOutline = true
 
       super.setCornerRadius(radiusInPixels)
       logDebug("Updated corner radius: ${currentCornerRadius}dp -> ${radiusInPixels}px")
