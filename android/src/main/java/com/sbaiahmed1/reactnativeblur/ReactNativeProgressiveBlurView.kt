@@ -1,8 +1,6 @@
 package com.sbaiahmed1.reactnativeblur
 
-import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -16,7 +14,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.view.View.MeasureSpec
-import com.facebook.react.bridge.ReactContext
 import com.qmdeve.blurview.widget.BlurView
 import kotlin.math.max
 
@@ -207,10 +204,17 @@ class ReactNativeProgressiveBlurView : FrameLayout {
 
   /**
    * Finds the optimal view to use as blur capture root.
-   * Priority: nearest react-native-screens Screen > android.R.id.content > parent
+   *
+   * Returns the nearest react-native-screens Screen ancestor if found, which scopes
+   * the blur to the current screen and prevents capturing navigation transitions.
+   *
+   * Returns null when no Screen ancestor exists (e.g. modals, standalone usage).
+   * A null return means swapBlurRootToScreenAncestor() is a no-op and QmBlurView
+   * keeps its default decor view as the blur root — this is correct for modals
+   * because they need to blur the content behind them (in the main activity window).
    */
   private fun findOptimalBlurRoot(): ViewGroup? {
-    return findNearestScreenAncestor() ?: getContentViewFallback()
+    return findNearestScreenAncestor()
   }
 
   /**
@@ -223,37 +227,6 @@ class ReactNativeProgressiveBlurView : FrameLayout {
         return currentParent as? ViewGroup
       }
       currentParent = currentParent.parent
-    }
-    return null
-  }
-
-  /**
-   * Falls back to android.R.id.content or the activity root view.
-   * Tries ReactContext.currentActivity first, then unwraps ContextWrapper chain.
-   */
-  private fun getContentViewFallback(): ViewGroup? {
-    try {
-      val activity = getActivityFromContext()
-      activity?.findViewById<ViewGroup>(android.R.id.content)?.let { return it }
-    } catch (e: Exception) {
-      logDebug("Could not access activity content view: ${e.message}")
-    }
-    return this.parent as? ViewGroup
-  }
-
-  /**
-   * Resolves an Activity from the view's context.
-   * Priority: ReactContext.currentActivity > ContextWrapper unwrap chain.
-   */
-  private fun getActivityFromContext(): Activity? {
-    // Try ReactContext first (most common in React Native)
-    (context as? ReactContext)?.currentActivity?.let { return it }
-
-    // Unwrap ContextWrapper chain to find an Activity
-    var ctx: Context? = context
-    while (ctx != null) {
-      if (ctx is Activity) return ctx
-      ctx = (ctx as? ContextWrapper)?.baseContext
     }
     return null
   }
