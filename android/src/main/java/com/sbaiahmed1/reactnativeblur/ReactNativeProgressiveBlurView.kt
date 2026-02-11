@@ -1,6 +1,8 @@
 package com.sbaiahmed1.reactnativeblur
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -14,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.view.View.MeasureSpec
+import com.facebook.react.bridge.ReactContext
 import com.qmdeve.blurview.widget.BlurView
 import kotlin.math.max
 
@@ -215,15 +218,33 @@ class ReactNativeProgressiveBlurView : FrameLayout {
 
   /**
    * Falls back to android.R.id.content or the activity root view.
+   * Tries ReactContext.currentActivity first, then unwraps ContextWrapper chain.
    */
   private fun getContentViewFallback(): ViewGroup? {
     try {
-      val activity = context as? android.app.Activity
+      val activity = getActivityFromContext()
       activity?.findViewById<ViewGroup>(android.R.id.content)?.let { return it }
     } catch (e: Exception) {
       logDebug("Could not access activity content view: ${e.message}")
     }
     return this.parent as? ViewGroup
+  }
+
+  /**
+   * Resolves an Activity from the view's context.
+   * Priority: ReactContext.currentActivity > ContextWrapper unwrap chain.
+   */
+  private fun getActivityFromContext(): Activity? {
+    // Try ReactContext first (most common in React Native)
+    (context as? ReactContext)?.currentActivity?.let { return it }
+
+    // Unwrap ContextWrapper chain to find an Activity
+    var ctx: Context? = context
+    while (ctx != null) {
+      if (ctx is Activity) return ctx
+      ctx = (ctx as? ContextWrapper)?.baseContext
+    }
+    return null
   }
 
   override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -379,6 +400,23 @@ class ReactNativeProgressiveBlurView : FrameLayout {
       blurView?.removeCallbacks(runnable)
     }
     swapRootRunnable = null
+
+    // Unregister the OnPreDrawListener from whatever root it was moved to,
+    // preventing callbacks into a detached BlurView and avoiding leaks.
+    blurView?.let { bv ->
+      val listener = bv.preDrawListener
+      val decor = bv.mDecorView
+      if (listener != null && decor != null) {
+        try {
+          decor.viewTreeObserver.removeOnPreDrawListener(listener)
+        } catch (e: Exception) {
+          logDebug("Could not remove pre-draw listener during cleanup: ${e.message}")
+        }
+      }
+      bv.mDecorView = null
+      bv.mDifferentRoot = false
+    }
+
     logDebug("View cleaned up")
   }
 
