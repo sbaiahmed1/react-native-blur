@@ -160,7 +160,9 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    * Redirects the internal BlurView's blur capture root from the activity decor view
    * to the nearest react-native-screens Screen ancestor.
    *
-   * BaseBlurView has public mDecorView and preDrawListener fields, so no reflection needed.
+   * BaseBlurView (QmBlurView 1.1.4) field visibility:
+   *   public  — mDecorView, mDifferentRoot, preDrawListener (direct access)
+   *   private — mForceRedraw (requires reflection)
    */
   private fun swapBlurRootToScreenAncestor() {
     val bv = blurView ?: return
@@ -178,14 +180,23 @@ class ReactNativeProgressiveBlurView : FrameLayout {
           logDebug("Could not remove old pre-draw listener: ${e.message}")
         }
 
-        // Set new root
+        // Set new root (public field)
         bv.mDecorView = newRoot
 
         // Add listener to new root
         newRoot.viewTreeObserver.addOnPreDrawListener(listener)
 
-        // Update mDifferentRoot flag
+        // Update mDifferentRoot flag (public field)
         bv.mDifferentRoot = newRoot.rootView != bv.rootView
+
+        // Force a redraw (private field — requires reflection)
+        try {
+          val forceRedrawField = bv.javaClass.superclass.getDeclaredField("mForceRedraw")
+          forceRedrawField.isAccessible = true
+          forceRedrawField.setBoolean(bv, true)
+        } catch (e: NoSuchFieldException) {
+          logWarning("Could not set mForceRedraw via reflection: ${e.message}")
+        }
 
         logDebug("Progressive blur: swapped root to ${newRoot.javaClass.simpleName}")
       }
