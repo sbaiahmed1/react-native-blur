@@ -36,6 +36,7 @@ class ReactNativeBlurView : BlurViewGroup {
   private var viewType: String = "blur"
   private var glassType: String = "clear"
   private var isBlurInitialized: Boolean = false
+  private var initRunnable: Runnable? = null
 
   companion object {
     private const val TAG = "ReactNativeBlurView"
@@ -103,11 +104,17 @@ class ReactNativeBlurView : BlurViewGroup {
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
 
+    if (isBlurInitialized) return
+
     // Defer the blur root swap to next frame so the view tree is fully mounted
-    post {
+    val runnable = Runnable {
+      initRunnable = null
+      if (isBlurInitialized) return@Runnable
       swapBlurRootToScreenAncestor()
       initializeBlur()
     }
+    initRunnable = runnable
+    post(runnable)
   }
 
   /**
@@ -118,6 +125,7 @@ class ReactNativeBlurView : BlurViewGroup {
    * Also moves the OnPreDrawListener from the old root to the new one.
    */
   private fun swapBlurRootToScreenAncestor() {
+    // Pinned to QmBlurView 1.1.4 – depends on: mBaseBlurViewGroup, mDecorView, preDrawListener, mDifferentRoot, mForceRedraw
     val newRoot = findOptimalBlurRoot() ?: return
 
     try {
@@ -137,6 +145,13 @@ class ReactNativeBlurView : BlurViewGroup {
       val preDrawListenerField = baseClass.getDeclaredField("preDrawListener")
       preDrawListenerField.isAccessible = true
       val preDrawListener = preDrawListenerField.get(baseBlurViewGroup) as? ViewTreeObserver.OnPreDrawListener
+
+      if (oldDecorView == null) {
+        logWarning("swapBlurRootToScreenAncestor: oldDecorView is null, skipping swap – falling back to decor view")
+      }
+      if (preDrawListener == null) {
+        logWarning("swapBlurRootToScreenAncestor: preDrawListener is null, skipping swap – falling back to decor view")
+      }
 
       if (preDrawListener != null && oldDecorView != null) {
         // Step 3: Remove listener from old root's ViewTreeObserver
@@ -210,8 +225,11 @@ class ReactNativeBlurView : BlurViewGroup {
   /**
    * Initialize the blur view with current settings.
    * Called after the view is attached and the blur root has been swapped.
+   * Guarded by isBlurInitialized to prevent duplicate setup.
    */
   private fun initializeBlur() {
+    if (isBlurInitialized) return
+
     try {
       super.setBlurRadius(currentBlurRadius)
       super.setOverlayColor(currentOverlayColor)
@@ -240,7 +258,8 @@ class ReactNativeBlurView : BlurViewGroup {
    */
   fun cleanup() {
     isBlurInitialized = false
-    removeCallbacks(null)
+    initRunnable?.let { removeCallbacks(it) }
+    initRunnable = null
     logDebug("View cleaned up")
   }
 
