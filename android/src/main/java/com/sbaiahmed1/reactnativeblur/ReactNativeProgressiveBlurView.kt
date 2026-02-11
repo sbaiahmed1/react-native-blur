@@ -10,10 +10,11 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.Shader
 import android.util.AttributeSet
 import android.util.Log
+import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.view.View.MeasureSpec
 import com.qmdeve.blurview.widget.BlurView
-import androidx.core.graphics.toColorInt
 import kotlin.math.max
 
 /**
@@ -33,12 +34,13 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   private var currentDirection = "topToBottom"
   private var currentStartOffset = 0.0f
   private var hasExplicitBackground: Boolean = false
+  private var isBlurInitialized: Boolean = false
 
   companion object {
     private const val TAG = "ReactNativeProgressiveBlur"
     private const val MAX_BLUR_RADIUS = 100f
     private const val DEFAULT_BLUR_RADIUS = 10f
-    private const val DEBUG = true
+    private const val DEBUG = false
 
     // Cross-platform blur amount constants
     private const val MIN_BLUR_AMOUNT = 0f
@@ -72,42 +74,148 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   }
 
   constructor(context: Context) : super(context) {
-    initializeProgressiveBlur()
+    setupView()
   }
 
   constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-    initializeProgressiveBlur()
+    setupView()
   }
 
   /**
-   * Initialize the progressive blur view with blur + gradient approach.
+   * Initial view setup in constructor - only sets up visual defaults and gradient paint.
+   * Blur child creation is deferred to onAttachedToWindow.
    */
-  private fun initializeProgressiveBlur() {
+  private fun setupView() {
+    // Set up the gradient paint
+    gradientPaint.style = Paint.Style.FILL
+    setWillNotDraw(false)
+
+    // Set transparent background for the container
+    super.setBackgroundColor(Color.TRANSPARENT)
+  }
+
+  /**
+   * Called when the view is attached to a window.
+   * Defers blur initialization to the next frame to ensure the view tree is ready.
+   */
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+
+    if (!isBlurInitialized) {
+      post {
+        initializeBlurChild()
+      }
+    }
+  }
+
+  /**
+   * Initialize the internal blur view child after the view tree is ready.
+   * Also swaps the blur capture root to the nearest Screen ancestor.
+   */
+  private fun initializeBlurChild() {
+    if (isBlurInitialized) return
+
     try {
-      // Create and add the blur view as a child
-      blurView = BlurView(context, null).apply {
-        layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+      if (blurView == null) {
+        blurView = BlurView(context, null).apply {
+          layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+          setDownsampleFactor(6.0F)
+          blurRounds = 3
+        }
+        addView(blurView)
+      }
+
+      blurView?.apply {
         setBlurRadius(currentBlurRadius)
-        setDownsampleFactor(6.0F)
-        blurRounds = 3
         overlayColor = currentOverlayColor
         setBackgroundColor(currentOverlayColor)
       }
-      addView(blurView)
 
-      // Set up the gradient paint
-      gradientPaint.style = Paint.Style.FILL
-      setWillNotDraw(false) // Enable onDraw for gradient overlay
+      // Swap blur root after BlurView is attached (deferred to let it attach first)
+      blurView?.post {
+        swapBlurRootToScreenAncestor()
+      }
 
-      // Set transparent background for the container
-      super.setBackgroundColor(Color.TRANSPARENT)
-
+      isBlurInitialized = true
       logDebug("Initialized progressive blur with blur + gradient approach")
       updateGradient()
 
     } catch (e: Exception) {
       logError("Failed to initialize progressive blur view: ${e.message}", e)
     }
+  }
+
+  /**
+   * Redirects the internal BlurView's blur capture root from the activity decor view
+   * to the nearest react-native-screens Screen ancestor.
+   *
+   * BaseBlurView has public mDecorView and preDrawListener fields, so no reflection needed.
+   */
+  private fun swapBlurRootToScreenAncestor() {
+    val bv = blurView ?: return
+    val newRoot = findOptimalBlurRoot() ?: return
+
+    try {
+      val oldDecorView = bv.mDecorView
+      val listener = bv.preDrawListener
+
+      if (oldDecorView != null && listener != null) {
+        // Remove listener from old root
+        try {
+          oldDecorView.viewTreeObserver.removeOnPreDrawListener(listener)
+        } catch (e: Exception) {
+          logDebug("Could not remove old pre-draw listener: ${e.message}")
+        }
+
+        // Set new root
+        bv.mDecorView = newRoot
+
+        // Add listener to new root
+        newRoot.viewTreeObserver.addOnPreDrawListener(listener)
+
+        // Update mDifferentRoot flag
+        bv.mDifferentRoot = newRoot.rootView != bv.rootView
+
+        logDebug("Progressive blur: swapped root to ${newRoot.javaClass.simpleName}")
+      }
+    } catch (e: Exception) {
+      logWarning("Failed to swap progressive blur root: ${e.message}")
+    }
+  }
+
+  /**
+   * Finds the optimal view to use as blur capture root.
+   * Priority: nearest react-native-screens Screen > android.R.id.content > parent
+   */
+  private fun findOptimalBlurRoot(): ViewGroup? {
+    return findNearestScreenAncestor() ?: getContentViewFallback()
+  }
+
+  /**
+   * Walks up the view hierarchy looking for react-native-screens Screen components.
+   */
+  private fun findNearestScreenAncestor(): ViewGroup? {
+    var currentParent = this.parent
+    while (currentParent != null) {
+      if (currentParent.javaClass.name == "com.swmansion.rnscreens.Screen") {
+        return currentParent as? ViewGroup
+      }
+      currentParent = currentParent.parent
+    }
+    return null
+  }
+
+  /**
+   * Falls back to android.R.id.content or the activity root view.
+   */
+  private fun getContentViewFallback(): ViewGroup? {
+    try {
+      val activity = context as? android.app.Activity
+      activity?.findViewById<ViewGroup>(android.R.id.content)?.let { return it }
+    } catch (e: Exception) {
+      logDebug("Could not access activity content view: ${e.message}")
+    }
+    return this.parent as? ViewGroup
   }
 
   override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -252,11 +360,12 @@ class ReactNativeProgressiveBlurView : FrameLayout {
 
   /**
    * Cleanup method to prevent memory leaks.
+   * Resets initialization state so blur is re-initialized on next attach.
    */
   fun cleanup() {
     hasExplicitBackground = false
+    isBlurInitialized = false
     removeCallbacks(null)
-    blurView = null
     logDebug("View cleaned up")
   }
 
