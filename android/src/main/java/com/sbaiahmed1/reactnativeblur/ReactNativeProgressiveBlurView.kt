@@ -35,6 +35,8 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   private var currentStartOffset = 0.0f
   private var hasExplicitBackground: Boolean = false
   private var isBlurInitialized: Boolean = false
+  private var initRunnable: Runnable? = null
+  private var swapRootRunnable: Runnable? = null
 
   companion object {
     private const val TAG = "ReactNativeProgressiveBlur"
@@ -102,9 +104,12 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     super.onAttachedToWindow()
 
     if (!isBlurInitialized) {
-      post {
+      val runnable = Runnable {
+        initRunnable = null
         initializeBlurChild()
       }
+      initRunnable = runnable
+      post(runnable)
     }
   }
 
@@ -132,9 +137,12 @@ class ReactNativeProgressiveBlurView : FrameLayout {
       }
 
       // Swap blur root after BlurView is attached (deferred to let it attach first)
-      blurView?.post {
+      val swapRunnable = Runnable {
+        swapRootRunnable = null
         swapBlurRootToScreenAncestor()
       }
+      swapRootRunnable = swapRunnable
+      blurView?.post(swapRunnable)
 
       isBlurInitialized = true
       logDebug("Initialized progressive blur with blur + gradient approach")
@@ -365,7 +373,12 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   fun cleanup() {
     hasExplicitBackground = false
     isBlurInitialized = false
-    removeCallbacks(null)
+    initRunnable?.let { removeCallbacks(it) }
+    initRunnable = null
+    swapRootRunnable?.let { runnable ->
+      blurView?.removeCallbacks(runnable)
+    }
+    swapRootRunnable = null
     logDebug("View cleaned up")
   }
 
