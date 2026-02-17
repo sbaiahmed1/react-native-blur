@@ -70,6 +70,8 @@ class ReactNativeBlurSwitch : BlurSwitchButtonView {
    */
   private fun initializeSwitch() {
     try {
+      blurRounds = 5
+
       setOnCheckedChangeListener { isChecked ->
         if (isDisabled) {
           setChecked(currentValue, false)
