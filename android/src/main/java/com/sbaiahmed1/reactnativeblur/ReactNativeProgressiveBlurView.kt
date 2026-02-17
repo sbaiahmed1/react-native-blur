@@ -93,7 +93,11 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     setWillNotDraw(false)
 
     // Set transparent background for the container
-    super.setBackgroundColor(Color.TRANSPARENT)
+    super.setBackgroundColor(currentOverlayColor)
+
+    // Force the initialization of the blur child here to ensure it's created,
+    // but the actual blur setup will be deferred to onAttachedToWindow
+    initializeBlurChild()
   }
 
   /**
@@ -125,7 +129,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
         blurView = BlurView(context, null).apply {
           layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
           setDownsampleFactor(6.0F)
-          blurRounds = 3
+          blurRounds = 5
         }
         addView(blurView)
       }
