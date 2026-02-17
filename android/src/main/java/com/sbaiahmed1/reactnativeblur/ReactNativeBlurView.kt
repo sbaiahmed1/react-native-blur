@@ -91,6 +91,7 @@ class ReactNativeBlurView : BlurViewGroup {
     super.setBackgroundColor(currentOverlayColor)
     clipChildren = true
     clipToOutline = true
+    blurRounds = 5
     super.setDownsampleFactor(6.0F)
   }
 
