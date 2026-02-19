@@ -623,7 +623,7 @@ All props are optional and have sensible defaults.
 | ---------------------------------- | ------------ | ----------- | ----------------------------------------------------------------------------- |
 | `blurType`                         | `BlurType`   | `'xlight'`  | The type of blur effect to apply                                              |
 | `blurAmount`                       | `number`     | `10.0`      | The intensity of the blur effect (0-100)                                      |
-| `ignoreSafeArea`                   | `boolean`    | `false`     | (iOS only) Controls whether the blur effect should ignore all safe area edges |
+| `ignoreSafeArea`                   | `boolean`    | `true`     | (iOS only) Controls whether the blur effect should ignore all safe area edges |
 | `reducedTransparencyFallbackColor` | `string`     | `'#FFFFFF'` | Fallback color when reduced transparency is enabled                           |
 | `overlayColor`                     | `ColorValue` | `undefined` | The overlay color to apply on top of the blur effect                          |
 | `style`                            | `ViewStyle`  | `undefined` | Style object for the blur view                                                |
@@ -670,7 +670,7 @@ All props are optional and have sensible defaults.
 | `glassTintColor`                   | `string`    | `'clear'`   | The tint color for glass effect. Accepts hex colors or color names                         |
 | `glassOpacity`                     | `number`    | `1.0`       | The opacity of glass effect (0-1)                                                          |
 | `isInteractive`                    | `boolean`   | `true`      | (iOS 26+ only) Controls whether the liquid glass effect is interactive and reacts to touch |
-| `ignoreSafeArea`                   | `boolean`   | `false`     | (iOS only) Controls whether the glass effect should ignore all safe area edges             |
+| `ignoreSafeArea`                   | `boolean`   | `true`     | (iOS only) Controls whether the glass effect should ignore all safe area edges             |
 | `reducedTransparencyFallbackColor` | `string`    | `'#FFFFFF'` | Fallback color when reduced transparency is enabled or on older iOS versions               |
 | `style`                            | `ViewStyle` | `undefined` | Style object for the glass view                                                            |
 | `children`                         | `ReactNode` | `undefined` | Child components to render inside the glass view                                           |

@@ -106,7 +106,7 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
   glassOpacity = 1.0,
   reducedTransparencyFallbackColor = '#FFFFFF',
   isInteractive = true,
-  ignoreSafeArea = false,
+  ignoreSafeArea = true,
   style,
   children,
   ...props

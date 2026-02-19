@@ -33,17 +33,17 @@ import UIKit
 
   public override init(frame: CGRect) {
     super.init(frame: frame)
-    setupHostingController()
   }
 
   required init?(coder: NSCoder) {
     super.init(coder: coder)
-    setupHostingController()
   }
 
   public override func layoutSubviews() {
     super.layoutSubviews()
-    if hostingController == nil {
+    // Defer controller setup until we have a valid frame to avoid issues with initial render
+    // in complex layouts (e.g. FlashList with dynamic content)
+    if hostingController == nil && bounds.width > 0 && bounds.height > 0 {
       setupHostingController()
     }
   }
@@ -80,21 +80,17 @@ import UIKit
   }
 
   private func updateView() {
-    setupHostingController()
+    if hostingController != nil {
+      setupHostingController()
+    }
   }
 
   public override func didMoveToSuperview() {
     super.didMoveToSuperview()
-    if superview != nil {
-      setupHostingController()
-    }
   }
 
   public override func didMoveToWindow() {
     super.didMoveToWindow()
-    if window != nil {
-      setupHostingController()
-    }
   }
 
   deinit {

@@ -46,9 +46,9 @@ interface NativeProps extends ViewProps {
   /**
    * Whether the glass view should ignore safe area insets
    * Platform: iOS only
-   * @default false
+   * @default true
    */
-  ignoreSafeArea?: WithDefault<boolean, false>;
+  ignoreSafeArea?: WithDefault<boolean, true>;
 }
 
 export default codegenNativeComponent<NativeProps>(
