@@ -151,12 +151,14 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
 ## Features
 
-- ✨ **Five Specialized Components**:
+- ✨ **Six Specialized Components**:
   - `BlurView` - Dedicated blur effects component with multiple blur types
   - `ProgressiveBlurView` - Variable/gradient blur transitions (iOS & Android)
   - `LiquidGlassView` - Separate component for iOS 26+ liquid glass effects
   - `LiquidGlassContainer` - iOS 26+ glass container with configurable spacing for grouping glass elements
   - `BlurSwitch` - Beautiful blur switch button using QmBlurView (Android)
+  - `Vibrancy View`- Beautiful Vibrancy view for iOS (iOS only)
+ 
 - �🌊 **Liquid Glass Effects**: Revolutionary glass effects using iOS 26+ UIGlassEffect API
 - 🎨 **Multiple Blur Types**: Support for various blur styles including system materials on iOS
 - 📱 **Cross-Platform**: Works on both iOS and Android
