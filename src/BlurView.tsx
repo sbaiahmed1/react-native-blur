@@ -46,7 +46,7 @@ export interface BlurViewProps {
   /**
    * @description style object for the blur view
    *
-   * @default false
+   * @default true
    */
   ignoreSafeArea?: boolean;
 
@@ -87,7 +87,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
   overlayColor,
   style,
   children,
-  ignoreSafeArea = false,
+  ignoreSafeArea = true,
   ...props
 }) => {
   const overlay = { backgroundColor: overlayColor };
