@@ -129,8 +129,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
         {...commonProps}
         {...props}
       />
-      {/* Content positioned relatively on top when device is not Android */}
-      <View style={styles.children}>{children}</View>
+      {children}
     </View>
   );
 };
@@ -141,9 +140,5 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
     overflow: 'hidden',
-  },
-  children: {
-    position: 'relative',
-    zIndex: 1,
   },
 });
