@@ -123,6 +123,7 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
       : glassTintColor;
 
   const glassStyle: Record<string, unknown> = {
+    zIndex: 1,
     backgroundColor: tintColor,
     backdropFilter: 'blur(40px) saturate(180%)',
     WebkitBackdropFilter: 'blur(40px) saturate(180%)',

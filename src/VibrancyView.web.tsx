@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ViewStyle, StyleProp } from 'react-native';
+import { type ViewStyle, type StyleProp, StyleSheet } from 'react-native';
 import type { BlurType } from './ReactNativeBlurViewNativeComponent';
 import { BlurView } from './BlurView.web';
 
@@ -63,10 +63,16 @@ export const VibrancyView: React.FC<VibrancyViewProps> = ({
     <BlurView
       blurType={blurType}
       blurAmount={blurAmount}
-      style={style}
+      style={[styles.container, style]}
       {...props}
     >
       {children}
     </BlurView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    zIndex: 1,
+  },
+});

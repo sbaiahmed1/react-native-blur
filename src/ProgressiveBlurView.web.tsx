@@ -177,6 +177,7 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
   const maskGradient = getMaskGradient(direction, startOffset);
 
   const blurStyle: Record<string, unknown> = {
+    zIndex: 1,
     backgroundColor: tint,
     backdropFilter: `blur(${blurPx}px)`,
     WebkitBackdropFilter: `blur(${blurPx}px)`,

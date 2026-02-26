@@ -1,5 +1,5 @@
 import React from 'react';
-import { Switch } from 'react-native';
+import { StyleSheet, Switch } from 'react-native';
 import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
 
 export interface BlurSwitchProps {
@@ -99,10 +99,16 @@ export const BlurSwitch: React.FC<BlurSwitchProps> = ({
       thumbColor={thumbColor}
       trackColor={trackColor}
       disabled={disabled}
-      style={style}
+      style={[styles.container, style]}
       {...props}
     />
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    zIndex: 1,
+  },
+});
 
 export default BlurSwitch;

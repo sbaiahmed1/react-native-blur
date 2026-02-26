@@ -137,6 +137,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
   const overlay = overlayColor ? { backgroundColor: overlayColor } : undefined;
 
   const blurStyle: Record<string, unknown> = {
+    zIndex: 1,
     backgroundColor: tint,
     backdropFilter: `blur(${blurPx}px)`,
     WebkitBackdropFilter: `blur(${blurPx}px)`,

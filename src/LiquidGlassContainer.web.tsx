@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import type { ViewProps } from 'react-native';
+import type { StyleProp, ViewProps, ViewStyle } from 'react-native';
 
 export interface LiquidGlassContainerProps extends ViewProps {
   /**
@@ -36,8 +36,13 @@ export const LiquidGlassContainer: React.FC<LiquidGlassContainerProps> = ({
   children,
   ...rest
 }) => {
+  const containerStyle: StyleProp<ViewStyle> = {
+    zIndex: 1,
+    gap: spacing,
+  };
+
   return (
-    <View style={[{ gap: spacing }, style]} {...rest}>
+    <View style={[containerStyle, style]} {...rest}>
       {children}
     </View>
   );
