@@ -4,24 +4,71 @@ import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
 import type { BlurType } from './ReactNativeBlurViewNativeComponent';
 
 export interface BlurViewProps {
+  /**
+   * @description The type of blur effect to apply
+   *
+   * @default 'xlight'
+   */
   blurType?: BlurType;
+
+  /**
+   * @description The intensity of the blur effect (0-100)
+   *
+   * @default 10
+   */
   blurAmount?: number;
+
+  /**
+   * @description Fallback color when reduced transparency is enabled
+   *
+   * Accepts hex color strings like `#FFFFFF`
+   *
+   * @platform ios & Android
+   *
+   * @default '#FFFFFF'
+   */
   reducedTransparencyFallbackColor?: string;
+
+  /**
+   * @description The overlay color to apply on top of the blur effect
+   *
+   * @default undefined
+   */
   overlayColor?: ColorValue;
+
+  /**
+   * @description style object for the blur view
+   *
+   * @default undefined
+   */
   style?: StyleProp<ViewStyle>;
+
+  /**
+   * @description style object for the blur view
+   *
+   * @platform ios & Android
+   *
+   * @default false
+   */
   ignoreSafeArea?: boolean;
+
+  /**
+   * @description Child components to render inside the blur view
+   *
+   * @default undefined
+   */
   children?: React.ReactNode;
 }
 
 /**
- * Maps native blur types to semi-transparent CSS background colours.
+ * Maps native blur types to semi-transparent CSS background colors.
  *
- * The colours approximate the visual tint each blur type produces on iOS:
+ * The colors approximate the visual tint each blur type produces on iOS:
  * - Light variants use white-based overlays
  * - Dark variants use black-based overlays
  * - Material variants match the iOS system material hierarchy
  */
-const blurTypeToBackground: Record<BlurType, string> = {
+const BLUR_TYPE_TO_BACKGROUND: Record<BlurType, string> = {
   // Base types
   xlight: 'rgba(255, 255, 255, 0.6)',
   light: 'rgba(255, 255, 255, 0.4)',
@@ -60,6 +107,18 @@ const blurTypeToBackground: Record<BlurType, string> = {
  * iOS UIVisualEffectView and Android QmBlurView behaviour in modern browsers.
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter
+ *
+ * @example
+ * ```tsx
+ * <BlurView
+ *   blurType="light"
+ *   blurAmount={20}
+ *   style={{ flex: 1 }}
+ * >
+ *   <Text>Content on top of blur</Text>
+ *   <Button title="Interactive Button" onPress={() => {}} />
+ * </BlurView>
+ * ```
  */
 export const BlurView: React.FC<BlurViewProps> = ({
   blurType = 'xlight',
@@ -73,32 +132,23 @@ export const BlurView: React.FC<BlurViewProps> = ({
   ...props
 }) => {
   const blurPx = Math.min(Math.max(blurAmount, 0), 100);
-  const tint = blurTypeToBackground[blurType] ?? blurTypeToBackground.xlight;
+  const tint =
+    BLUR_TYPE_TO_BACKGROUND[blurType] ?? BLUR_TYPE_TO_BACKGROUND.xlight;
   const overlay = overlayColor ? { backgroundColor: overlayColor } : undefined;
 
-  const blurStyle = {
+  const blurStyle: Record<string, unknown> = {
     backgroundColor: tint,
     backdropFilter: `blur(${blurPx}px)`,
     WebkitBackdropFilter: `blur(${blurPx}px)`,
   };
 
   if (!Children.count(children)) {
-    return (
-      <View
-        style={[style, overlay, blurStyle as Record<string, unknown>]}
-        {...props}
-      />
-    );
+    return <View style={[style, overlay, blurStyle]} {...props} />;
   }
 
   return (
     <View style={[styles.container, style, overlay]} {...props}>
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          blurStyle as Record<string, unknown>,
-        ]}
-      />
+      <View style={[StyleSheet.absoluteFill, blurStyle]} />
       <View style={styles.children}>{children}</View>
     </View>
   );

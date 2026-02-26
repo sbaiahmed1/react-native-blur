@@ -2,9 +2,7 @@
 // These are type-only imports and are erased at compile time,
 // so they do not pull in any native code at runtime.
 export type { BlurType } from './ReactNativeBlurViewNativeComponent';
-export type {
-  ProgressiveBlurDirection,
-} from './ReactNativeProgressiveBlurViewNativeComponent';
+export type { ProgressiveBlurDirection } from './ReactNativeProgressiveBlurViewNativeComponent';
 export type { GlassType } from './ReactNativeLiquidGlassViewNativeComponent';
 export type { ValueChangeEvent } from './ReactNativeBlurSwitchNativeComponent';
 

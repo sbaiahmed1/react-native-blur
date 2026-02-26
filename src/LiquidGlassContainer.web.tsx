@@ -3,6 +3,14 @@ import { View } from 'react-native';
 import type { ViewProps } from 'react-native';
 
 export interface LiquidGlassContainerProps extends ViewProps {
+  /**
+   * The spacing value for the glass container effect
+   * Platform: iOS only (iOS 26+)
+   *
+   * @platform ios
+   *
+   * @default 0
+   */
   spacing?: number;
 }
 
@@ -12,6 +20,15 @@ export interface LiquidGlassContainerProps extends ViewProps {
  * The native iOS 26+ component groups glass views with a shared effect.
  * On web there is no equivalent API, so this renders a plain View that
  * maps the `spacing` prop to CSS `gap` for flex-based layout.
+ *
+ * @platform ios
+ *
+ * @example
+ * ```tsx
+ * <LiquidGlassContainer spacing={20} style={{ flex: 1 }}>
+ *   <Text>Content inside glass container</Text>
+ * </LiquidGlassContainer>
+ * ```
  */
 export const LiquidGlassContainer: React.FC<LiquidGlassContainerProps> = ({
   spacing = 0,
@@ -20,10 +37,7 @@ export const LiquidGlassContainer: React.FC<LiquidGlassContainerProps> = ({
   ...rest
 }) => {
   return (
-    <View
-      style={[{ gap: spacing } as Record<string, unknown>, style]}
-      {...rest}
-    >
+    <View style={[{ gap: spacing }, style]} {...rest}>
       {children}
     </View>
   );

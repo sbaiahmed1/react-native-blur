@@ -5,20 +5,77 @@ import type { BlurType } from './ReactNativeBlurViewNativeComponent';
 import type { ProgressiveBlurDirection } from './ReactNativeProgressiveBlurViewNativeComponent';
 
 export interface ProgressiveBlurViewProps {
+  /**
+   * @description The type of blur effect to apply
+   *
+   * @default 'regular'
+   */
   blurType?: BlurType;
+
+  /**
+   * @description The maximum intensity of the blur effect (in pixels)
+   * This is the blur radius at the most blurred part of the gradient
+   *
+   * @default 20
+   */
   blurAmount?: number;
+
+  /**
+   * @description The direction of the progressive blur gradient
+   * - 'blurredTopClearBottom': Blur starts at top, clear at bottom
+   * - 'blurredBottomClearTop': Blur starts at bottom, clear at top
+   * - 'blurredCenterClearTopAndBottom': Blur peaks at center, clear at both edges
+   *
+   * @default 'blurredTopClearBottom'
+   */
   direction?: ProgressiveBlurDirection;
+
+  /**
+   * @description The offset where the gradient starts (0.0 to 1.0)
+   * 0.0 means the gradient starts immediately
+   * 1.0 means the gradient is delayed to the end
+   *
+   * @default 0.0
+   */
   startOffset?: number;
+
+  /**
+   * @description Fallback color when reduced transparency is enabled
+   *
+   * Accepts hex color strings like `#FFFFFF`
+   *
+   * @platform ios
+   *
+   * @default '#FFFFFF'
+   */
   reducedTransparencyFallbackColor?: string;
+
+  /**
+   * @description The overlay color to apply on top of the blur effect
+   *
+   * @default undefined
+   */
   overlayColor?: ColorValue;
+
+  /**
+   * @description style object for the progressive blur view
+   *
+   * @default undefined
+   */
   style?: StyleProp<ViewStyle>;
+
+  /**
+   * @description Child components to render inside the progressive blur view
+   *
+   * @default undefined
+   */
   children?: React.ReactNode;
 }
 
 /**
  * Maps native blur types to semi-transparent CSS background colours.
  */
-const blurTypeToBackground: Record<BlurType, string> = {
+const BLUR_TYPE_TO_BACKGROUND: Record<BlurType, string> = {
   xlight: 'rgba(255, 255, 255, 0.6)',
   light: 'rgba(255, 255, 255, 0.4)',
   dark: 'rgba(0, 0, 0, 0.5)',
@@ -72,7 +129,34 @@ const getMaskGradient = (
  * - Opaque areas of the mask reveal the full blur
  * - Transparent areas show no blur
  *
- * This approximates the native iOS/Android gradient blur behaviour.
+ * This approximates the native iOS/Android gradient blur behavior.
+ *
+ * @example
+ * ```tsx
+ * // Blur that fades from top (blurred) to bottom (clear)
+ * <ProgressiveBlurView
+ *   blurType="light"
+ *   blurAmount={30}
+ *   direction="blurredTopClearBottom"
+ *   startOffset={0.2}
+ *   style={{ height: 200 }}
+ * >
+ *   <Text>Content on top of progressive blur</Text>
+ * </ProgressiveBlurView>
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Blur that fades from bottom (blurred) to top (clear)
+ * <ProgressiveBlurView
+ *   blurType="dark"
+ *   blurAmount={40}
+ *   direction="blurredBottomClearTop"
+ *   style={{ height: 200 }}
+ * >
+ *   <Text>Content visible at top, blurred at bottom</Text>
+ * </ProgressiveBlurView>
+ * ```
  */
 export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
   blurType = 'regular',
@@ -87,11 +171,12 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
   ...props
 }) => {
   const blurPx = Math.min(Math.max(blurAmount, 0), 100);
-  const tint = blurTypeToBackground[blurType] ?? blurTypeToBackground.regular;
+  const tint =
+    BLUR_TYPE_TO_BACKGROUND[blurType] ?? BLUR_TYPE_TO_BACKGROUND.regular;
   const overlay = overlayColor ? { backgroundColor: overlayColor } : undefined;
   const maskGradient = getMaskGradient(direction, startOffset);
 
-  const blurStyle = {
+  const blurStyle: Record<string, unknown> = {
     backgroundColor: tint,
     backdropFilter: `blur(${blurPx}px)`,
     WebkitBackdropFilter: `blur(${blurPx}px)`,
@@ -100,22 +185,12 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
   };
 
   if (!Children.count(children)) {
-    return (
-      <View
-        style={[style, overlay, blurStyle as Record<string, unknown>]}
-        {...props}
-      />
-    );
+    return <View style={[style, overlay, blurStyle]} {...props} />;
   }
 
   return (
     <View style={[styles.container, style, overlay]} {...props}>
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          blurStyle as Record<string, unknown>,
-        ]}
-      />
+      <View style={[StyleSheet.absoluteFill, blurStyle]} />
       {children}
     </View>
   );

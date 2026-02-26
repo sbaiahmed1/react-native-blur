@@ -29,7 +29,8 @@ export interface BlurSwitchProps {
   /**
    * @description The intensity of the blur effect (0-100)
    *
-   * @platform android
+   * @platform Android
+   *
    * @default 10
    */
   blurAmount?: number;
