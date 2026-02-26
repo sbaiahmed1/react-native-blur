@@ -41,6 +41,18 @@ export interface VibrancyViewProps {
  *
  * On iOS, this uses UIVibrancyEffect.
  * On Android, this falls back to a simple View (or BlurView behavior if implemented).
+ *
+ * @example
+ * ```tsx
+ * <VibrancyView
+ *   blurType="light"
+ *   blurAmount={20}
+ *   style={{ flex: 1 }}
+ * >
+ *   <Text>Content on top of vibrancy view</Text>
+ *   <Button title="Interactive Button" onPress={() => {}} />
+ * </VibrancyView>
+ * ```
  */
 export const VibrancyView: React.FC<VibrancyViewProps> = ({
   blurType = 'xlight',
