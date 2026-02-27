@@ -7,6 +7,8 @@ export interface LiquidGlassContainerProps extends ViewProps {
    * The spacing value for the glass container effect
    * Platform: iOS only (iOS 26+)
    *
+   * @platform ios
+   *
    * @default 0
    */
   spacing?: number;

@@ -1,10 +1,7 @@
 import React from 'react';
-import { Platform, StyleSheet } from 'react-native';
-import type { ViewStyle, StyleProp } from 'react-native';
-import ReactNativeVibrancyView, {
-  type BlurType,
-} from './ReactNativeVibrancyViewNativeComponent';
-import BlurView from './BlurView';
+import { type ViewStyle, type StyleProp, StyleSheet } from 'react-native';
+import type { BlurType } from './ReactNativeBlurViewNativeComponent';
+import { BlurView } from './BlurView.web';
 
 export interface VibrancyViewProps {
   /**
@@ -37,10 +34,11 @@ export interface VibrancyViewProps {
 }
 
 /**
- * A component that applies a vibrancy effect to its content.
+ * Web implementation of VibrancyView.
  *
- * On iOS, this uses UIVibrancyEffect.
- * On Android, this falls back to a simple View (or BlurView behavior if implemented).
+ * iOS uses UIVibrancyEffect which makes content "vibrant" against a blurred
+ * background. On web we fall back to BlurView (same approach as the Android
+ * fallback in the native implementation).
  *
  * @example
  * ```tsx
@@ -61,32 +59,20 @@ export const VibrancyView: React.FC<VibrancyViewProps> = ({
   children,
   ...props
 }) => {
-  if (Platform.OS === 'android') {
-    return (
-      <BlurView
-        blurType={blurType}
-        blurAmount={blurAmount}
-        style={style}
-        {...props}
-      >
-        {children}
-      </BlurView>
-    );
-  }
   return (
-    <ReactNativeVibrancyView
+    <BlurView
       blurType={blurType}
       blurAmount={blurAmount}
       style={[styles.container, style]}
       {...props}
     >
       {children}
-    </ReactNativeVibrancyView>
+    </BlurView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'transparent',
+    zIndex: 1,
   },
 });

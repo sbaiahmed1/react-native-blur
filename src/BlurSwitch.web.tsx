@@ -1,15 +1,6 @@
 import React from 'react';
-import { Platform, Switch } from 'react-native';
+import { StyleSheet, Switch } from 'react-native';
 import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
-import ReactNativeBlurSwitch from './ReactNativeBlurSwitchNativeComponent';
-
-const toColorString = (
-  color: ColorValue | undefined,
-  fallback: string
-): string => {
-  if (typeof color === 'string') return color;
-  return fallback;
-};
 
 export interface BlurSwitchProps {
   /**
@@ -39,6 +30,7 @@ export interface BlurSwitchProps {
    * @description The color of the switch thumb
    *
    * @platform ios
+   *
    * @default '#FFFFFF'
    */
   thumbColor?: ColorValue;
@@ -73,14 +65,11 @@ export interface BlurSwitchProps {
 }
 
 /**
- * A cross-platform blur switch component.
+ * Web implementation of BlurSwitch.
  *
- * On iOS, this uses the native Switch component.
- * On Android, this uses QmBlurView's BlurSwitchButtonView for blur effects.
- *
- * Note: On Android, you only need to set the base color (`trackColor.true`),
- * and QmBlurView will automatically calculate the colors for on/off states.
- * The `thumbColor` and `trackColor.false` props are only supported on iOS.
+ * The native Android version renders a blur-styled switch via QmBlurView.
+ * On web we fall back to React Native's built-in Switch component, which
+ * renders a standard checkbox toggle.
  *
  * @example
  * ```tsx
@@ -95,42 +84,31 @@ export interface BlurSwitchProps {
 export const BlurSwitch: React.FC<BlurSwitchProps> = ({
   value = false,
   onValueChange,
-  blurAmount = 10,
   thumbColor = '#FFFFFF',
   trackColor = { false: '#E5E5EA', true: '#34C759' },
   disabled = false,
   style,
+  // Accepted for API compat, unused on web
+  blurAmount: _blurAmount,
   ...props
 }) => {
-  if (Platform.OS === 'ios') {
-    return (
-      <Switch
-        value={value}
-        onValueChange={onValueChange}
-        thumbColor={thumbColor}
-        trackColor={trackColor}
-        disabled={disabled}
-        style={style}
-        {...props}
-      />
-    );
-  }
-
   return (
-    <ReactNativeBlurSwitch
-      style={[{ width: 65, height: 36 }, style]}
+    <Switch
       value={value}
-      onValueChange={(event) => {
-        onValueChange?.(event.nativeEvent.value);
-      }}
-      blurAmount={blurAmount}
-      thumbColor={toColorString(thumbColor, '#FFFFFF')}
-      trackColorOff={toColorString(trackColor?.false, '#E5E5EA')}
-      trackColorOn={toColorString(trackColor?.true, '#34C759')}
+      onValueChange={onValueChange}
+      thumbColor={thumbColor}
+      trackColor={trackColor}
       disabled={disabled}
+      style={[styles.container, style]}
       {...props}
     />
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    zIndex: 1,
+  },
+});
 
 export default BlurSwitch;
