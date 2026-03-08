@@ -152,7 +152,7 @@ RCT_CUSTOM_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString, Progressive
                              alpha:1.0];
     }
   } else {
-    NSLog(@"[ReactNativeLiquidGlassView] Warning: Unsupported hex color length (%lu) for '%@', expected 3, 4, 6, or 8 characters",
+    NSLog(@"[ReactNativeProgressiveBlurView] Warning: Unsupported hex color length (%lu) for '%@', expected 3, 4, 6, or 8 characters",
           (unsigned long)hexString.length, colorString);
   }
 
