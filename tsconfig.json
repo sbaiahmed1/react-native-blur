@@ -2,7 +2,12 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "@sbaiahmed1/react-native-blur": ["./src/index"]
+      "@sbaiahmed1/react-native-blur": ["./src/index"],
+      "@/assets/*": ["./example/assets/*"],
+      "@/components/*": ["./example/src/components/*"],
+      "@/constants/*": ["./example/src/constants/*"],
+      "@/hooks/*": ["./example/src/hooks/*"],
+      "@/*": ["./example/src/*"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
