@@ -54,7 +54,7 @@ A modern React Native library providing **six specialized components** for advan
 ## Requirements
 
 | Platform                  | Minimum Version                                       |
-| ------------------------- |-------------------------------------------------------|
+| ------------------------- | ----------------------------------------------------- |
 | **iOS**                   | iOS 13.0+                                             |
 | **Xcode**                 | min: Xcode 16; Xcode 26.0+ (for liquid glass support) |
 | **React Native**          | 0.68+ (New Architecture)                              |
@@ -158,7 +158,7 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
   - `LiquidGlassContainer` - iOS 26+ glass container with configurable spacing for grouping glass elements
   - `BlurSwitch` - Beautiful blur switch button using QmBlurView (Android)
   - `Vibrancy View`- Beautiful Vibrancy view for iOS (iOS only)
- 
+
 - �🌊 **Liquid Glass Effects**: Revolutionary glass effects using iOS 26+ UIGlassEffect API
 - 🎨 **Multiple Blur Types**: Support for various blur styles including system materials on iOS
 - 📱 **Cross-Platform**: Works on both iOS and Android
@@ -380,6 +380,7 @@ function GradientBlurComponent() {
 ```
 
 Tips:
+
 - `startOffset` shifts where the blur plateau begins; 0 = longest body, higher = shorter.
 - `blurAmount` controls peak intensity; center direction balances strength per platform.
 - Works on iOS and Android with matching props.
@@ -625,7 +626,7 @@ All props are optional and have sensible defaults.
 | ---------------------------------- | ------------ | ----------- | ----------------------------------------------------------------------------- |
 | `blurType`                         | `BlurType`   | `'xlight'`  | The type of blur effect to apply                                              |
 | `blurAmount`                       | `number`     | `10.0`      | The intensity of the blur effect (0-100)                                      |
-| `ignoreSafeArea`                   | `boolean`    | `true`     | (iOS only) Controls whether the blur effect should ignore all safe area edges |
+| `ignoreSafeArea`                   | `boolean`    | `true`      | (iOS only) Controls whether the blur effect should ignore all safe area edges |
 | `reducedTransparencyFallbackColor` | `string`     | `'#FFFFFF'` | Fallback color when reduced transparency is enabled                           |
 | `overlayColor`                     | `ColorValue` | `undefined` | The overlay color to apply on top of the blur effect                          |
 | `style`                            | `ViewStyle`  | `undefined` | Style object for the blur view                                                |
@@ -635,27 +636,27 @@ All props are optional and have sensible defaults.
 
 All props are optional and have sensible defaults.
 
-| Prop         | Type         | Default     | Description                                     |
-| ------------ | ------------ | ----------- | ----------------------------------------------- |
-| `blurType`   | `BlurType`   | `'xlight'`  | The type of blur/vibrancy effect to apply       |
-| `blurAmount` | `number`     | `10.0`      | The intensity of the blur effect (0-100)        |
-| `style`      | `ViewStyle`  | `undefined` | Style object for the vibrancy view              |
-| `children`   | `ReactNode`  | `undefined` | Child components to render inside the vibrancy view |
+| Prop         | Type        | Default     | Description                                         |
+| ------------ | ----------- | ----------- | --------------------------------------------------- |
+| `blurType`   | `BlurType`  | `'xlight'`  | The type of blur/vibrancy effect to apply           |
+| `blurAmount` | `number`    | `10.0`      | The intensity of the blur effect (0-100)            |
+| `style`      | `ViewStyle` | `undefined` | Style object for the vibrancy view                  |
+| `children`   | `ReactNode` | `undefined` | Child components to render inside the vibrancy view |
 
 ### ProgressiveBlurView Props
 
 All props are optional and have sensible defaults.
 
-| Prop                               | Type                                                 | Default                   | Description                                          |
-| ---------------------------------- | ---------------------------------------------------- | ------------------------- | ---------------------------------------------------- |
-| `blurType`                         | `BlurType`                                           | `'regular'`               | The type of blur effect to apply                     |
-| `blurAmount`                       | `number`                                             | `20.0`                    | Maximum blur radius in pixels                        |
+| Prop                               | Type                                                                                     | Default                   | Description                                          |
+| ---------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------- | ---------------------------------------------------- |
+| `blurType`                         | `BlurType`                                                                               | `'regular'`               | The type of blur effect to apply                     |
+| `blurAmount`                       | `number`                                                                                 | `20.0`                    | Maximum blur radius in pixels                        |
 | `direction`                        | `'blurredTopClearBottom' \| 'blurredBottomClearTop' \| 'blurredCenterClearTopAndBottom'` | `'blurredTopClearBottom'` | Direction of the blur gradient                       |
-| `startOffset`                      | `number`                                             | `0.0`                     | Where the gradient starts (0.0 to 1.0)               |
-| `reducedTransparencyFallbackColor` | `string`                                             | `'#FFFFFF'`               | Fallback color when reduced transparency is enabled  |
-| `overlayColor`                     | `ColorValue`                                         | `undefined`               | The overlay color to apply on top of the blur effect |
-| `style`                            | `ViewStyle`                                          | `undefined`               | Style object for the blur view                       |
-| `children`                         | `ReactNode`                                          | `undefined`               | Child components to render inside the blur view      |
+| `startOffset`                      | `number`                                                                                 | `0.0`                     | Where the gradient starts (0.0 to 1.0)               |
+| `reducedTransparencyFallbackColor` | `string`                                                                                 | `'#FFFFFF'`               | Fallback color when reduced transparency is enabled  |
+| `overlayColor`                     | `ColorValue`                                                                             | `undefined`               | The overlay color to apply on top of the blur effect |
+| `style`                            | `ViewStyle`                                                                              | `undefined`               | Style object for the blur view                       |
+| `children`                         | `ReactNode`                                                                              | `undefined`               | Child components to render inside the blur view      |
 
 > **Platform Note**: `ProgressiveBlurView` works on both **iOS** and **Android**.
 >
@@ -672,7 +673,7 @@ All props are optional and have sensible defaults.
 | `glassTintColor`                   | `string`    | `'clear'`   | The tint color for glass effect. Accepts hex colors or color names                         |
 | `glassOpacity`                     | `number`    | `1.0`       | The opacity of glass effect (0-1)                                                          |
 | `isInteractive`                    | `boolean`   | `true`      | (iOS 26+ only) Controls whether the liquid glass effect is interactive and reacts to touch |
-| `ignoreSafeArea`                   | `boolean`   | `true`     | (iOS only) Controls whether the glass effect should ignore all safe area edges             |
+| `ignoreSafeArea`                   | `boolean`   | `true`      | (iOS only) Controls whether the glass effect should ignore all safe area edges             |
 | `reducedTransparencyFallbackColor` | `string`    | `'#FFFFFF'` | Fallback color when reduced transparency is enabled or on older iOS versions               |
 | `style`                            | `ViewStyle` | `undefined` | Style object for the glass view                                                            |
 | `children`                         | `ReactNode` | `undefined` | Child components to render inside the glass view                                           |
@@ -691,15 +692,15 @@ All props are optional and have sensible defaults.
 
 All props are optional and have sensible defaults.
 
-| Prop           | Type                                      | Default                                   | Description                                                                                                                    |
-| -------------- | ----------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `value`        | `boolean`                                 | `false`                                   | The current value of the switch                                                                                                |
-| `onValueChange`| `(value: boolean) => void`                | `undefined`                               | Callback invoked when the switch value changes                                                                                 |
-| `blurAmount`   | `number`                                  | `10`                                      | (Android only) The intensity of the blur effect (0-100)                                                                        |
-| `thumbColor`   | `ColorValue`                              | `'#FFFFFF'`                               | (iOS only) The color of the switch thumb                                                                                       |
-| `trackColor`   | `{ false?: ColorValue; true?: ColorValue }`| `{ false: '#E5E5EA', true: '#34C759' }`  | Track colors. On Android, only `true` is used - QmBlurView auto-calculates on/off colors from base color                      |
-| `disabled`     | `boolean`                                 | `false`                                   | Whether the switch is disabled (prevents interaction but maintains current value)                                              |
-| `style`        | `ViewStyle`                               | `undefined`                               | Style object for the switch view                                                                                               |
+| Prop            | Type                                        | Default                                 | Description                                                                                              |
+| --------------- | ------------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `value`         | `boolean`                                   | `false`                                 | The current value of the switch                                                                          |
+| `onValueChange` | `(value: boolean) => void`                  | `undefined`                             | Callback invoked when the switch value changes                                                           |
+| `blurAmount`    | `number`                                    | `10`                                    | (Android only) The intensity of the blur effect (0-100)                                                  |
+| `thumbColor`    | `ColorValue`                                | `'#FFFFFF'`                             | (iOS only) The color of the switch thumb                                                                 |
+| `trackColor`    | `{ false?: ColorValue; true?: ColorValue }` | `{ false: '#E5E5EA', true: '#34C759' }` | Track colors. On Android, only `true` is used - QmBlurView auto-calculates on/off colors from base color |
+| `disabled`      | `boolean`                                   | `false`                                 | Whether the switch is disabled (prevents interaction but maintains current value)                        |
+| `style`         | `ViewStyle`                                 | `undefined`                             | Style object for the switch view                                                                         |
 
 > **Note**: The `BlurType` and `GlassType` are exported types from the library. See [Blur Types](#blur-types) and [Glass Types](#glass-types) sections below for all available values.
 
@@ -773,7 +774,7 @@ The component uses the QmBlurView library to provide real blur effects with hard
 
 #### L+ssibility
 
-All components automatically respect the "Reduce Transparency" accessibility setting:
+All components automatically respect the "Reduce Transparency" accessibility setting. The `reducedTransparencyFallbackColor` property accepts hexadecimal colors and named colors: `black`, `blue`, `brown`, `clear`, `cyan`, `magenta`, `gray`, `green`, `orange`, `purple`, `red`, `transparent`, `white` and `yellow`.
 
 ### BlurView
 
@@ -790,7 +791,7 @@ All components automatically respect the "Reduce Transparency" accessibility set
 - **iOS 26+**: When reduce transparency is enabled, falls back to regular View
 - **iOS < 26 & Android**: Always renders as regular View
 
-You can customize the fallback color using the `reducedTransparencyFallbackColor` prop on `BlurView` and `LiquidGlassView` components.
+You can customize the fallback color using the `reducedTransparencyFallbackColor` prop on `BlurView`, `ProgressiveBlurView`, and `LiquidGlassView` components.
 
 ## TypeScript Support
 
