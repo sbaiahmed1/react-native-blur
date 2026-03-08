@@ -1,10 +1,16 @@
 {
-  "extends": "@react-native/typescript-config",
+  "extends": "../tsconfig",
   "compilerOptions": {
+    "baseUrl": ".",
+    "rootDir": ".",
     "paths": {
-      "@sbaiahmed1/react-native-blur": ["../src/index.tsx"]
+      "@sbaiahmed1/react-native-blur": ["../src/index"],
+      "@/assets/*": ["./assets/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/constants/*": ["./src/constants/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["**/node_modules", "**/Pods"]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
 }
