@@ -129,7 +129,7 @@ RCT_CUSTOM_VIEW_PROPERTY(reducedTransparencyFallbackColor, NSString, Progressive
     unsigned int hexValue;
     NSScanner *scanner = [NSScanner scannerWithString:hexString];
     if ([scanner scanHexInt:&hexValue] && [scanner isAtEnd]) {
-      // Expand 4-digit hex to 8-digit (e.g., "FFF0" -> "FFFFFFFF00")
+      // Expand 4-digit hex to 8-digit (e.g., "FFF0" -> "FFFFFF00")
       unsigned int r = (hexValue & 0xF000) >> 12;
       unsigned int g = (hexValue & 0x0F00) >> 8;
       unsigned int b = (hexValue & 0x00F0) >> 4;
