@@ -10,8 +10,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "build:android": "expo run:android --no-build-cache | xcpretty",
-    "build:ios": "expo run:ios --no-build-cache | xcpretty"
+    "build:android": "cd android && ./gradlew assembleDebug --no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a",
+    "build:ios": "xcodebuild -workspace ios/reactnativeblurexampleapp.xcworkspace -scheme reactnativeblurexampleapp -configuration Debug -sdk iphonesimulator CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ | xcpretty"
   },
   "dependencies": {
     "@react-navigation/bottom-tabs": "^7.7.3",
