@@ -37,17 +37,20 @@ using namespace facebook::react;
 
   // Handle common color names
   NSDictionary *colorMap = @{
-    @"red": [UIColor redColor],
+    @"black": [UIColor blackColor],
     @"blue": [UIColor blueColor],
+    @"brown": [UIColor brownColor],
+    @"clear": [UIColor clearColor],
+    @"cyan": [UIColor cyanColor],
+    @"magenta": [UIColor magentaColor],
+    @"gray": [UIColor grayColor],
     @"green": [UIColor greenColor],
-    @"yellow": [UIColor yellowColor],
     @"orange": [UIColor orangeColor],
     @"purple": [UIColor purpleColor],
-    @"black": [UIColor blackColor],
+    @"red": [UIColor redColor],
+    @"transparent": [UIColor clearColor],
     @"white": [UIColor whiteColor],
-    @"gray": [UIColor grayColor],
-    @"clear": [UIColor clearColor],
-    @"transparent": [UIColor clearColor]
+    @"yellow": [UIColor yellowColor],
   };
 
   UIColor *namedColor = colorMap[colorString.lowercaseString];
@@ -95,6 +98,20 @@ using namespace facebook::react;
                              alpha:(hexValue & 0x000000FF) / 255.0];
     }
   }
+  // Handle 4-character hex (RGBA shorthand)
+  else if (hexString.length == 4) {
+    unsigned int hexValue;
+    NSScanner *scanner = [NSScanner scannerWithString:hexString];
+    if ([scanner scanHexInt:&hexValue] && [scanner isAtEnd]) {
+      // Expand 4-digit hex to 8-digit (e.g., "FFF0" -> "FFFFFF00")
+      unsigned int r = (hexValue & 0xF000) >> 12;
+      unsigned int g = (hexValue & 0x0F00) >> 8;
+      unsigned int b = (hexValue & 0x00F0) >> 4;
+      unsigned int a = (hexValue & 0x000F);
+
+      return [UIColor colorWithRed:(r | (r << 4)) / 255.0 green:(g | (g << 4)) / 255.0 blue:(b | (b << 4)) / 255.0 alpha:(a | (a << 4)) / 255.0];
+    }
+  }
   // Handle 3-character hex (RGB shorthand)
   else if (hexString.length == 3) {
     unsigned int hexValue;
@@ -112,7 +129,7 @@ using namespace facebook::react;
     }
   }
   else {
-    NSLog(@"[ReactNativeBlurView] Warning: Unsupported hex color length (%lu) for '%@', expected 3, 6, or 8 characters",
+    NSLog(@"[ReactNativeBlurView] Warning: Unsupported hex color length (%lu) for '%@', expected 3, 4, 6, or 8 characters",
           (unsigned long)hexString.length, colorString);
   }
 

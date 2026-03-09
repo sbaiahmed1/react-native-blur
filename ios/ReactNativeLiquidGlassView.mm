@@ -38,17 +38,20 @@ using namespace facebook::react;
 
   // Handle common color names
   NSDictionary *colorMap = @{
-    @"red": [UIColor redColor],
+    @"black": [UIColor blackColor],
     @"blue": [UIColor blueColor],
+    @"brown": [UIColor brownColor],
+    @"clear": [UIColor clearColor],
+    @"cyan": [UIColor cyanColor],
+    @"magenta": [UIColor magentaColor],
+    @"gray": [UIColor grayColor],
     @"green": [UIColor greenColor],
-    @"yellow": [UIColor yellowColor],
     @"orange": [UIColor orangeColor],
     @"purple": [UIColor purpleColor],
-    @"black": [UIColor blackColor],
+    @"red": [UIColor redColor],
+    @"transparent": [UIColor clearColor],
     @"white": [UIColor whiteColor],
-    @"gray": [UIColor grayColor],
-    @"clear": [UIColor clearColor],
-    @"transparent": [UIColor clearColor]
+    @"yellow": [UIColor yellowColor],
   };
 
   UIColor *namedColor = colorMap[colorString.lowercaseString];
@@ -96,6 +99,20 @@ using namespace facebook::react;
                              alpha:(hexValue & 0x000000FF) / 255.0];
     }
   }
+  // Handle 4-character hex (RGBA shorthand)
+  else if (hexString.length == 4) {
+    unsigned int hexValue;
+    NSScanner *scanner = [NSScanner scannerWithString:hexString];
+    if ([scanner scanHexInt:&hexValue] && [scanner isAtEnd]) {
+      // Expand 4-digit hex to 8-digit (e.g., "FFF0" -> "FFFFFF00")
+      unsigned int r = (hexValue & 0xF000) >> 12;
+      unsigned int g = (hexValue & 0x0F00) >> 8;
+      unsigned int b = (hexValue & 0x00F0) >> 4;
+      unsigned int a = (hexValue & 0x000F);
+
+      return [UIColor colorWithRed:(r | (r << 4)) / 255.0 green:(g | (g << 4)) / 255.0 blue:(b | (b << 4)) / 255.0 alpha:(a | (a << 4)) / 255.0];
+    }
+  }
   // Handle 3-character hex (RGB shorthand)
   else if (hexString.length == 3) {
     unsigned int hexValue;
@@ -113,7 +130,7 @@ using namespace facebook::react;
     }
   }
   else {
-    NSLog(@"[ReactNativeLiquidGlassView] Warning: Unsupported hex color length (%lu) for '%@', expected 3, 6, or 8 characters",
+    NSLog(@"[ReactNativeLiquidGlassView] Warning: Unsupported hex color length (%lu) for '%@', expected 3, 4, 6, or 8 characters",
           (unsigned long)hexString.length, colorString);
   }
 
@@ -223,15 +240,15 @@ using namespace facebook::react;
 - (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask
 {
   [super finalizeUpdates:updateMask];
-  
+
   // Apply border radius from layout metrics to the inner glass view (Callstack pattern)
   if (@available(iOS 26.0, *)) {
     const auto &props = *std::static_pointer_cast<ReactNativeLiquidGlassViewProps const>(_props);
     const auto borderMetrics = props.resolveBorderMetrics(_layoutMetrics);
-    
+
     // Use topLeft.horizontal same as React Native RCTViewComponentView implementation
     CGFloat radius = borderMetrics.borderRadii.topLeft.horizontal;
-    
+
     if (radius > 0) {
       [_liquidGlassView setBorderRadius:radius];
     }
@@ -242,11 +259,11 @@ using namespace facebook::react;
 {
   [super layoutSubviews];
   _liquidGlassView.frame = self.bounds;
-  
+
   // Copy corner radius from the Fabric view to the inner glass view (Callstack pattern)
   _liquidGlassView.layer.cornerRadius = self.layer.cornerRadius;
   _liquidGlassView.layer.cornerCurve = self.layer.cornerCurve;
-  
+
   // On iOS 26+, don't clip bounds to allow interactive glass animations to be visible
   // The glass effect view handles its own clipping via cornerConfiguration
   if (@available(iOS 26.0, *)) {
