@@ -107,15 +107,12 @@ class ReactNativeBlurView : BlurViewGroup {
 
     if (isBlurInitialized) return
 
-    // Defer the blur root swap to next frame so the view tree is fully mounted
-    val runnable = Runnable {
-      initRunnable = null
-      if (isBlurInitialized) return@Runnable
-      swapBlurRootToScreenAncestor()
-      initializeBlur()
-    }
-    initRunnable = runnable
-    post(runnable)
+    // Immediately try to swap blur root and initialize.
+    // We avoid posting a runnable to prevent the 1-second delay artifact.
+    // If the parent hierarchy is not ready yet (unlikely in onAttachedToWindow),
+    // we could fall back to post, but for now we prioritize immediate execution.
+    swapBlurRootToScreenAncestor()
+    initializeBlur()
   }
 
   /**
