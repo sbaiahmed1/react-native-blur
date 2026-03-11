@@ -68,16 +68,24 @@ import UIKit
     let blurEffect = UIBlurEffect(style: style)
     let vibrancyEffect = UIVibrancyEffect(blurEffect: blurEffect)
 
-    // Use animator to control blur intensity
-    blurAnimator = UIViewPropertyAnimator(duration: 1, curve: .linear)
-    blurAnimator?.addAnimations { [weak self] in
-      self?.blurEffectView.effect = blurEffect
-      self?.vibrancyEffectView.effect = vibrancyEffect
+    // Set effects directly first to ensure they are visible
+    // Animating them from nil often causes issues with UIVibrancyEffect
+    blurEffectView.effect = blurEffect
+    vibrancyEffectView.effect = vibrancyEffect
+    
+    // Create animator to adjust intensity
+    blurAnimator = UIViewPropertyAnimator(duration: 1, curve: .linear) { [weak self] in
+        self?.blurEffectView.effect = nil
+        self?.vibrancyEffectView.effect = nil
     }
 
     // Convert blurAmount (0-100) to intensity (0.0-1.0)
+    // We reverse the logic: 
+    // fractionComplete = 0.0 -> effects are fully applied (start state)
+    // fractionComplete = 1.0 -> effects are removed (end state)
+    // So to get desired intensity X, we set fractionComplete to (1 - X)
     let intensity = min(max(blurAmount / 100.0, 0.0), 1.0)
-    blurAnimator?.fractionComplete = intensity
+    blurAnimator?.fractionComplete = 1.0 - intensity
 
     // Stop the animation at the current state
     DispatchQueue.main.async { [weak self, weak blurAnimator] in
