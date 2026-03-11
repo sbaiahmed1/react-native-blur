@@ -8,7 +8,8 @@
     "scheme": "exampleapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.sbaiahmed1.reactnativeblurexampleapp"
     },
     "android": {
       "adaptiveIcon": {

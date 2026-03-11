@@ -68,7 +68,14 @@ import UIKit
     hosting.view.backgroundColor = .clear
     hosting.view.translatesAutoresizingMaskIntoConstraints = false
 
-    addSubview(hosting.view)
+    // Insert at index 0 to ensure it stays behind any potential subviews (though usually this view has no children)
+    // This fixes the z-ordering bug where blur covers content
+    if !subviews.isEmpty {
+        insertSubview(hosting.view, at: 0)
+    } else {
+        addSubview(hosting.view)
+    }
+    
     NSLayoutConstraint.activate([
       hosting.view.topAnchor.constraint(equalTo: topAnchor),
       hosting.view.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -80,8 +87,20 @@ import UIKit
   }
 
   private func updateView() {
-    if hostingController != nil {
-      setupHostingController()
+    if let hosting = hostingController {
+        // Update the existing controller's root view to avoid expensive recreation
+        // This fixes performance bottlenecks and state synchronization issues
+        let blurStyle = blurStyleFromString(blurTypeString)
+        let swiftUIView = BasicColoredView(
+          blurAmount: blurAmount,
+          blurStyle: blurStyle,
+          ignoreSafeArea: ignoreSafeArea,
+          reducedTransparencyFallbackColor: reducedTransparencyFallbackColor
+        )
+        hosting.rootView = swiftUIView
+        hosting.view.setNeedsLayout()
+    } else {
+        setupHostingController()
     }
   }
 
