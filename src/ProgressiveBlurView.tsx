@@ -46,6 +46,8 @@ export interface ProgressiveBlurViewProps {
    *
    * Accepts hex color strings like `#FFFFFF`
    *
+   * @platform ios
+   *
    * @default '#FFFFFF'
    */
   reducedTransparencyFallbackColor?: string;
