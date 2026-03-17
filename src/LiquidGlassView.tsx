@@ -11,6 +11,8 @@ export interface LiquidGlassViewProps {
    * The type of glass effect to apply
    * Platform: iOS 26+ only
    *
+   * @platform ios
+   *
    * @default 'clear'
    */
   glassType?: GlassType;
@@ -20,6 +22,8 @@ export interface LiquidGlassViewProps {
    * Accepts hex color strings like '#FFFFFF' or color names
    * Platform: iOS 26+ only
    *
+   * @platform ios
+   *
    * @default 'clear'
    */
   glassTintColor?: string;
@@ -27,6 +31,8 @@ export interface LiquidGlassViewProps {
   /**
    * The opacity of the glass effect (0-1)
    * Platform: iOS 26+ only
+   *
+   * @platform ios
    *
    * @default 1.0
    */
@@ -37,6 +43,8 @@ export interface LiquidGlassViewProps {
    * Accepts hex color strings like '#FFFFFF'
    * Platform: iOS only
    *
+   * @platform ios
+   *
    * @default '#FFFFFF'
    */
   reducedTransparencyFallbackColor?: string;
@@ -44,6 +52,8 @@ export interface LiquidGlassViewProps {
   /**
    * Whether the glass view should be interactive
    * Platform: iOS 26+ only
+   *
+   * @platform ios
    *
    * @default true
    */
@@ -53,17 +63,23 @@ export interface LiquidGlassViewProps {
    * Whether the glass view should ignore safe area insets
    * Platform: iOS 26+ only
    *
+   * @platform ios
+   *
    * @default false
    */
   ignoreSafeArea?: boolean;
 
   /**
    * Style object for the liquid glass view
+   *
+   * @default undefined
    */
   style?: StyleProp<ViewStyle>;
 
   /**
    * Child components to render inside the liquid glass view
+   *
+   * @default undefined
    */
   children?: React.ReactNode;
 }
@@ -83,6 +99,8 @@ export interface LiquidGlassViewProps {
  * effect is positioned absolutely behind the content, ensuring interactive elements
  * work correctly.
  *
+ * @platform ios
+ *
  * @example
  * ```tsx
  * import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
@@ -97,8 +115,6 @@ export interface LiquidGlassViewProps {
  *   <Button title="Interactive Button" onPress={() => {}} />
  * </LiquidGlassView>
  * ```
- *
- * @platform ios
  */
 export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
   glassType = 'clear',
