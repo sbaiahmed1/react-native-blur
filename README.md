@@ -7,7 +7,7 @@ A modern React Native library providing **six specialized components** for advan
 <div align="center">
   <p>
     <img src="https://img.shields.io/npm/v/@sbaiahmed1/react-native-blur?style=for-the-badge&color=blue" alt="npm version" />
-    <img src="https://img.shields.io/npm/dt/@sbaiahmed1/react-native-blur?style=for-the-badge&color=green" alt="downloads" />
+    <img src="https://img.shields.io/npm/dm/%40sbaiahmed1%2Freact-native-blur?style=for-the-badge" alt="downloads per month" />
     <img src="https://img.shields.io/github/license/sbaiahmed1/react-native-blur?style=for-the-badge&color=orange" alt="license" />
     <img src="https://img.shields.io/github/stars/sbaiahmed1/react-native-blur?style=for-the-badge&color=yellow" alt="stars" />
   </p>
@@ -1001,6 +1001,7 @@ MIT
 
 <div align="center">
   <img src="https://img.shields.io/github/contributors/sbaiahmed1/react-native-blur?style=for-the-badge" alt="contributors" />
+  <img src="https://img.shields.io/npm/dt/@sbaiahmed1/react-native-blur?style=for-the-badge&color=green" alt="downloads" />
   <img src="https://img.shields.io/github/last-commit/sbaiahmed1/react-native-blur?style=for-the-badge" alt="last commit" />
   <img src="https://img.shields.io/github/issues/sbaiahmed1/react-native-blur?style=for-the-badge" alt="issues" />
   <img src="https://img.shields.io/github/issues-pr/sbaiahmed1/react-native-blur?style=for-the-badge" alt="pull requests" />
