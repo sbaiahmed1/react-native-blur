@@ -1,6 +1,6 @@
 # @sbaiahmed1/react-native-blur
 
-A modern React Native library providing **six specialized components** for advanced visual effects: `BlurView` for native blur effects, `VibrancyView` for iOS vibrancy effects, `LiquidGlassView` for cutting-edge liquid glass effects on iOS 26+ (with Android fallback to enhanced blur), `LiquidGlassContainer` for iOS 26+ glass container effects with configurable spacing, `ProgressiveBlurView` for smooth, variable blur transitions, and `BlurSwitch` for beautiful blur switch buttons on Android.
+A modern React Native library providing six specialized components for advanced visual effects across iOS, Android, and Web: BlurView for native blur effects, VibrancyView for iOS vibrancy effects, LiquidGlassView for cutting-edge liquid glass effects on iOS 26+ (with Android fallback to enhanced blur), LiquidGlassContainer for iOS 26+ glass container effects with configurable spacing, ProgressiveBlurView for smooth, variable blur transitions, and BlurSwitch for beautiful blur switch buttons on Android.
 
 > **⚠️ Breaking Changes**: If upgrading from 3.x, see [Breaking Changes](#️-breaking-changes-in-v400) section.
 
@@ -60,6 +60,8 @@ A modern React Native library providing **six specialized components** for advan
 | **React Native**          | 0.68+ (New Architecture)                              |
 | **Android**               | API 24+ (Android 7.0)                                 |
 | **Android Gradle Plugin** | 8.9.1+                                                |
+| **Web**                   | Chrome 76+, Edge 79+, Firefox 103+ and Safari 9+      |
+| **Web Backdrop Filter**   | ~96% global support                                   |
 
 > ⚠️ **Note**: LiquidGlassView requires Xcode 26.0+ and iOS 26+ for full glass effects. The component automatically falls back to enhanced blur on older versions.
 
@@ -160,8 +162,9 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
   - `Vibrancy View`- Beautiful Vibrancy view for iOS (iOS only)
 
 - �🌊 **Liquid Glass Effects**: Revolutionary glass effects using iOS 26+ UIGlassEffect API
-- 🎨 **Multiple Blur Types**: Support for various blur styles including system materials on iOS
+- 🎨 **Multiple Blur Types**: Support for various blur styles, including system materials on iOS
 - 📱 **Cross-Platform**: Works on both iOS and Android
+- 🖥️ **Web Support**: Works on Web applications
 - ♿ **Accessibility**: Automatic fallback for reduced transparency settings
 - 🔧 **TypeScript**: Full TypeScript support with proper type definitions for all components
 - 🚀 **Turbo Module**: Built with React Native's new architecture (Fabric)
@@ -661,7 +664,7 @@ All props are optional and have sensible defaults.
 > **Platform Note**: `ProgressiveBlurView` works on both **iOS** and **Android**.
 >
 > - **iOS**: Uses private Core Animation filters for variable blur effects
-> - **Android**: Extends QMBlur's BlurView with custom gradient masking to create progressive blur effect
+> - **Android**: Extends QMBlur's BlurView with custom gradient masking to create a progressive blur effect
 
 ### LiquidGlassView Props
 
@@ -792,6 +795,20 @@ All components automatically respect the "Reduce Transparency" accessibility set
 - **iOS < 26 & Android**: Always renders as regular View
 
 You can customize the fallback color using the `reducedTransparencyFallbackColor` prop on `BlurView`, `ProgressiveBlurView`, and `LiquidGlassView` components.
+
+### Web
+
+All components are supported on web via platform-specific `.web.tsx` files that Metro/webpack automatically resolves when bundling for React Native Web. No additional configuration is required.
+
+#### Browser support
+
+CSS `backdrop-filter` is supported in all modern browsers (~96% global support):
+
+- **Chrome** 76+, **Edge** 79+, **Firefox** 103+, **Safari** 9+ (with `-webkit-` prefix)
+
+#### BlurType mapping
+
+All 21 `BlurType` values are mapped to appropriate `rgba()` background colors that approximate native iOS `UIVisualEffectView` tints — light variants map to white-based overlays and dark variants to black-based overlays with graduated opacity.
 
 ## TypeScript Support
 
