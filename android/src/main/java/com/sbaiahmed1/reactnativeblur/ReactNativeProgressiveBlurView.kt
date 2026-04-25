@@ -245,9 +245,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   private fun findNearestReactRootView(): ViewGroup? {
     var currentParent = this.parent
     while (currentParent != null) {
-      val className = currentParent.javaClass.name
-      if (className == "com.facebook.react.ReactRootView" ||
-          className == "com.facebook.react.rootview.ReactRootView") {
+      if (currentParent.javaClass.name == "com.facebook.react.ReactRootView") {
         return currentParent as? ViewGroup
       }
       currentParent = currentParent.parent
