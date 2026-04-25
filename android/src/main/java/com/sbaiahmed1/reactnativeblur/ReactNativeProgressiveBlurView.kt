@@ -209,16 +209,18 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   /**
    * Finds the optimal view to use as blur capture root.
    *
-   * Returns the nearest react-native-screens Screen ancestor if found, which scopes
-   * the blur to the current screen and prevents capturing navigation transitions.
-   *
-   * Returns null when no Screen ancestor exists (e.g. modals, standalone usage).
-   * A null return means swapBlurRootToScreenAncestor() is a no-op and QmBlurView
-   * keeps its default decor view as the blur root — this is correct for modals
-   * because they need to blur the content behind them (in the main activity window).
+   * Priority:
+   * 1. Nearest react-native-screens Screen ancestor — scopes blur to the current
+   *    screen and prevents capturing navigation transition artifacts.
+   * 2. Nearest ReactRootView ancestor — scopes blur to the React Native root when
+   *    the component is not inside a Screen (e.g. plain View hierarchies). Without
+   *    this fallback, QmBlurView defaults to the activity decor view and blurs the
+   *    entire screen instead of just the component area (issue #89).
+   * 3. null — returned for modals, which intentionally need to blur content from
+   *    the main activity window (decor view is correct there).
    */
   private fun findOptimalBlurRoot(): ViewGroup? {
-    return findNearestScreenAncestor()
+    return findNearestScreenAncestor() ?: findNearestReactRootView()
   }
 
   /**
@@ -228,6 +230,24 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     var currentParent = this.parent
     while (currentParent != null) {
       if (currentParent.javaClass.name == "com.swmansion.rnscreens.Screen") {
+        return currentParent as? ViewGroup
+      }
+      currentParent = currentParent.parent
+    }
+    return null
+  }
+
+  /**
+   * Walks up the view hierarchy looking for the React Native root view.
+   * Used as a fallback when no Screen ancestor exists, to scope the blur
+   * capture to the RN root rather than the full activity decor view.
+   */
+  private fun findNearestReactRootView(): ViewGroup? {
+    var currentParent = this.parent
+    while (currentParent != null) {
+      val className = currentParent.javaClass.name
+      if (className == "com.facebook.react.ReactRootView" ||
+          className == "com.facebook.react.rootview.ReactRootView") {
         return currentParent as? ViewGroup
       }
       currentParent = currentParent.parent

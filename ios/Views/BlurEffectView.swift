@@ -21,6 +21,10 @@ class BlurEffectView: UIVisualEffectView {
   }
 
   func updateBlur(style: UIBlurEffect.Style, intensity: Double) {
+    // Skip expensive animator recreation when nothing changed.
+    // During FlashList recycling, updateUIView fires on every layout pass
+    // even when props are identical, causing jank (issue #100).
+    guard style != self.blurStyle || intensity != self.intensity else { return }
     self.blurStyle = style
     self.intensity = intensity
     setupBlur()
@@ -43,13 +47,14 @@ class BlurEffectView: UIVisualEffectView {
       self?.effect = UIBlurEffect(style: self?.blurStyle ?? .systemMaterial)
     }
 
-    // Set intensity
+    // Set intensity and immediately freeze the animator so the blur is
+    // applied synchronously. The previous async dispatch caused a one-frame
+    // window where the wrong intensity was visible, leading to flickers on
+    // navigation (issue #101) and fallback-color flashes with many instances
+    // on iOS 26.2 (issue #85).
     animator?.fractionComplete = intensity
-    // Stop the animation at the current state
-    DispatchQueue.main.async { [weak self] in
-      self?.animator?.stopAnimation(true)
-      self?.animator?.finishAnimation(at: .current)
-    }
+    animator?.stopAnimation(true)
+    animator?.finishAnimation(at: .current)
   }
 
   deinit {
