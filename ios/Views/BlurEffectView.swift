@@ -30,37 +30,45 @@ class BlurEffectView: UIVisualEffectView {
     setupBlur()
   }
 
+  override func didMoveToWindow() {
+    super.didMoveToWindow()
+    guard window != nil else { return }
+    // UIKit resumes paused CAAnimations when a view re-joins a window
+    // (e.g. after modal dismiss + re-present). If the animation plays
+    // toward its end state the blur drifts to full intensity. Re-pause
+    // and re-set the fraction here to lock it back to our intended value.
+    // pausesOnCompletion = true (set in setupBlur) ensures the animator
+    // stays .active even if it reaches fraction 1.0, so this is always safe.
+    animator?.pauseAnimation()
+    animator?.fractionComplete = intensity
+  }
+
   private func setupBlur() {
-    // Clean up existing animator
-    if let animator = animator {
-      animator.stopAnimation(true)
-      animator.finishAnimation(at: .current)
+    if let existing = animator, existing.state == .active {
+      existing.stopAnimation(true)
     }
     animator = nil
 
-    // Reset effect
     effect = nil
 
-    // Create new animator
-    animator = UIViewPropertyAnimator(duration: 1, curve: .linear)
-    animator?.addAnimations { [weak self] in
+    let newAnimator = UIViewPropertyAnimator(duration: 1, curve: .linear)
+    newAnimator.addAnimations { [weak self] in
       self?.effect = UIBlurEffect(style: self?.blurStyle ?? .systemMaterial)
     }
-
-    // Set intensity and immediately freeze the animator so the blur is
-    // applied synchronously. The previous async dispatch caused a one-frame
-    // window where the wrong intensity was visible, leading to flickers on
-    // navigation (issue #101) and fallback-color flashes with many instances
-    // on iOS 26.2 (issue #85).
-    animator?.fractionComplete = intensity
-    animator?.stopAnimation(true)
-    animator?.finishAnimation(at: .current)
+    // pausesOnCompletion: if UIKit ever resumes and runs this to the end,
+    // the animator stays .active (paused at 1.0) instead of going .inactive.
+    // This guarantees didMoveToWindow can always call pauseAnimation() safely.
+    newAnimator.pausesOnCompletion = true
+    newAnimator.startAnimation()
+    newAnimator.pauseAnimation()
+    newAnimator.fractionComplete = intensity
+    animator = newAnimator
   }
 
   deinit {
-    guard let animator = animator, animator.state == .active else { return }
-    animator.stopAnimation(true)
-    animator.finishAnimation(at: .current)
+    if let animator = animator, animator.state == .active {
+      animator.stopAnimation(true)
+    }
   }
 }
 
