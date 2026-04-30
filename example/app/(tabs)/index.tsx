@@ -5,10 +5,10 @@ import {
   ImageBackground,
   ScrollView,
   Pressable,
-  Modal,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { FullWindowOverlay } from 'react-native-screens';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { DEMO_IMAGES } from '@/constants/blur';
 
@@ -65,21 +65,23 @@ export default function HomeScreen() {
         </BlurView>
       </ScrollView>
 
-      <Modal visible={isModalVisible} transparent statusBarTranslucent>
-        <TouchableWithoutFeedback onPress={() => setIsModalVisible(false)}>
-          <BlurView
-            ignoreSafeArea
-            blurType={'dark'}
-            style={StyleSheet.absoluteFill}
-          />
-        </TouchableWithoutFeedback>
+      {isModalVisible && (
+        <FullWindowOverlay>
+          <TouchableWithoutFeedback onPress={() => setIsModalVisible(false)}>
+            <BlurView
+              ignoreSafeArea
+              blurType={'dark'}
+              style={StyleSheet.absoluteFill}
+            />
+          </TouchableWithoutFeedback>
 
-        <View style={styles.modalContent}>
-          <View style={styles.modalCard}>
-            <Text>Hello this is a centred text in a modal</Text>
+          <View style={styles.modalContent} pointerEvents="none">
+            <View style={styles.modalCard}>
+              <Text>Hello this is a centred text in a modal</Text>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </FullWindowOverlay>
+      )}
     </ImageBackground>
   );
 }
