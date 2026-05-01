@@ -12,7 +12,7 @@ export interface LiquidGlassViewProps {
    *
    * @default 'clear'
    *
-   * @platform iOS
+   * @platform iOS 26+
    */
   glassType?: GlassType;
 

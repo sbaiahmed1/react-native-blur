@@ -472,6 +472,9 @@ class ReactNativeBlurView : BlurViewGroup {
   override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
 
-    setBlurType(currentBlurType)
+    if (viewType == "blur") {
+      // Re-apply blur type to update overlay color based on new configuration
+      setBlurType(currentBlurType)
+    }
   }
 }
