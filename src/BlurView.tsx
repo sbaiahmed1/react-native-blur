@@ -23,9 +23,9 @@ export interface BlurViewProps {
   /**
    * @description Fallback color when reduced transparency is enabled
    *
-   * Accepts hex color strings like `#FFFFFF`
-   *
    * @default '#FFFFFF'
+   *
+   * @platform iOS
    */
   reducedTransparencyFallbackColor?: string;
 

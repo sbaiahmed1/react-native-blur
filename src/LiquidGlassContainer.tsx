@@ -4,10 +4,11 @@ import ReactNativeLiquidGlassContainer from './ReactNativeLiquidGlassContainerNa
 
 export interface LiquidGlassContainerProps extends ViewProps {
   /**
-   * The spacing value for the glass container effect
-   * Platform: iOS only (iOS 26+)
+   * @description The spacing value for the glass container effect
    *
    * @default 0
+   *
+   * @platform iOS
    */
   spacing?: number;
 }

@@ -8,62 +8,72 @@ import BlurView from './BlurView';
 
 export interface LiquidGlassViewProps {
   /**
-   * The type of glass effect to apply
-   * Platform: iOS 26+ only
+   * @description The type of glass effect to apply
    *
    * @default 'clear'
+   *
+   * @platform iOS
    */
   glassType?: GlassType;
 
   /**
-   * The tint color of the glass effect
-   * Accepts hex color strings like '#FFFFFF' or color names
-   * Platform: iOS 26+ only
+   * @description The tint color of the glass effect. Accepts hex color strings
+   * like '#FFFFFF' or color names
    *
    * @default 'clear'
+   *
+   * @platform iOS 26+
    */
   glassTintColor?: string;
 
   /**
-   * The opacity of the glass effect (0-1)
-   * Platform: iOS 26+ only
+   * @description The opacity of the glass effect (0-1)
    *
    * @default 1.0
+   *
+   * @platform iOS 26+
    */
   glassOpacity?: number;
 
   /**
-   * Fallback color when reduced transparency is enabled or on older iOS versions
-   * Accepts hex color strings like '#FFFFFF'
-   * Platform: iOS only
+   * @description Fallback color when reduced transparency is enabled or on
+   * older iOS versions
    *
    * @default '#FFFFFF'
+   *
+   * @platform iOS
    */
   reducedTransparencyFallbackColor?: string;
 
   /**
-   * Whether the glass view should be interactive
-   * Platform: iOS 26+ only
+   * @description Whether the glass view should be interactive
    *
    * @default true
+   *
+   * @platform iOS
    */
   isInteractive?: boolean;
 
   /**
-   * Whether the glass view should ignore safe area insets
-   * Platform: iOS 26+ only
+   * @description Whether the glass view should ignore safe area insets
    *
    * @default false
+   *
+   * @platform iOS
    */
   ignoreSafeArea?: boolean;
 
   /**
-   * Style object for the liquid glass view
+   * @description Style object for the liquid glass view
+   *
+   * @default undefined
    */
   style?: StyleProp<ViewStyle>;
 
   /**
    * Child components to render inside the liquid glass view
+   *
+   * @default undefined
    */
   children?: React.ReactNode;
 }
