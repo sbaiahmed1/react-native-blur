@@ -1,6 +1,7 @@
 package com.sbaiahmed1.reactnativeblur
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Outline
 import android.util.AttributeSet
@@ -35,6 +36,7 @@ class ReactNativeBlurView : BlurViewGroup {
   private var glassOpacity: Float = 1.0f
   private var viewType: String = "blur"
   private var glassType: String = "clear"
+  private var currentBlurType: String = "xlight"
   private var isBlurInitialized: Boolean = false
   private var initRunnable: Runnable? = null
 
@@ -293,7 +295,8 @@ class ReactNativeBlurView : BlurViewGroup {
    * @param type The blur type string (case-insensitive)
    */
   fun setBlurType(type: String) {
-    val blurType = BlurType.fromString(type)
+    currentBlurType = type
+    val blurType = BlurType.fromString(type, resources.configuration)
     currentOverlayColor = blurType.overlayColor
     logDebug("setBlurType: $type -> ${blurType.name}")
 
@@ -477,5 +480,16 @@ class ReactNativeBlurView : BlurViewGroup {
     // We override this to prevent the superclass (BlurViewGroup/FrameLayout) from
     // re-positioning children based on its own logic (e.g. gravity), which would
     // conflict with React Native's layout.
+  }
+
+  /**
+   * Handle configuration changes, such as dark mode or orientation changes.
+   * This ensures the blur view updates its overlay color based on the new
+   * configuration.
+   */
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    super.onConfigurationChanged(newConfig)
+
+    setBlurType(currentBlurType)
   }
 }
