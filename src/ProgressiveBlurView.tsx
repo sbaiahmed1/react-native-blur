@@ -23,6 +23,16 @@ export interface ProgressiveBlurViewProps {
   blurAmount?: number;
 
   /**
+   * @description The number of blur interactions to perform for a smoother
+   * effect (1-15)
+   *
+   * @default 5
+   *
+   * @platform Android
+   */
+  blurRounds?: number;
+
+  /**
    * @description The direction of the progressive blur gradient
    * - 'blurredTopClearBottom': Blur starts at top, clear at bottom
    * - 'blurredBottomClearTop': Blur starts at bottom, clear at top
@@ -115,6 +125,7 @@ export interface ProgressiveBlurViewProps {
 export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
   blurType = 'regular',
   blurAmount = 20,
+  blurRounds = 5,
   direction = 'blurredTopClearBottom',
   startOffset = 0.0,
   reducedTransparencyFallbackColor = '#FFFFFF',
@@ -131,6 +142,7 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
       <ReactNativeProgressiveBlurView
         blurType={blurType}
         blurAmount={blurAmount}
+        blurRounds={blurRounds}
         direction={direction}
         startOffset={startOffset}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
@@ -147,6 +159,7 @@ export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
       <ReactNativeProgressiveBlurView
         blurType={blurType}
         blurAmount={blurAmount}
+        blurRounds={blurRounds}
         direction={direction}
         startOffset={startOffset}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}

@@ -4,6 +4,7 @@ import type {
   WithDefault,
   Double,
   DirectEventHandler,
+  Int32,
 } from 'react-native/Libraries/Types/CodegenTypes';
 
 export interface ValueChangeEvent {
@@ -13,6 +14,7 @@ export interface ValueChangeEvent {
 interface NativeProps extends ViewProps {
   value?: WithDefault<boolean, false>;
   blurAmount?: WithDefault<Double, 10.0>;
+  blurRounds?: WithDefault<Int32, 5>;
   thumbColor?: WithDefault<string, '#FFFFFF'>;
   trackColorOff?: WithDefault<string, '#E5E5EA'>;
   trackColorOn?: WithDefault<string, '#34C759'>;

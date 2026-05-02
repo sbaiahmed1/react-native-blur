@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, Switch } from 'react-native';
+import { Platform, StyleSheet, Switch } from 'react-native';
 import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
 import ReactNativeBlurSwitch from './ReactNativeBlurSwitchNativeComponent';
 
@@ -30,9 +30,20 @@ export interface BlurSwitchProps {
    * @description The intensity of the blur effect (0-100)
    *
    * @platform android
+   *
    * @default 10
    */
   blurAmount?: number;
+
+  /**
+   * @description The number of blur interactions to perform for a smoother
+   * effect (1-15)
+   *
+   * @default 5
+   *
+   * @platform Android
+   */
+  blurRounds?: number;
 
   /**
    * @description The color of the switch thumb
@@ -93,8 +104,9 @@ export interface BlurSwitchProps {
  */
 export const BlurSwitch: React.FC<BlurSwitchProps> = ({
   value = false,
-  onValueChange,
   blurAmount = 10,
+  blurRounds = 5,
+  onValueChange,
   thumbColor = '#FFFFFF',
   trackColor = { false: '#E5E5EA', true: '#34C759' },
   disabled = false,
@@ -117,12 +129,13 @@ export const BlurSwitch: React.FC<BlurSwitchProps> = ({
 
   return (
     <ReactNativeBlurSwitch
-      style={[{ width: 65, height: 36 }, style]}
+      style={[styles.switch, style]}
       value={value}
       onValueChange={(event) => {
         onValueChange?.(event.nativeEvent.value);
       }}
       blurAmount={blurAmount}
+      blurRounds={blurRounds}
       thumbColor={toColorString(thumbColor, '#FFFFFF')}
       trackColorOff={toColorString(trackColor?.false, '#E5E5EA')}
       trackColorOn={toColorString(trackColor?.true, '#34C759')}
@@ -131,5 +144,12 @@ export const BlurSwitch: React.FC<BlurSwitchProps> = ({
     />
   );
 };
+
+const styles = StyleSheet.create({
+  switch: {
+    width: 65,
+    height: 36,
+  },
+});
 
 export default BlurSwitch;

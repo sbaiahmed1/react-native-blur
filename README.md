@@ -626,6 +626,7 @@ All props are optional and have sensible defaults.
 | ---------------------------------- | ------------ | ----------- | ----------------------------------------------------------------------------- |
 | `blurType`                         | `BlurType`   | `'xlight'`  | The type of blur effect to apply                                              |
 | `blurAmount`                       | `number`     | `10.0`      | The intensity of the blur effect (0-100)                                      |
+| `blurRounds`                       | `number`     | `5`         | The number of blur interactions must be an integer value (1-15)               |
 | `ignoreSafeArea`                   | `boolean`    | `true`      | (iOS only) Controls whether the blur effect should ignore all safe area edges |
 | `reducedTransparencyFallbackColor` | `string`     | `'#FFFFFF'` | Fallback color when reduced transparency is enabled                           |
 | `overlayColor`                     | `ColorValue` | `undefined` | The overlay color to apply on top of the blur effect                          |
@@ -647,16 +648,17 @@ All props are optional and have sensible defaults.
 
 All props are optional and have sensible defaults.
 
-| Prop                               | Type                                                                                     | Default                   | Description                                          |
-| ---------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------- | ---------------------------------------------------- |
-| `blurType`                         | `BlurType`                                                                               | `'regular'`               | The type of blur effect to apply                     |
-| `blurAmount`                       | `number`                                                                                 | `20.0`                    | Maximum blur radius in pixels                        |
-| `direction`                        | `'blurredTopClearBottom' \| 'blurredBottomClearTop' \| 'blurredCenterClearTopAndBottom'` | `'blurredTopClearBottom'` | Direction of the blur gradient                       |
-| `startOffset`                      | `number`                                                                                 | `0.0`                     | Where the gradient starts (0.0 to 1.0)               |
-| `reducedTransparencyFallbackColor` | `string`                                                                                 | `'#FFFFFF'`               | Fallback color when reduced transparency is enabled  |
-| `overlayColor`                     | `ColorValue`                                                                             | `undefined`               | The overlay color to apply on top of the blur effect |
-| `style`                            | `ViewStyle`                                                                              | `undefined`               | Style object for the blur view                       |
-| `children`                         | `ReactNode`                                                                              | `undefined`               | Child components to render inside the blur view      |
+| Prop                               | Type                                                                                     | Default                   | Description                                                     |
+| ---------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------- | --------------------------------------------------------------- |
+| `blurType`                         | `BlurType`                                                                               | `'regular'`               | The type of blur effect to apply                                |
+| `blurAmount`                       | `number`                                                                                 | `20.0`                    | Maximum blur radius in pixels                                   |
+| `blurRounds`                       | `number`                                                                                 | `5`                       | The number of blur interactions must be an integer value (1-15) |
+| `direction`                        | `'blurredTopClearBottom' \| 'blurredBottomClearTop' \| 'blurredCenterClearTopAndBottom'` | `'blurredTopClearBottom'` | Direction of the blur gradient                                  |
+| `startOffset`                      | `number`                                                                                 | `0.0`                     | Where the gradient starts (0.0 to 1.0)                          |
+| `reducedTransparencyFallbackColor` | `string`                                                                                 | `'#FFFFFF'`               | Fallback color when reduced transparency is enabled             |
+| `overlayColor`                     | `ColorValue`                                                                             | `undefined`               | The overlay color to apply on top of the blur effect            |
+| `style`                            | `ViewStyle`                                                                              | `undefined`               | Style object for the blur view                                  |
+| `children`                         | `ReactNode`                                                                              | `undefined`               | Child components to render inside the blur view                 |
 
 > **Platform Note**: `ProgressiveBlurView` works on both **iOS** and **Android**.
 >
@@ -696,7 +698,8 @@ All props are optional and have sensible defaults.
 | --------------- | ------------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | `value`         | `boolean`                                   | `false`                                 | The current value of the switch                                                                          |
 | `onValueChange` | `(value: boolean) => void`                  | `undefined`                             | Callback invoked when the switch value changes                                                           |
-| `blurAmount`    | `number`                                    | `10`                                    | (Android only) The intensity of the blur effect (0-100)                                                  |
+| `blurAmount`    | `number`                                    | `10.0`                                  | (Android only) The intensity of the blur effect (0-100)                                                  |
+| `blurRounds`    | `number`                                    | `5`                                     | The number of blur interactions must be an integer value (1-15)                                          |
 | `thumbColor`    | `ColorValue`                                | `'#FFFFFF'`                             | (iOS only) The color of the switch thumb                                                                 |
 | `trackColor`    | `{ false?: ColorValue; true?: ColorValue }` | `{ false: '#E5E5EA', true: '#34C759' }` | Track colors. On Android, only `true` is used - QmBlurView auto-calculates on/off colors from base color |
 | `disabled`      | `boolean`                                   | `false`                                 | Whether the switch is disabled (prevents interaction but maintains current value)                        |
@@ -845,6 +848,7 @@ interface MyGlassContainerProps {
 const blurProps: BlurViewProps = {
   blurType: 'systemMaterial',
   blurAmount: 50,
+  blurRounds: 10,
   reducedTransparencyFallbackColor: '#FFFFFF',
   overlayColor: '#FF000040',
 };
@@ -867,6 +871,7 @@ const blurSwitchProps: BlurSwitchProps = {
   value: true,
   onValueChange: (value) => console.log(value),
   blurAmount: 20,
+  blurRounds: 15,
   trackColor: { true: '#34C759' },
   disabled: false,
 };

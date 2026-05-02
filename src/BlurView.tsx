@@ -21,6 +21,16 @@ export interface BlurViewProps {
   blurAmount?: number;
 
   /**
+   * @description The number of blur interactions to perform for a smoother
+   * effect (1-15)
+   *
+   * @default 5
+   *
+   * @platform Android
+   */
+  blurRounds?: number;
+
+  /**
    * @description Fallback color when reduced transparency is enabled
    *
    * @default '#FFFFFF'
@@ -83,6 +93,7 @@ export interface BlurViewProps {
 export const BlurView: React.FC<BlurViewProps> = ({
   blurType = 'xlight',
   blurAmount = 10,
+  blurRounds = 5,
   reducedTransparencyFallbackColor = '#FFFFFF',
   overlayColor,
   style,
@@ -94,6 +105,7 @@ export const BlurView: React.FC<BlurViewProps> = ({
   const commonProps: BlurViewProps = {
     blurType,
     blurAmount,
+    blurRounds,
     ignoreSafeArea,
     reducedTransparencyFallbackColor,
   };

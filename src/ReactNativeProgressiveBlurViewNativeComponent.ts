@@ -3,6 +3,7 @@ import type { ViewProps } from 'react-native';
 import type {
   WithDefault,
   Double,
+  Int32,
 } from 'react-native/Libraries/Types/CodegenTypes';
 
 export type BlurType =
@@ -36,6 +37,7 @@ export type ProgressiveBlurDirection =
 interface NativeProps extends ViewProps {
   blurAmount?: WithDefault<Double, 20.0>;
   blurType?: WithDefault<BlurType, 'regular'>;
+  blurRounds?: WithDefault<Int32, 5>;
   direction?: WithDefault<ProgressiveBlurDirection, 'blurredTopClearBottom'>;
   startOffset?: WithDefault<Double, 0.0>;
   reducedTransparencyFallbackColor?: WithDefault<string, '#FFFFFF'>;

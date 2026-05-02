@@ -39,6 +39,11 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
     view?.setBlurAmount(blurAmount.toFloat())
   }
 
+  @ReactProp(name = "blurRounds")
+  override fun setBlurRounds(view: ReactNativeBlurView?, blurRounds: Int) {
+    view?.setRounds(blurRounds)
+  }
+
   @ReactProp(name = "borderRadius")
   override fun setBorderRadius(view: ReactNativeBlurView?, borderRadius: Float) {
     view?.setBorderRadius(borderRadius)
