@@ -22,9 +22,11 @@ class ReactNativeBlurSwitch : BlurSwitchButtonView {
   private var onValueChangeListener: ((Boolean) -> Unit)? = null
   private var currentValue = false
   private var isDisabled = false
+  private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
 
   companion object {
     private const val TAG = "ReactNativeBlurSwitch"
+    private const val DEFAULT_BLUR_ROUNDS = 5
     private const val DEFAULT_WIDTH_DP = 65f
     private const val DEFAULT_HEIGHT_DP = 36f
     private const val MIN_BLUR_AMOUNT = 0f
@@ -70,7 +72,7 @@ class ReactNativeBlurSwitch : BlurSwitchButtonView {
    */
   private fun initializeSwitch() {
     try {
-      blurRounds = 5
+      blurRounds = currentBlurRounds
 
       setOnCheckedChangeListener { isChecked ->
         if (isDisabled) {
@@ -178,6 +180,7 @@ class ReactNativeBlurSwitch : BlurSwitchButtonView {
    */
   fun setRounds(rounds: Int) {
     val blurRounds = rounds.coerceIn(1, 15)
+    currentBlurRounds = blurRounds
     logDebug("setRounds: $rounds -> $blurRounds")
 
     try {

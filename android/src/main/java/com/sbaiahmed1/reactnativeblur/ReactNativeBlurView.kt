@@ -31,6 +31,7 @@ import android.view.View.MeasureSpec
 class ReactNativeBlurView : BlurViewGroup {
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
   private var currentOverlayColor = Color.TRANSPARENT
+  private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
   private var currentCornerRadius = 0f
   private var glassTintColor: Int = Color.TRANSPARENT
   private var glassOpacity: Float = 1.0f
@@ -44,6 +45,7 @@ class ReactNativeBlurView : BlurViewGroup {
     private const val TAG = "ReactNativeBlurView"
     private const val MAX_BLUR_RADIUS = 100f
     private const val DEFAULT_BLUR_RADIUS = 10f
+    private const val DEFAULT_BLUR_ROUNDS = 5
     private const val DEBUG = false
 
     // Cross-platform blur amount constants
@@ -93,7 +95,7 @@ class ReactNativeBlurView : BlurViewGroup {
     super.setBackgroundColor(currentOverlayColor)
     clipChildren = true
     clipToOutline = true
-    blurRounds = 5
+    blurRounds = currentBlurRounds
     super.setDownsampleFactor(6.0F)
   }
 
@@ -296,6 +298,7 @@ class ReactNativeBlurView : BlurViewGroup {
    */
   fun setRounds(rounds: Int) {
     val blurRounds = rounds.coerceIn(1, 15)
+    currentBlurRounds = blurRounds
     logDebug("setRounds: $rounds -> $blurRounds")
 
     try {
