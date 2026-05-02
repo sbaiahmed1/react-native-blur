@@ -31,6 +31,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   private val gradientPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
+  private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
   private var currentOverlayColor = Color.TRANSPARENT
   private var currentBlurType = "xlight"
   private var currentDirection = "topToBottom"
@@ -44,6 +45,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     private const val TAG = "ReactNativeProgressiveBlur"
     private const val MAX_BLUR_RADIUS = 100f
     private const val DEFAULT_BLUR_RADIUS = 10f
+    private const val DEFAULT_BLUR_ROUNDS = 5
     private const val DEBUG = false
 
     // Cross-platform blur amount constants
@@ -131,7 +133,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
         blurView = BlurView(context, null).apply {
           layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
           setDownsampleFactor(6.0F)
-          blurRounds = 5
+          blurRounds = currentBlurRounds
         }
         addView(blurView)
       }
@@ -466,6 +468,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    */
   fun setRounds(rounds: Int) {
     val blurRounds = rounds.coerceIn(1, 15)
+    currentBlurRounds = blurRounds
     logDebug("setRounds: $rounds -> $blurRounds")
 
     try {
