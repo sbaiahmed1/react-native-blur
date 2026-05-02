@@ -45,6 +45,11 @@ class ReactNativeProgressiveBlurViewManager : SimpleViewManager<ReactNativeProgr
     view?.setBlurAmount(blurAmount.toFloat())
   }
 
+  @ReactProp(name = "blurRounds")
+  override fun setBlurRounds(view: ReactNativeProgressiveBlurView?, blurRounds: Int) {
+    view?.setRounds(blurRounds)
+  }
+
   @ReactProp(name = "direction")
   override fun setDirection(view: ReactNativeProgressiveBlurView?, direction: String?) {
     // Provide default value if direction is null or empty

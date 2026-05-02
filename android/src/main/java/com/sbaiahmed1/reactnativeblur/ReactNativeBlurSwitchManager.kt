@@ -40,6 +40,11 @@ class ReactNativeBlurSwitchManager : SimpleViewManager<ReactNativeBlurSwitch>() 
     view?.setBlurAmount(blurAmount.toFloat())
   }
 
+  @ReactProp(name = "blurRounds")
+  fun setBlurRounds(view: ReactNativeBlurSwitch?, blurRounds: Int) {
+    view?.setRounds(blurRounds)
+  }
+
   @ReactProp(name = "thumbColor")
   fun setThumbColor(view: ReactNativeBlurSwitch?, color: String?) {
     color?.let {

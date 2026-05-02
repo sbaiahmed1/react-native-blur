@@ -3,6 +3,7 @@ import type { ViewProps } from 'react-native';
 import type {
   WithDefault,
   Double,
+  Int32,
 } from 'react-native/Libraries/Types/CodegenTypes';
 
 export type BlurType =
@@ -31,6 +32,7 @@ export type BlurType =
 interface NativeProps extends ViewProps {
   blurAmount?: WithDefault<Double, 10.0>;
   blurType?: WithDefault<BlurType, 'xlight'>;
+  blurRounds?: WithDefault<Int32, 5>;
   reducedTransparencyFallbackColor?: WithDefault<string, '#FFFFFF'>;
   ignoreSafeArea?: WithDefault<boolean, true>;
 }

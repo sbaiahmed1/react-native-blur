@@ -173,6 +173,21 @@ class ReactNativeBlurSwitch : BlurSwitchButtonView {
   }
 
   /**
+   * Set the number of blur rounds.
+   * @param rounds The number of blur rounds (1-15)
+   */
+  fun setRounds(rounds: Int) {
+    val blurRounds = rounds.coerceIn(1, 15)
+    logDebug("setRounds: $rounds -> $blurRounds")
+
+    try {
+      super.setBlurRounds(blurRounds)
+    } catch (e: Exception) {
+      logError("Failed to set blur rounds: ${e.message}", e)
+    }
+  }
+
+  /**
    * Set whether the switch is disabled.
    * @param disabled True to disable, false to enable
    */

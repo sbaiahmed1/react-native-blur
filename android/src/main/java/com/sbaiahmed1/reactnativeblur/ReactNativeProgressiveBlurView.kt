@@ -461,6 +461,21 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   }
 
   /**
+   * Set the number of blur rounds.
+   * @param rounds The number of blur rounds (1-15)
+   */
+  fun setRounds(rounds: Int) {
+    val blurRounds = rounds.coerceIn(1, 15)
+    logDebug("setRounds: $rounds -> $blurRounds")
+
+    try {
+      blurView?.blurRounds = blurRounds
+    } catch (e: Exception) {
+      logError("Failed to set blur rounds: ${e.message}", e)
+    }
+  }
+
+  /**
    * Set the direction of the progressive blur gradient.
    * @param direction The direction string: "blurredTopClearBottom" or "blurredBottomClearTop"
    */

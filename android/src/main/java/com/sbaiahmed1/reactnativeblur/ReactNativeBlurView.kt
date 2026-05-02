@@ -291,6 +291,21 @@ class ReactNativeBlurView : BlurViewGroup {
   }
 
   /**
+   * Set the number of blur rounds.
+   * @param rounds The number of blur rounds (1-15)
+   */
+  fun setRounds(rounds: Int) {
+    val blurRounds = rounds.coerceIn(1, 15)
+    logDebug("setRounds: $rounds -> $blurRounds")
+
+    try {
+      super.setBlurRounds(blurRounds)
+    } catch (e: Exception) {
+      logError("Failed to set blur rounds: ${e.message}", e)
+    }
+  }
+
+  /**
    * Set the blur type which determines the overlay color.
    * @param type The blur type string (case-insensitive)
    */
