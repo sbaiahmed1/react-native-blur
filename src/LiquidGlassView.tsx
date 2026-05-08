@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 import type { ViewStyle, StyleProp } from 'react-native';
 import ReactNativeLiquidGlassView, {
   type GlassType,
@@ -122,6 +122,25 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
   ...props
 }) => {
   const isIos = Platform.OS === 'ios';
+
+  // Android: use native ReactNativeLiquidGlassView
+  if (Platform.OS === 'android') {
+    return (
+      <View style={[{ position: 'relative' }, style]}>
+        <ReactNativeLiquidGlassView
+          glassType={glassType}
+          glassTintColor={glassTintColor}
+          glassOpacity={glassOpacity}
+          reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+          isInteractive={isInteractive}
+          ignoreSafeArea={ignoreSafeArea}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          {...props}
+        />
+        <View>{children}</View>
+      </View>
+    );
+  }
 
   // Only render on iOS 26+ (fallback otherwise)
   if (!isIos || (isIos && Number.parseInt(String(Platform.Version), 10) < 26)) {

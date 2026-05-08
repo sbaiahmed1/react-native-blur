@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { FullWindowOverlay } from 'react-native-screens';
-import { BlurView } from '@sbaiahmed1/react-native-blur';
+import { BlurView, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 import { DEMO_IMAGES } from '@/constants/blur';
 
 export default function HomeScreen() {
@@ -63,6 +63,18 @@ export default function HomeScreen() {
             </Text>
           </Pressable>
         </BlurView>
+
+        <LiquidGlassView
+          glassType="clear"
+          glassTintColor="#007AFF"
+          glassOpacity={0.8}
+          style={styles.card}
+        >
+          <Text style={styles.cardTitle}>💎 Liquid Glass (Android)</Text>
+          <Text style={styles.cardText}>
+            Native Android liquid glass effect.
+          </Text>
+        </LiquidGlassView>
       </ScrollView>
 
       {isModalVisible && (

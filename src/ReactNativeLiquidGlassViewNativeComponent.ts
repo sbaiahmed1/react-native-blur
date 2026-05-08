@@ -17,6 +17,5 @@ interface NativeProps extends ViewProps {
 }
 
 export default codegenNativeComponent<NativeProps>(
-  'ReactNativeLiquidGlassView',
-  { excludedPlatforms: ['android'] }
+  'ReactNativeLiquidGlassView'
 );
