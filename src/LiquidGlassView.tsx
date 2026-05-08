@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, View } from 'react-native';
+import { Platform } from 'react-native';
 import type { ViewStyle, StyleProp } from 'react-native';
 import ReactNativeLiquidGlassView, {
   type GlassType,
@@ -121,19 +121,18 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
   // Android: use native ReactNativeLiquidGlassView
   if (Platform.OS === 'android') {
     return (
-      <View style={[{ position: 'relative' }, style]}>
-        <ReactNativeLiquidGlassView
-          glassType={glassType}
-          glassTintColor={glassTintColor}
-          glassOpacity={glassOpacity}
-          reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-          isInteractive={isInteractive}
-          ignoreSafeArea={ignoreSafeArea}
-          style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }}
-          {...props}
-        />
-        <View style={{ zIndex: 1 }}>{children}</View>
-      </View>
+      <ReactNativeLiquidGlassView
+        glassType={glassType}
+        glassTintColor={glassTintColor}
+        glassOpacity={glassOpacity}
+        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+        isInteractive={isInteractive}
+        ignoreSafeArea={ignoreSafeArea}
+        style={style}
+        {...props}
+      >
+        {children}
+      </ReactNativeLiquidGlassView>
     );
   }
 
