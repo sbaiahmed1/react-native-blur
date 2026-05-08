@@ -12,7 +12,7 @@ export interface LiquidGlassViewProps {
    *
    * @default 'clear'
    *
-   * @platform iOS 26+
+   * @platform iOS 26+, Android
    */
   glassType?: GlassType;
 
@@ -22,7 +22,7 @@ export interface LiquidGlassViewProps {
    *
    * @default 'clear'
    *
-   * @platform iOS 26+
+   * @platform iOS 26+, Android
    */
   glassTintColor?: string;
 
@@ -31,7 +31,7 @@ export interface LiquidGlassViewProps {
    *
    * @default 1.0
    *
-   * @platform iOS 26+
+   * @platform iOS 26+, Android
    */
   glassOpacity?: number;
 
@@ -50,7 +50,7 @@ export interface LiquidGlassViewProps {
    *
    * @default true
    *
-   * @platform iOS
+   * @platform iOS, Android
    */
   isInteractive?: boolean;
 
@@ -79,19 +79,18 @@ export interface LiquidGlassViewProps {
 }
 
 /**
- * A Liquid Glass view component that provides iOS 26+ glass effects.
+ * A Liquid Glass view component that provides iOS 26+ and Android glass effects.
  *
- * This component uses the new UIKit glass effect API available on iOS 26+.
- * On older iOS versions or when reduced transparency is enabled, it falls back
- * to a solid color background.
+ * This component uses the native glass effect APIs:
+ * - iOS 26+: UIKit glass effect API
+ * - Android: com.qmdeve.liquidglass:core library
+ *
+ * On older iOS versions, it falls back to a BlurView with glass-like styling.
  *
  * **Platform Support:**
  * - iOS 26+: Native glass effect with full functionality
- * - iOS < 26 or Android: Fallback to reducedTransparencyFallbackColor
- *
- * This component automatically handles the proper positioning pattern where the glass
- * effect is positioned absolutely behind the content, ensuring interactive elements
- * work correctly.
+ * - Android: Native liquid glass effect via QmDeve library
+ * - iOS < 26: Fallback to BlurView
  *
  * @example
  * ```tsx
@@ -107,8 +106,6 @@ export interface LiquidGlassViewProps {
  *   <Button title="Interactive Button" onPress={() => {}} />
  * </LiquidGlassView>
  * ```
- *
- * @platform ios
  */
 export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
   glassType = 'clear',
@@ -121,8 +118,6 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
   children,
   ...props
 }) => {
-  const isIos = Platform.OS === 'ios';
-
   // Android: use native ReactNativeLiquidGlassView
   if (Platform.OS === 'android') {
     return (
@@ -134,21 +129,18 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
           isInteractive={isInteractive}
           ignoreSafeArea={ignoreSafeArea}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0 }}
           {...props}
         />
-        <View>{children}</View>
+        <View style={{ zIndex: 1 }}>{children}</View>
       </View>
     );
   }
 
-  // Only render on iOS 26+ (fallback otherwise)
-  if (!isIos || (isIos && Number.parseInt(String(Platform.Version), 10) < 26)) {
-    console.warn(
-      'LiquidGlassView is only supported on iOS. Rendering children without glass effect.'
-    );
+  const isIos = Platform.OS === 'ios';
 
-    // Compute overlay color with opacity for Android native handling
+  // iOS < 26: fallback to BlurView
+  if (!isIos || (isIos && Number.parseInt(String(Platform.Version), 10) < 26)) {
     const overlayColorWithAlpha =
       glassTintColor +
       Math.floor(glassOpacity * 255)
@@ -168,7 +160,7 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
     );
   }
 
-  // If children exist, use the absolute positioning pattern
+  // iOS 26+: native glass effect
   return (
     <ReactNativeLiquidGlassView
       glassType={glassType}

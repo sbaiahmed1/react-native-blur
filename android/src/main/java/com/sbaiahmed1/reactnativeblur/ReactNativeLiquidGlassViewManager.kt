@@ -1,5 +1,6 @@
 package com.sbaiahmed1.reactnativeblur
 
+import android.view.View
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.ThemedReactContext
@@ -29,38 +30,54 @@ class ReactNativeLiquidGlassViewManager : ViewGroupManager<ReactNativeLiquidGlas
     return ReactNativeLiquidGlassView(context)
   }
 
+  override fun addView(parent: ReactNativeLiquidGlassView, child: View, index: Int) {
+    parent.addReactSubview(child, index)
+  }
+
+  override fun removeViewAt(parent: ReactNativeLiquidGlassView, index: Int) {
+    parent.removeReactSubviewAt(index)
+  }
+
+  override fun getChildAt(parent: ReactNativeLiquidGlassView, index: Int): View {
+    return parent.getReactSubviewAt(index)
+  }
+
+  override fun getChildCount(parent: ReactNativeLiquidGlassView): Int {
+    return parent.getReactSubviewCount()
+  }
+
+  override fun needsCustomLayoutForChildren(): Boolean {
+    return true
+  }
+
   @ReactProp(name = "glassType")
   override fun setGlassType(view: ReactNativeLiquidGlassView?, glassType: String?) {
-    // no-op for now
+    view?.setGlassType(glassType ?: "clear")
   }
 
   @ReactProp(name = "glassTintColor")
   override fun setGlassTintColor(view: ReactNativeLiquidGlassView?, glassTintColor: String?) {
-    // no-op for now
+    view?.setGlassTintColor(glassTintColor)
   }
 
   @ReactProp(name = "glassOpacity")
   override fun setGlassOpacity(view: ReactNativeLiquidGlassView?, glassOpacity: Double) {
-    // no-op for now
+    view?.setGlassOpacity(glassOpacity.toFloat())
   }
 
   @ReactProp(name = "reducedTransparencyFallbackColor")
   override fun setReducedTransparencyFallbackColor(view: ReactNativeLiquidGlassView?, reducedTransparencyFallbackColor: String?) {
-    // no-op for now
+    // no-op for Android
   }
 
   @ReactProp(name = "isInteractive")
   override fun setIsInteractive(view: ReactNativeLiquidGlassView?, isInteractive: Boolean) {
-    // no-op for now
+    view?.setIsInteractive(isInteractive)
   }
 
   @ReactProp(name = "ignoreSafeArea")
   override fun setIgnoreSafeArea(view: ReactNativeLiquidGlassView?, ignoreSafeArea: Boolean) {
-    // no-op for now
-  }
-
-  override fun needsCustomLayoutForChildren(): Boolean {
-    return false
+    // no-op for Android
   }
 
   companion object {

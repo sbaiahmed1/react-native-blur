@@ -7,6 +7,8 @@ import {
   Pressable,
   TouchableWithoutFeedback,
   View,
+  Linking,
+  Platform,
 } from 'react-native';
 import { FullWindowOverlay } from 'react-native-screens';
 import { BlurView, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
@@ -14,6 +16,14 @@ import { DEMO_IMAGES } from '@/constants/blur';
 
 export default function HomeScreen() {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+
+  const openLiquidGlassTest = () => {
+    if (Platform.OS === 'android') {
+      Linking.openURL('exampleapp://liquidglass-test').catch((err) =>
+        console.error('Failed to open test:', err)
+      );
+    }
+  };
 
   return (
     <ImageBackground
@@ -66,8 +76,8 @@ export default function HomeScreen() {
 
         <LiquidGlassView
           glassType="clear"
-          glassTintColor="#007AFF"
-          glassOpacity={0.8}
+          glassTintColor="#FFFFFF"
+          glassOpacity={0.3}
           style={styles.card}
         >
           <Text style={styles.cardTitle}>💎 Liquid Glass (Android)</Text>
@@ -75,6 +85,12 @@ export default function HomeScreen() {
             Native Android liquid glass effect.
           </Text>
         </LiquidGlassView>
+
+        <Pressable style={styles.testButton} onPress={openLiquidGlassTest}>
+          <Text style={styles.testButtonText}>
+            🧪 Open Native Liquid Glass Test
+          </Text>
+        </Pressable>
       </ScrollView>
 
       {isModalVisible && (
@@ -151,5 +167,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 50,
     borderRadius: 10,
+  },
+  testButton: {
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+    backgroundColor: '#FF9500',
+    alignItems: 'center',
+  },
+  testButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
