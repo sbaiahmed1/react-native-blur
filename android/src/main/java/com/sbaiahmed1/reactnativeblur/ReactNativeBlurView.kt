@@ -35,10 +35,10 @@ class ReactNativeBlurView : BlurViewGroup {
   private var currentOverlayColor = Color.TRANSPARENT
   private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
   private var borderRadius = 0f
-  private var borderTopLeftRadius = borderRadius
-  private var borderTopRightRadius = borderRadius
-  private var borderBottomLeftRadius = borderRadius
-  private var borderBottomRightRadius = borderRadius
+  private var borderTopLeftRadius = -1f
+  private var borderTopRightRadius = -1f
+  private var borderBottomLeftRadius = -1f
+  private var borderBottomRightRadius = -1f
   private var glassTintColor: Int = Color.TRANSPARENT
   private var glassOpacity: Float = 1.0f
   private var viewType: String = "blur"
