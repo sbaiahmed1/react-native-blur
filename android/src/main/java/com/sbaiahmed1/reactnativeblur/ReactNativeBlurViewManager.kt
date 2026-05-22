@@ -49,6 +49,26 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
     view?.setBorderRadius(borderRadius)
   }
 
+  @ReactProp(name = "borderTopLeftRadius")
+  override fun setBorderTopLeftRadius(view: ReactNativeBlurView?, borderTopLeftRadius: Float) {
+    view?.setBorderTopLeftRadius(borderTopLeftRadius)
+  }
+
+  @ReactProp(name = "borderTopRightRadius")
+  override fun setBorderTopRightRadius(view: ReactNativeBlurView?, borderTopRightRadius: Float) {
+    view?.setBorderTopRightRadius(borderTopRightRadius)
+  }
+
+  @ReactProp(name = "borderBottomLeftRadius")
+  override fun setBorderBottomLeftRadius(view: ReactNativeBlurView?, borderBottomLeftRadius: Float) {
+    view?.setBorderBottomLeftRadius(borderBottomLeftRadius)
+  }
+
+  @ReactProp(name = "borderBottomRightRadius")
+  override fun setBorderBottomRightRadius(view: ReactNativeBlurView?, borderBottomRightRadius: Float) {
+    view?.setBorderBottomRightRadius(borderBottomRightRadius)
+  }
+
   @ReactProp(name = "reducedTransparencyFallbackColor")
   override fun setReducedTransparencyFallbackColor(view: ReactNativeBlurView?, reducedTransparencyFallbackColor: String?) {
     // no-op

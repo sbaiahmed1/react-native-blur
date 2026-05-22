@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Outline
+import android.graphics.Path
+import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
@@ -32,7 +34,11 @@ class ReactNativeBlurView : BlurViewGroup {
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
   private var currentOverlayColor = Color.TRANSPARENT
   private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
-  private var currentCornerRadius = 0f
+  private var borderRadius = 0f
+  private var borderTopLeftRadius = borderRadius
+  private var borderTopRightRadius = borderRadius
+  private var borderBottomLeftRadius = borderRadius
+  private var borderBottomRightRadius = borderRadius
   private var glassTintColor: Int = Color.TRANSPARENT
   private var glassOpacity: Float = 1.0f
   private var viewType: String = "blur"
@@ -433,8 +439,32 @@ class ReactNativeBlurView : BlurViewGroup {
    * @param radius The border radius value in dp
    */
   fun setBorderRadius(radius: Float) {
-    currentCornerRadius = radius
+    borderRadius = radius
     logDebug("setBorderRadius: $radius dp")
+    updateCornerRadius()
+  }
+
+  fun setBorderTopLeftRadius(radius: Float) {
+    borderTopLeftRadius = radius
+    logDebug("setBorderTopLeftRadius: $radius dp")
+    updateCornerRadius()
+  }
+
+  fun setBorderTopRightRadius(radius: Float) {
+    borderTopRightRadius = radius
+    logDebug("setBorderTopRightRadius: $radius dp")
+    updateCornerRadius()
+  }
+
+  fun setBorderBottomLeftRadius(radius: Float) {
+    borderBottomLeftRadius = radius
+    logDebug("setBorderBottomLeftRadius: $radius dp")
+    updateCornerRadius()
+  }
+
+  fun setBorderBottomRightRadius(radius: Float) {
+    borderBottomRightRadius = radius
+    logDebug("setBorderBottomRightRadius: $radius dp")
     updateCornerRadius()
   }
 
@@ -443,24 +473,60 @@ class ReactNativeBlurView : BlurViewGroup {
    * QmBlurView's setCornerRadius expects values in pixels, and React Native already
    * provides values in dp, so we need to convert from dp to pixels.
    */
+  private fun convertDpToPx(dp: Float): Float {
+    val displayMetrics = context.resources.displayMetrics
+    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, displayMetrics)
+  }
+
   private fun updateCornerRadius() {
     try {
-      // Convert from dp (React Native) to pixels (Android)
-      val radiusInPixels = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        currentCornerRadius,
-        context.resources.displayMetrics
-      )
+      val baseRadius = convertDpToPx(borderRadius)
+      val topLeft = if (borderTopLeftRadius > 0) convertDpToPx(borderTopLeftRadius) else baseRadius
+      val topRight = if (borderTopRightRadius > 0) convertDpToPx(borderTopRightRadius) else baseRadius
+      val bottomLeft = if (borderBottomLeftRadius > 0) convertDpToPx(borderBottomLeftRadius) else baseRadius
+      val bottomRight = if (borderBottomRightRadius > 0) convertDpToPx(borderBottomRightRadius) else baseRadius
 
-      outlineProvider = object : ViewOutlineProvider() {
-        override fun getOutline(view: View, outline: Outline?) {
-          outline?.setRoundRect(0, 0, view.width, view.height, radiusInPixels)
+      super.setTopLeftCornerRadius(topLeft)
+      super.setTopRightCornerRadius(topRight)
+      super.setBottomLeftCornerRadius(bottomLeft)
+      super.setBottomRightCornerRadius(bottomRight)
+      super.setCornerRadius(baseRadius)
+
+      val isUniform = topLeft == topRight && topRight == bottomLeft && bottomLeft == bottomRight
+
+      if (isUniform) {
+        outlineProvider = object : ViewOutlineProvider() {
+          override fun getOutline(view: View, outline: Outline?) {
+            outline?.setRoundRect(0, 0, view.width, view.height, baseRadius)
+          }
+        }
+      } else {
+        outlineProvider = object : ViewOutlineProvider() {
+          override fun getOutline(view: View, outline: Outline?) {
+            val path = Path()
+            val radii = floatArrayOf(
+              topLeft,
+              topLeft,
+              topRight,
+              topRight,
+              bottomRight,
+              bottomRight,
+              bottomLeft,
+              bottomLeft
+            )
+            path.addRoundRect(0f, 0f, view.width.toFloat(), view.height.toFloat(), radii, Path.Direction.CW)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+              outline?.setPath(path)
+            } else {
+              @Suppress("DEPRECATION")
+              outline?.setConvexPath(path)
+            }
+          }
         }
       }
-      clipToOutline = true
 
-      super.setCornerRadius(radiusInPixels)
-      logDebug("Updated corner radius: ${currentCornerRadius}dp -> ${radiusInPixels}px")
+      clipToOutline = true
+      logDebug("Updated corner radius: topLeft=$topLeft, topRight=$topRight, bottomLeft=$bottomLeft, bottomRight=$bottomRight (px)")
     } catch (e: Exception) {
       logError("Failed to update corner radius: ${e.message}", e)
     }
