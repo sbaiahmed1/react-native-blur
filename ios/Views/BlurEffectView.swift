@@ -21,26 +21,29 @@ class BlurEffectView: UIVisualEffectView {
   }
 
   func updateBlur(style: UIBlurEffect.Style, intensity: Double) {
-    // Skip expensive animator recreation when nothing changed.
-    // During FlashList recycling, updateUIView fires on every layout pass
-    // even when props are identical, causing jank (issue #100).
     guard style != self.blurStyle || intensity != self.intensity else { return }
     self.blurStyle = style
     self.intensity = intensity
-    setupBlur()
-  }
 
-  override func didMoveToWindow() {
-    super.didMoveToWindow()
-    guard window != nil else { return }
-    // UIKit resumes paused CAAnimations when a view re-joins a window
-    // (e.g. after modal dismiss + re-present). If the animation plays
-    // toward its end state the blur drifts to full intensity. Re-pause
-    // and re-set the fraction here to lock it back to our intended value.
-    // pausesOnCompletion = true (set in setupBlur) ensures the animator
-    // stays .active even if it reaches fraction 1.0, so this is always safe.
-    animator?.pauseAnimation()
-    animator?.fractionComplete = intensity
+    if intensity == 1.0 {
+      // Fast path: full blur, skip animator entirely
+      animator?.stopAnimation(true)
+      animator = nil
+      effect = UIBlurEffect(style: style)
+    } else if intensity == 0.0 {
+      // Fast path: no blur
+      animator?.stopAnimation(true)
+      animator = nil
+      effect = nil
+    } else {
+      // Reuse existing animator if possible, only recreate if style changed
+      if let existing = animator,
+         existing.state == .active || existing.state == .inactive {
+        existing.fractionComplete = intensity
+      } else {
+        setupBlur()
+      }
+    }
   }
 
   private func setupBlur() {
@@ -55,9 +58,6 @@ class BlurEffectView: UIVisualEffectView {
     newAnimator.addAnimations { [weak self] in
       self?.effect = UIBlurEffect(style: self?.blurStyle ?? .systemMaterial)
     }
-    // pausesOnCompletion: if UIKit ever resumes and runs this to the end,
-    // the animator stays .active (paused at 1.0) instead of going .inactive.
-    // This guarantees didMoveToWindow can always call pauseAnimation() safely.
     newAnimator.pausesOnCompletion = true
     newAnimator.startAnimation()
     newAnimator.pauseAnimation()
