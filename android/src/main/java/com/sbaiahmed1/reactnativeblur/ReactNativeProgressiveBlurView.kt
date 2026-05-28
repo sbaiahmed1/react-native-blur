@@ -1,7 +1,6 @@
 package com.sbaiahmed1.reactnativeblur
 
 import android.content.Context
-import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -398,17 +397,6 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   }
 
   /**
-   * Handle configuration changes, such as dark mode or orientation changes.
-   * This ensures the blur view updates its overlay color based on the new
-   * configuration.
-   */
-  override fun onConfigurationChanged(newConfig: Configuration) {
-    super.onConfigurationChanged(newConfig)
-
-    setBlurType(currentBlurType)
-  }
-
-  /**
    * Cleanup method to prevent memory leaks.
    * Resets initialization state so blur is re-initialized on next attach.
    */
@@ -526,7 +514,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    */
   fun setBlurType(type: String) {
     currentBlurType = type
-    val blurType = BlurType.fromString(type, resources.configuration)
+    val blurType = BlurType.fromString(type)
     currentOverlayColor = blurType.overlayColor
     logDebug("setBlurType: $type -> ${blurType.name} -> ${Integer.toHexString(currentOverlayColor)}")
 

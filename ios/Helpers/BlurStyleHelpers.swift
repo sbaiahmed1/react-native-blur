@@ -55,6 +55,23 @@ func blurStyleFromString(_ styleString: String) -> UIBlurEffect.Style {
   }
 }
 
+/// Determines the fixed interface style for a blur type to prevent system adaptation.
+/// Returns nil for ambiguous styles that should inherit from the system.
+func interfaceStyleForBlurType(_ styleString: String) -> UIUserInterfaceStyle? {
+  switch styleString {
+  case "xlight", "light",
+       "systemUltraThinMaterialLight", "systemThinMaterialLight",
+       "systemMaterialLight", "systemThickMaterialLight", "systemChromeMaterialLight":
+    return .light
+  case "dark", "extraDark",
+       "systemUltraThinMaterialDark", "systemThinMaterialDark",
+       "systemMaterialDark", "systemThickMaterialDark", "systemChromeMaterialDark":
+    return .dark
+  default:
+    return nil
+  }
+}
+
 /// Maps string glass type names to Glass effect values (iOS 26.0+)
 #if compiler(>=6.2)
 @available(iOS 26.0, *)

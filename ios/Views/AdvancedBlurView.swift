@@ -49,7 +49,6 @@ import UIKit
   }
 
   private func setupHostingController() {
-    // Completely remove old hosting controller
     if let oldHosting = hostingController {
       oldHosting.view.removeFromSuperview()
       oldHosting.removeFromParent()
@@ -68,8 +67,10 @@ import UIKit
     hosting.view.backgroundColor = .clear
     hosting.view.translatesAutoresizingMaskIntoConstraints = false
 
-    // Insert at index 0 to ensure it stays behind any potential subviews (though usually this view has no children)
-    // This fixes the z-ordering bug where blur covers content
+    let interfaceStyle = interfaceStyleForBlurType(blurTypeString) ?? .unspecified
+    overrideUserInterfaceStyle = interfaceStyle
+    hosting.overrideUserInterfaceStyle = interfaceStyle
+
     if !subviews.isEmpty {
         insertSubview(hosting.view, at: 0)
     } else {
@@ -87,9 +88,11 @@ import UIKit
   }
 
   private func updateView() {
+    let interfaceStyle = interfaceStyleForBlurType(blurTypeString) ?? .unspecified
+    overrideUserInterfaceStyle = interfaceStyle
+
     if let hosting = hostingController {
-        // Update the existing controller's root view to avoid expensive recreation
-        // This fixes performance bottlenecks and state synchronization issues
+        hosting.overrideUserInterfaceStyle = interfaceStyle
         let blurStyle = blurStyleFromString(blurTypeString)
         let swiftUIView = BasicColoredView(
           blurAmount: blurAmount,

@@ -1,7 +1,6 @@
 package com.sbaiahmed1.reactnativeblur
 
 import android.content.Context
-import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.Path
@@ -54,7 +53,6 @@ class ReactNativeBlurView : BlurViewGroup {
     private const val DEFAULT_BLUR_ROUNDS = 5
     private const val DEBUG = false
 
-    // Cross-platform blur amount constants
     private const val MIN_BLUR_AMOUNT = 0f
     private const val MAX_BLUR_AMOUNT = 100f
 
@@ -72,12 +70,6 @@ class ReactNativeBlurView : BlurViewGroup {
       Log.e(TAG, message, throwable)
     }
 
-    /**
-     * Maps blur amount (0-100) to Android blur radius (0-25).
-     * This ensures cross-platform consistency while respecting Android's limitations.
-     * @param amount The blur amount from 0-100
-     * @return The corresponding blur radius from 0-25
-     */
     private fun mapBlurAmountToRadius(amount: Float): Float {
       val clampedAmount = amount.coerceIn(MIN_BLUR_AMOUNT, MAX_BLUR_AMOUNT)
       return (clampedAmount / MAX_BLUR_AMOUNT) * MAX_BLUR_RADIUS
@@ -92,11 +84,6 @@ class ReactNativeBlurView : BlurViewGroup {
     setupView()
   }
 
-  /**
-   * Initial view setup in constructor - only sets up visual defaults.
-   * Blur initialization is deferred to onAttachedToWindow to ensure the
-   * view hierarchy is fully mounted, preventing flickering and wrong frame capture.
-   */
   private fun setupView() {
     super.setBackgroundColor(currentOverlayColor)
     clipChildren = true
@@ -105,45 +92,24 @@ class ReactNativeBlurView : BlurViewGroup {
     super.setDownsampleFactor(6.0F)
   }
 
-  /**
-   * Called when the view is attached to a window.
-   * After QmBlurView's onAttachedToWindow sets the decor view as blur root,
-   * we use reflection to redirect it to the nearest Screen ancestor.
-   * This scopes the blur capture to just the current screen, preventing
-   * navigation transition artifacts.
-   */
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
 
     if (isBlurInitialized) return
 
-    // Immediately try to swap blur root and initialize.
-    // We avoid posting a runnable to prevent the 1-second delay artifact.
-    // If the parent hierarchy is not ready yet (unlikely in onAttachedToWindow),
-    // we could fall back to post, but for now we prioritize immediate execution.
     swapBlurRootToScreenAncestor()
     initializeBlur()
   }
 
-  /**
-   * Uses reflection to redirect QmBlurView's internal blur capture root
-   * from the activity decor view to the nearest react-native-screens Screen ancestor.
-   *
-   * Reflection path: BlurViewGroup.mBaseBlurViewGroup -> BaseBlurViewGroup.mDecorView
-   * Also moves the OnPreDrawListener from the old root to the new one.
-   */
   private fun swapBlurRootToScreenAncestor() {
-    // Pinned to QmBlurView 1.1.4 – depends on: mBaseBlurViewGroup, mDecorView, preDrawListener, mDifferentRoot, mForceRedraw
     val newRoot = findOptimalBlurRoot() ?: return
 
     try {
-      // Step 1: Get BlurViewGroup's private mBaseBlurViewGroup field
       val blurViewGroupClass = BlurViewGroup::class.java
       val baseField = blurViewGroupClass.getDeclaredField("mBaseBlurViewGroup")
       baseField.isAccessible = true
       val baseBlurViewGroup = baseField.get(this) ?: return
 
-      // Step 2: Get BaseBlurViewGroup's private fields
       val baseClass = BaseBlurViewGroup::class.java
 
       val decorViewField = baseClass.getDeclaredField("mDecorView")
@@ -162,25 +128,20 @@ class ReactNativeBlurView : BlurViewGroup {
       }
 
       if (preDrawListener != null && oldDecorView != null) {
-        // Step 3: Remove listener from old root's ViewTreeObserver
         try {
           oldDecorView.viewTreeObserver.removeOnPreDrawListener(preDrawListener)
         } catch (e: Exception) {
           logDebug("Could not remove old pre-draw listener: ${e.message}")
         }
 
-        // Step 4: Set new root as mDecorView
         decorViewField.set(baseBlurViewGroup, newRoot)
 
-        // Step 5: Add listener to new root's ViewTreeObserver
         newRoot.viewTreeObserver.addOnPreDrawListener(preDrawListener)
 
-        // Step 6: Update mDifferentRoot flag
         val differentRootField = baseClass.getDeclaredField("mDifferentRoot")
         differentRootField.isAccessible = true
         differentRootField.setBoolean(baseBlurViewGroup, newRoot.rootView != this.rootView)
 
-        // Step 7: Force a redraw
         val forceRedrawField = baseClass.getDeclaredField("mForceRedraw")
         forceRedrawField.isAccessible = true
         forceRedrawField.setBoolean(baseBlurViewGroup, true)
@@ -194,27 +155,10 @@ class ReactNativeBlurView : BlurViewGroup {
     }
   }
 
-  /**
-   * Finds the optimal view to use as blur capture root.
-   *
-   * Priority:
-   * 1. Nearest react-native-screens Screen ancestor — scopes blur to the current
-   *    screen and prevents capturing navigation transition artifacts.
-   * 2. Nearest ReactRootView ancestor — scopes blur to the React Native root when
-   *    the component is not inside a Screen (e.g. plain View hierarchies). Without
-   *    this fallback, QmBlurView defaults to the activity decor view and blurs the
-   *    entire screen instead of just the component area (issue #89).
-   * 3. null — returned for modals, which intentionally need to blur content from
-   *    the main activity window (decor view is correct there).
-   */
   private fun findOptimalBlurRoot(): ViewGroup? {
     return findNearestScreenAncestor() ?: findNearestReactRootView()
   }
 
-  /**
-   * Walks up the view hierarchy looking for react-native-screens Screen components
-   * using class name detection to avoid hard dependencies on react-native-screens.
-   */
   private fun findNearestScreenAncestor(): ViewGroup? {
     var currentParent = this.parent
     while (currentParent != null) {
@@ -226,11 +170,6 @@ class ReactNativeBlurView : BlurViewGroup {
     return null
   }
 
-  /**
-   * Walks up the view hierarchy looking for the React Native root view.
-   * Used as a fallback when no Screen ancestor exists, to scope the blur
-   * capture to the RN root rather than the full activity decor view.
-   */
   private fun findNearestReactRootView(): ViewGroup? {
     var currentParent = this.parent
     while (currentParent != null) {
@@ -242,11 +181,6 @@ class ReactNativeBlurView : BlurViewGroup {
     return null
   }
 
-  /**
-   * Initialize the blur view with current settings.
-   * Called after the view is attached and the blur root has been swapped.
-   * Guarded by isBlurInitialized to prevent duplicate setup.
-   */
   private fun initializeBlur() {
     if (isBlurInitialized) return
 
@@ -262,20 +196,11 @@ class ReactNativeBlurView : BlurViewGroup {
     }
   }
 
-  /**
-   * Called when the view is detached from a window.
-   * Performs cleanup to prevent memory leaks and resets initialization state
-   * so blur is re-initialized on next attach (e.g. navigation transitions).
-   */
   override fun onDetachedFromWindow() {
     super.onDetachedFromWindow()
     cleanup()
   }
 
-  /**
-   * Cleanup method to reset state.
-   * Helps prevent memory leaks and ensures clean state.
-   */
   fun cleanup() {
     isBlurInitialized = false
     initRunnable?.let { removeCallbacks(it) }
@@ -283,10 +208,6 @@ class ReactNativeBlurView : BlurViewGroup {
     logDebug("View cleaned up")
   }
 
-  /**
-   * Set the blur amount with cross-platform mapping.
-   * @param amount The blur amount value (0-100), will be mapped to Android's 0-25 radius range
-   */
   fun setBlurAmount(amount: Float) {
     currentBlurRadius = mapBlurAmountToRadius(amount)
     logDebug("setBlurAmount: $amount -> $currentBlurRadius (mapped from 0-100 to 0-25 range)")
@@ -298,10 +219,6 @@ class ReactNativeBlurView : BlurViewGroup {
     }
   }
 
-  /**
-   * Set the number of blur rounds.
-   * @param rounds The number of blur rounds (1-15)
-   */
   fun setRounds(rounds: Int) {
     val blurRounds = rounds.coerceIn(1, 15)
     currentBlurRounds = blurRounds
@@ -320,7 +237,7 @@ class ReactNativeBlurView : BlurViewGroup {
    */
   fun setBlurType(type: String) {
     currentBlurType = type
-    val blurType = BlurType.fromString(type, resources.configuration)
+    val blurType = BlurType.fromString(type)
     currentOverlayColor = blurType.overlayColor
     logDebug("setBlurType: $type -> ${blurType.name}")
 
@@ -334,9 +251,6 @@ class ReactNativeBlurView : BlurViewGroup {
 
   /**
    * Set the glass tint color for liquid glass effect.
-   * @param color The color string in hex format (e.g., "#FF0000") or null to clear
-   */
-  fun setGlassTintColor(color: String?) {
     color?.let {
       try {
         glassTintColor = it.toColorInt()
@@ -353,58 +267,37 @@ class ReactNativeBlurView : BlurViewGroup {
     }
   }
 
-  /**
-   * Set the glass opacity for liquid glass effect.
-   * @param opacity The opacity value (0.0 to 1.0)
-   */
   fun setGlassOpacity(opacity: Float) {
     glassOpacity = opacity.coerceIn(0.0f, 1.0f)
     logDebug("setGlassOpacity: $opacity")
     updateGlassEffect()
   }
 
-  /**
-   * Set the view type (blur or liquidGlass).
-   * @param type The view type string
-   */
   fun setType(type: String) {
     viewType = type
     logDebug("setType: $type")
     updateViewType()
   }
 
-    /**
-   * Set the view type (blur or liquidGlass).
-   * @param isInteractive The view type string
-   */
   fun setIsInteractive(isInteractive: Boolean) {
     logDebug("setType: $isInteractive")
   }
 
-  /**
-   * Set the glass type for liquid glass effect.
-   * @param type The glass type string
-   */
   fun setGlassType(type: String) {
     glassType = type
     logDebug("setGlassType: $type")
     updateGlassEffect()
   }
 
-  /**
-   * Update the glass effect based on current glass properties.
-   */
   private fun updateGlassEffect() {
     if (viewType == "liquidGlass") {
       try {
-        // Apply glass tint with opacity
         val glassColor = Color.argb(
           (glassOpacity * 255).toInt(),
           Color.red(glassTintColor),
           Color.green(glassTintColor),
           Color.blue(glassTintColor)
         )
-        // Use QmBlurView's setOverlayColor method
         super.setOverlayColor(glassColor)
         logDebug("Applied glass effect: color=$glassColor, opacity=$glassOpacity")
       } catch (e: Exception) {
@@ -413,16 +306,12 @@ class ReactNativeBlurView : BlurViewGroup {
     }
   }
 
-  /**
-   * Update the view type and apply appropriate effects.
-   */
   private fun updateViewType() {
     when (viewType) {
       "liquidGlass" -> {
         updateGlassEffect()
       }
       "blur" -> {
-        // Restore original blur overlay color
         try {
           super.setBackgroundColor(currentOverlayColor)
           super.setOverlayColor(currentOverlayColor)
@@ -433,11 +322,6 @@ class ReactNativeBlurView : BlurViewGroup {
     }
   }
 
-  /**
-   * Set the border radius from React Native StyleSheet.
-   * React Native provides values in logical pixels (dp), which we convert for the native view.
-   * @param radius The border radius value in dp
-   */
   fun setBorderRadius(radius: Float) {
     borderRadius = radius
     logDebug("setBorderRadius: $radius dp")
@@ -468,11 +352,6 @@ class ReactNativeBlurView : BlurViewGroup {
     updateCornerRadius()
   }
 
-  /**
-   * Convert pixels to density-independent pixels and update the corner radius.
-   * QmBlurView's setCornerRadius expects values in pixels, and React Native already
-   * provides values in dp, so we need to convert from dp to pixels.
-   */
   private fun convertDpToPx(dp: Float): Float {
     val displayMetrics = context.resources.displayMetrics
     return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, displayMetrics)
@@ -561,22 +440,5 @@ class ReactNativeBlurView : BlurViewGroup {
    */
   override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
     // No-op: Layout is handled by React Native's UIManager.
-    // We override this to prevent the superclass (BlurViewGroup/FrameLayout) from
-    // re-positioning children based on its own logic (e.g. gravity), which would
-    // conflict with React Native's layout.
-  }
-
-  /**
-   * Handle configuration changes, such as dark mode or orientation changes.
-   * This ensures the blur view updates its overlay color based on the new
-   * configuration.
-   */
-  override fun onConfigurationChanged(newConfig: Configuration) {
-    super.onConfigurationChanged(newConfig)
-
-    if (viewType == "blur") {
-      // Re-apply blur type to update overlay color based on new configuration
-      setBlurType(currentBlurType)
-    }
   }
 }

@@ -108,14 +108,12 @@ import UIKit
   }
 
   private func updateFallback() {
-    // If reduce transparency is enabled, show solid color
     if UIAccessibility.isReduceTransparencyEnabled {
       backgroundColor = reducedTransparencyFallbackColor
       glassEffectView?.effect = nil
     } else {
       backgroundColor = .clear
-      
-      // Map glass types to blur styles for fallback
+
       let style: UIBlurEffect.Style
       switch glassType {
       case "regular":
@@ -125,14 +123,13 @@ import UIKit
       default:
         style = .regular
       }
-      
+
       let effect = UIBlurEffect(style: style)
       glassEffectView?.effect = effect
-      
-      // Clear any background color on content view
+
       glassEffectView?.contentView.backgroundColor = .clear
     }
-    
+
     layer.cornerRadius = allBorderRadius
     glassEffectView?.layer.cornerRadius = allBorderRadius
     glassEffectView?.layer.masksToBounds = true

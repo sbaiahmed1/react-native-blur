@@ -7,7 +7,7 @@
     "start": "expo start",
     "android": "expo run:android",
     "prebuild:ios": "expo prebuild --platform ios --clean",
-    "ios": "expo run:ios",
+    "ios": "expo run:ios --device",
     "web": "expo start --web",
     "lint": "expo lint",
     "build:android": "cd android && ./gradlew assembleDebug --no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a",
