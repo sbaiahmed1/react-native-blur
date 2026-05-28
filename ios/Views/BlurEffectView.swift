@@ -9,6 +9,7 @@ class BlurEffectView: UIVisualEffectView {
   private var animator: UIViewPropertyAnimator?
   private var blurStyle: UIBlurEffect.Style = .systemMaterial
   private var intensity: Double = 1.0
+  private var currentEffectStyle: UIBlurEffect.Style?
 
   override init(effect: UIVisualEffect?) {
     super.init(effect: effect)
@@ -26,19 +27,19 @@ class BlurEffectView: UIVisualEffectView {
     self.intensity = intensity
 
     if intensity == 1.0 {
-      // Fast path: full blur, skip animator entirely
       animator?.stopAnimation(true)
       animator = nil
+      currentEffectStyle = style
       effect = UIBlurEffect(style: style)
     } else if intensity == 0.0 {
-      // Fast path: no blur
       animator?.stopAnimation(true)
       animator = nil
+      currentEffectStyle = nil
       effect = nil
     } else {
-      // Reuse existing animator if possible, only recreate if style changed
       if let existing = animator,
-         existing.state == .active || existing.state == .inactive {
+         (existing.state == .active || existing.state == .inactive),
+         currentEffectStyle == style {
         existing.fractionComplete = intensity
       } else {
         setupBlur()
@@ -53,6 +54,7 @@ class BlurEffectView: UIVisualEffectView {
     animator = nil
 
     effect = nil
+    currentEffectStyle = blurStyle
 
     let newAnimator = UIViewPropertyAnimator(duration: 1, curve: .linear)
     newAnimator.addAnimations { [weak self] in
