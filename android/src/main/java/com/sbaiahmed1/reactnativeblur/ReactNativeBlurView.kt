@@ -251,6 +251,9 @@ class ReactNativeBlurView : BlurViewGroup {
 
   /**
    * Set the glass tint color for liquid glass effect.
+   * @param color The color string in hex format (e.g., "#FF0000") or null to clear
+   */
+  fun setGlassTintColor(color: String?) {
     color?.let {
       try {
         glassTintColor = it.toColorInt()
