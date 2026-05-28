@@ -53,14 +53,15 @@ import UIKit
   }
 
   private func updateEffect() {
-    // Clean up existing animator
+    let interfaceStyle = interfaceStyleForBlurType(blurType) ?? .unspecified
+    overrideUserInterfaceStyle = interfaceStyle
+
     if let animator = blurAnimator {
       animator.stopAnimation(true)
       animator.finishAnimation(at: .current)
     }
     blurAnimator = nil
 
-    // Reset effects
     blurEffectView.effect = nil
     vibrancyEffectView.effect = nil
 
@@ -68,28 +69,18 @@ import UIKit
     let blurEffect = UIBlurEffect(style: style)
     let vibrancyEffect = UIVibrancyEffect(blurEffect: blurEffect)
 
-    // Set effects directly first to ensure they are visible
-    // Animating them from nil often causes issues with UIVibrancyEffect
     blurEffectView.effect = blurEffect
     vibrancyEffectView.effect = vibrancyEffect
     
-    // Create animator to adjust intensity
     blurAnimator = UIViewPropertyAnimator(duration: 1, curve: .linear) { [weak self] in
         self?.blurEffectView.effect = nil
         self?.vibrancyEffectView.effect = nil
     }
 
-    // Convert blurAmount (0-100) to intensity (0.0-1.0)
-    // We reverse the logic: 
-    // fractionComplete = 0.0 -> effects are fully applied (start state)
-    // fractionComplete = 1.0 -> effects are removed (end state)
-    // So to get desired intensity X, we set fractionComplete to (1 - X)
     let intensity = min(max(blurAmount / 100.0, 0.0), 1.0)
     blurAnimator?.fractionComplete = 1.0 - intensity
 
-    // Stop the animation at the current state
     DispatchQueue.main.async { [weak self, weak blurAnimator] in
-        // Only stop the animator if it's still the current one
         guard let self = self, let currentAnimator = self.blurAnimator, currentAnimator === blurAnimator else { return }
         
         currentAnimator.stopAnimation(true)

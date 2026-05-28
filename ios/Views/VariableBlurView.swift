@@ -113,17 +113,6 @@ open class VariableBlurView: UIVisualEffectView {
     }
   }
 
-  open override func traitCollectionDidChange(
-    _ previousTraitCollection: UITraitCollection?
-  ) {
-    super.traitCollectionDidChange(previousTraitCollection)
-    // Re-setup blur if needed when trait collection changes
-    if let previousTraitCollection = previousTraitCollection,
-       traitCollection.userInterfaceStyle != previousTraitCollection.userInterfaceStyle {
-      setupVariableBlur()
-    }
-  }
-
   private func makeGradientImage(
     width: CGFloat = 100,
     height: CGFloat = 100,

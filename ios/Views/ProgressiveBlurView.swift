@@ -49,7 +49,6 @@ import UIKit
   }
 
   private func setupView() {
-    // Remove old view if exists
     variableBlurView?.removeFromSuperview()
 
     let blurStyle = blurStyleFromString(blurTypeString)
@@ -74,7 +73,10 @@ import UIKit
 
     self.variableBlurView = variableBlur
 
-    // Handle reduced transparency
+    let interfaceStyle = interfaceStyleForBlurType(blurTypeString) ?? .unspecified
+    overrideUserInterfaceStyle = interfaceStyle
+    variableBlur.overrideUserInterfaceStyle = interfaceStyle
+
     if UIAccessibility.isReduceTransparencyEnabled {
       variableBlur.isHidden = true
       backgroundColor = reducedTransparencyFallbackColor
@@ -100,7 +102,10 @@ import UIKit
       blurStyle: blurStyle
     )
 
-    // Handle reduced transparency
+    let interfaceStyle = interfaceStyleForBlurType(blurTypeString) ?? .unspecified
+    overrideUserInterfaceStyle = interfaceStyle
+    variableBlurView.overrideUserInterfaceStyle = interfaceStyle
+
     if UIAccessibility.isReduceTransparencyEnabled {
       variableBlurView.isHidden = true
       backgroundColor = reducedTransparencyFallbackColor
