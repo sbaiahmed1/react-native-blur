@@ -171,3 +171,7 @@ temp/
 .trae/
 .claude
 .serena
+.opencode
+.specify
+opencode.json
+CLAUDE.md
