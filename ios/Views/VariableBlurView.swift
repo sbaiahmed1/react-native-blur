@@ -1,7 +1,6 @@
 // VariableBlurView.swift
 // Progressive/Variable Blur implementation based on VariableBlur library
 
-import SwiftUI
 import UIKit
 import CoreImage.CIFilterBuiltins
 import QuartzCore

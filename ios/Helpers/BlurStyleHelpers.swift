@@ -1,6 +1,5 @@
 // BlurStyleHelpers.swift
 
-import SwiftUI
 import UIKit
 
 // MARK: - Style Mapping Helper Functions
