@@ -1,6 +1,5 @@
 // BlurEffectView.swift
 
-import SwiftUI
 import UIKit
 
 // MARK: - Blur View with proper intensity control
@@ -25,6 +24,14 @@ class BlurEffectView: UIVisualEffectView {
     guard style != self.blurStyle || intensity != self.intensity else { return }
     self.blurStyle = style
     self.intensity = intensity
+
+    // Paused animators hang Detox indefinitely — use on/off blur when Detox is running
+    if isDetoxPresent() {
+      animator?.stopAnimation(true)
+      animator = nil
+      effect = intensity > 0 ? UIBlurEffect(style: style) : nil
+      return
+    }
 
     if intensity == 1.0 {
       animator?.stopAnimation(true)
@@ -74,19 +81,8 @@ class BlurEffectView: UIVisualEffectView {
   }
 }
 
-// MARK: - SwiftUI Blur Wrapper
-
-struct Blur: UIViewRepresentable {
-  var style: UIBlurEffect.Style = .systemMaterial
-  var intensity: Double = 1.0
-
-  func makeUIView(context: Context) -> BlurEffectView {
-    let effectView = BlurEffectView(effect: nil)
-    effectView.updateBlur(style: style, intensity: intensity)
-    return effectView
-  }
-
-  func updateUIView(_ uiView: BlurEffectView, context: Context) {
-    uiView.updateBlur(style: style, intensity: intensity)
-  }
+private func isDetoxPresent() -> Bool {
+  let args = ProcessInfo.processInfo.arguments
+  return args.contains("-detoxServer") && args.contains("-detoxSessionId")
 }
+

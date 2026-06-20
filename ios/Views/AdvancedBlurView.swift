@@ -1,125 +1,60 @@
-import SwiftUI
 import UIKit
-
-// MARK: - UIKit Wrapper for Blur
 
 @objc public class AdvancedBlurView: UIView {
 
-  private var hostingController: UIHostingController<BasicColoredView>?
+  private let blurView = BlurEffectView(effect: nil)
 
   @objc public var blurAmount: Double = 10.0 {
-    didSet {
-      updateView()
-    }
+    didSet { updateBlur() }
   }
 
   @objc public var blurTypeString: String = "xlight" {
-    didSet {
-      updateView()
-    }
+    didSet { updateBlur() }
   }
 
   @objc public var reducedTransparencyFallbackColor: UIColor = .white {
-    didSet {
-      updateView()
-    }
+    didSet { updateBlur() }
   }
 
   @objc public var ignoreSafeArea: Bool = false {
-    didSet {
-      updateView()
-    }
- }
+    didSet { updateBlur() }
+  }
 
   public override init(frame: CGRect) {
     super.init(frame: frame)
+    blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    blurView.frame = bounds
+    addSubview(blurView)
   }
 
   required init?(coder: NSCoder) {
     super.init(coder: coder)
+    blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    blurView.frame = bounds
+    addSubview(blurView)
   }
 
   public override func layoutSubviews() {
     super.layoutSubviews()
-    // Defer controller setup until we have a valid frame to avoid issues with initial render
-    // in complex layouts (e.g. FlashList with dynamic content)
-    if hostingController == nil && bounds.width > 0 && bounds.height > 0 {
-      setupHostingController()
-    }
+    blurView.frame = bounds
   }
 
-  private func setupHostingController() {
-    if let oldHosting = hostingController {
-      oldHosting.view.removeFromSuperview()
-      oldHosting.removeFromParent()
-    }
-    hostingController = nil
-
-    let blurStyle = blurStyleFromString(blurTypeString)
-    let swiftUIView = BasicColoredView(
-      blurAmount: blurAmount,
-      blurStyle: blurStyle,
-      ignoreSafeArea: ignoreSafeArea,
-      reducedTransparencyFallbackColor: reducedTransparencyFallbackColor
-    )
-
-    let hosting = UIHostingController(rootView: swiftUIView)
-    hosting.view.backgroundColor = .clear
-    hosting.view.translatesAutoresizingMaskIntoConstraints = false
-
+  private func updateBlur() {
     let interfaceStyle = interfaceStyleForBlurType(blurTypeString) ?? .unspecified
     overrideUserInterfaceStyle = interfaceStyle
-    hosting.overrideUserInterfaceStyle = interfaceStyle
+    blurView.overrideUserInterfaceStyle = interfaceStyle
 
-    if !subviews.isEmpty {
-        insertSubview(hosting.view, at: 0)
-    } else {
-        addSubview(hosting.view)
+    if UIAccessibility.isReduceTransparencyEnabled {
+      blurView.isHidden = true
+      backgroundColor = reducedTransparencyFallbackColor
+      return
     }
-    
-    NSLayoutConstraint.activate([
-      hosting.view.topAnchor.constraint(equalTo: topAnchor),
-      hosting.view.leadingAnchor.constraint(equalTo: leadingAnchor),
-      hosting.view.trailingAnchor.constraint(equalTo: trailingAnchor),
-      hosting.view.bottomAnchor.constraint(equalTo: bottomAnchor)
-    ])
 
-    self.hostingController = hosting
-  }
+    blurView.isHidden = false
+    backgroundColor = .clear
 
-  private func updateView() {
-    let interfaceStyle = interfaceStyleForBlurType(blurTypeString) ?? .unspecified
-    overrideUserInterfaceStyle = interfaceStyle
-
-    if let hosting = hostingController {
-        hosting.overrideUserInterfaceStyle = interfaceStyle
-        let blurStyle = blurStyleFromString(blurTypeString)
-        let swiftUIView = BasicColoredView(
-          blurAmount: blurAmount,
-          blurStyle: blurStyle,
-          ignoreSafeArea: ignoreSafeArea,
-          reducedTransparencyFallbackColor: reducedTransparencyFallbackColor
-        )
-        hosting.rootView = swiftUIView
-        hosting.view.setNeedsLayout()
-    } else {
-        setupHostingController()
-    }
-  }
-
-  public override func didMoveToSuperview() {
-    super.didMoveToSuperview()
-  }
-
-  public override func didMoveToWindow() {
-    super.didMoveToWindow()
-  }
-
-  deinit {
-    if let hosting = hostingController {
-      hosting.view.removeFromSuperview()
-      hosting.removeFromParent()
-    }
-    hostingController = nil
+    let style = blurStyleFromString(blurTypeString)
+    let intensity = mapBlurAmountToIntensity(blurAmount)
+    blurView.updateBlur(style: style, intensity: intensity)
   }
 }

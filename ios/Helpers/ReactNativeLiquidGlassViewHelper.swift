@@ -1,6 +1,5 @@
 // ReactNativeLiquidGlassViewHelper.swift
 
-import SwiftUI
 import UIKit
 
 // MARK: - Objective-C Bridging Helpers for Liquid Glass

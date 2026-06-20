@@ -1,7 +1,6 @@
 // ProgressiveBlurView.swift
 // React Native wrapper for VariableBlurView
 
-import SwiftUI
 import UIKit
 
 @objc public class ProgressiveBlurView: UIView {

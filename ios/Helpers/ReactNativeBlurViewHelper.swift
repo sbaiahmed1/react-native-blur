@@ -1,6 +1,5 @@
 // ReactNativeBlurViewHelper.swift
 
-import SwiftUI
 import UIKit
 
 // MARK: - Objective-C Bridging Helpers
