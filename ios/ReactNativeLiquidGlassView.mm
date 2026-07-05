@@ -204,12 +204,13 @@ using namespace facebook::react;
     [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassOpacity:newViewProps.glassOpacity];
   }
 
-  // Update glassType if it has changed
+  // Update glassType if it has changed. Apply unconditionally — including
+  // Clear. Skipping the Clear case left recycled views stuck on the previous
+  // mount's "regular" style (clear glass rendering as regular after
+  // re-visiting a screen).
   if (oldViewProps.glassType != newViewProps.glassType) {
-    if (newViewProps.glassType != facebook::react::ReactNativeLiquidGlassViewGlassType::Clear) {
-      NSString *glassTypeString = [[NSString alloc] initWithUTF8String:toString(newViewProps.glassType).c_str()];
-      [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassType:glassTypeString];
-    }
+    NSString *glassTypeString = [[NSString alloc] initWithUTF8String:toString(newViewProps.glassType).c_str()];
+    [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassType:glassTypeString];
   }
 
   // Update isInteractive if it has changed
@@ -235,6 +236,31 @@ using namespace facebook::react;
   _props = props;
 
   [super updateProps:props oldProps:oldProps];
+}
+
+// Fabric recycles component views: after unmount this instance returns to a
+// pool and is reused for a future mount, whose updateProps diffs against
+// whatever _props holds. Reset both the cached props and the inner container's
+// visual state to defaults so no glass type/tint/opacity leaks between mounts.
+- (void)prepareForRecycle
+{
+  [super prepareForRecycle];
+
+  static const auto defaultProps = std::make_shared<const ReactNativeLiquidGlassViewProps>();
+  _props = defaultProps;
+
+  const auto &lgProps = *std::static_pointer_cast<const ReactNativeLiquidGlassViewProps>(defaultProps);
+
+  NSString *defaultGlassTypeString = [[NSString alloc] initWithUTF8String:toString(lgProps.glassType).c_str()];
+  [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassType:defaultGlassTypeString];
+
+  NSString *defaultGlassTintColorString = [[NSString alloc] initWithUTF8String:lgProps.glassTintColor.c_str()];
+  UIColor *defaultGlassTintColor = [ReactNativeLiquidGlassView colorFromString:defaultGlassTintColorString];
+  [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassTintColor:defaultGlassTintColor];
+
+  [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassOpacity:lgProps.glassOpacity];
+  [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIsInteractive:lgProps.isInteractive];
+  [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIgnoringSafeArea:lgProps.ignoreSafeArea];
 }
 
 - (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask
