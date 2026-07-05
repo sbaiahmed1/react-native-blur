@@ -261,6 +261,13 @@ using namespace facebook::react;
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassOpacity:lgProps.glassOpacity];
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIsInteractive:lgProps.isInteractive];
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIgnoringSafeArea:lgProps.ignoreSafeArea];
+
+  // Reset the fallback colour too — the container defaults to white when the
+  // default prop string is empty.
+  UIColor *defaultFallbackColor = lgProps.reducedTransparencyFallbackColor.empty()
+    ? [UIColor whiteColor]
+    : [ReactNativeLiquidGlassView colorFromString:[[NSString alloc] initWithUTF8String:lgProps.reducedTransparencyFallbackColor.c_str()]];
+  [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:defaultFallbackColor];
 }
 
 - (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask

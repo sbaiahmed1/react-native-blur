@@ -108,13 +108,31 @@ function getFallbackOverlayColor(
     return undefined;
   }
 
-  const hexMatch = /^#([0-9a-f]{6})$/.exec(normalized);
-  if (hexMatch) {
+  // Normalize all hex forms React Native accepts (#rgb, #rgba, #rrggbb,
+  // #rrggbbaa) to a 6-digit base plus a 0-1 alpha carried by the tint itself.
+  const hexBody = /^#([0-9a-f]{3,8})$/.exec(normalized)?.[1];
+  let rgb: string | undefined;
+  let tintAlpha = 1;
+  if (hexBody) {
+    if (hexBody.length === 3 || hexBody.length === 4) {
+      const [r, g, b, a] = hexBody.split('');
+      rgb = `${r}${r}${g}${g}${b}${b}`;
+      if (a !== undefined) tintAlpha = parseInt(`${a}${a}`, 16) / 255;
+    } else if (hexBody.length === 6 || hexBody.length === 8) {
+      rgb = hexBody.slice(0, 6);
+      if (hexBody.length === 8)
+        tintAlpha = parseInt(hexBody.slice(6), 16) / 255;
+    }
+  }
+
+  if (rgb) {
     const clamped = Math.max(0, Math.min(1, opacity));
-    const alpha = Math.round(clamped * MAX_FALLBACK_TINT_ALPHA * 255)
+    const alpha = Math.round(
+      clamped * MAX_FALLBACK_TINT_ALPHA * tintAlpha * 255
+    )
       .toString(16)
       .padStart(2, '0');
-    return `#${hexMatch[1]}${alpha}`;
+    return `#${rgb}${alpha}`;
   }
 
   // Named colour or rgb()/rgba() — cannot safely re-alpha, pass through as-is.
