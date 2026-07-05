@@ -7,77 +7,45 @@ import UIKit
 class BlurEffectView: UIVisualEffectView {
   private var animator: UIViewPropertyAnimator?
   private var blurStyle: UIBlurEffect.Style = .systemMaterial
-  private var intensity: Double = 1.0
-  private var currentEffectStyle: UIBlurEffect.Style?
+  private var blurIntensity: Double = 1.0
 
   override init(effect: UIVisualEffect?) {
     super.init(effect: effect)
-    setupBlur()
   }
 
   required init?(coder: NSCoder) {
     super.init(coder: coder)
-    setupBlur()
   }
 
   func updateBlur(style: UIBlurEffect.Style, intensity: Double) {
-    guard style != self.blurStyle || intensity != self.intensity else { return }
-    self.blurStyle = style
-    self.intensity = intensity
+    blurStyle = style
+    blurIntensity = intensity
+    setNeedsDisplay()
+  }
+
+  // draw(_:) is called by UIVisualEffectView whenever the effect needs to refresh —
+  // including when the view re-enters a window after navigation. Rebuilding the
+  // animator here ensures intensity is always correct on re-appearance.
+  override func draw(_ rect: CGRect) {
+    super.draw(rect)
 
     // Paused animators hang Detox indefinitely — use on/off blur when Detox is running
     if isDetoxPresent() {
-      animator?.stopAnimation(true)
-      animator = nil
-      effect = intensity > 0 ? UIBlurEffect(style: style) : nil
+      effect = blurIntensity > 0 ? UIBlurEffect(style: blurStyle) : nil
       return
     }
 
-    if intensity == 1.0 {
-      animator?.stopAnimation(true)
-      animator = nil
-      currentEffectStyle = style
-      effect = UIBlurEffect(style: style)
-    } else if intensity == 0.0 {
-      animator?.stopAnimation(true)
-      animator = nil
-      currentEffectStyle = nil
-      effect = nil
-    } else {
-      if let existing = animator,
-         (existing.state == .active || existing.state == .inactive),
-         currentEffectStyle == style {
-        existing.fractionComplete = intensity
-      } else {
-        setupBlur()
-      }
-    }
-  }
-
-  private func setupBlur() {
-    if let existing = animator, existing.state == .active {
-      existing.stopAnimation(true)
-    }
-    animator = nil
-
     effect = nil
-    currentEffectStyle = blurStyle
-
-    let newAnimator = UIViewPropertyAnimator(duration: 1, curve: .linear)
-    newAnimator.addAnimations { [weak self] in
-      self?.effect = UIBlurEffect(style: self?.blurStyle ?? .systemMaterial)
+    animator?.stopAnimation(true)
+    animator = UIViewPropertyAnimator(duration: 1, curve: .linear) { [weak self] in
+      guard let self else { return }
+      self.effect = UIBlurEffect(style: self.blurStyle)
     }
-    newAnimator.pausesOnCompletion = true
-    newAnimator.startAnimation()
-    newAnimator.pauseAnimation()
-    newAnimator.fractionComplete = intensity
-    animator = newAnimator
+    animator?.fractionComplete = CGFloat(blurIntensity)
   }
 
   deinit {
-    if let animator = animator, animator.state == .active {
-      animator.stopAnimation(true)
-    }
+    animator?.stopAnimation(true)
   }
 }
 
