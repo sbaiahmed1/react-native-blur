@@ -78,6 +78,49 @@ export interface LiquidGlassViewProps {
   children?: React.ReactNode;
 }
 
+/** Blur strength used for the non-iOS-26 glass fallback. */
+const FALLBACK_BLUR_AMOUNT = 70;
+
+/**
+ * Upper bound on the tint alpha for the fallback. Liquid glass reads as a
+ * subtle tint over blurred content, so a fully opaque tint would look like a
+ * solid coloured panel. glassOpacity is scaled into [0, this].
+ */
+const MAX_FALLBACK_TINT_ALPHA = 0.35;
+
+/**
+ * Builds the overlay colour for the fallback blur. Returns undefined (no tint)
+ * for a clear/transparent/missing tint, and scales a hex tint down to a subtle,
+ * capped alpha so the fallback approximates glass rather than a solid fill.
+ * Non-hex colours (named colours, rgb/rgba) are passed through unchanged.
+ */
+function getFallbackOverlayColor(
+  tint: string | undefined,
+  opacity: number
+): string | undefined {
+  if (!tint) return undefined;
+  const normalized = tint.trim().toLowerCase();
+  if (
+    normalized === '' ||
+    normalized === 'clear' ||
+    normalized === 'transparent'
+  ) {
+    return undefined;
+  }
+
+  const hexMatch = /^#([0-9a-f]{6})$/.exec(normalized);
+  if (hexMatch) {
+    const clamped = Math.max(0, Math.min(1, opacity));
+    const alpha = Math.round(clamped * MAX_FALLBACK_TINT_ALPHA * 255)
+      .toString(16)
+      .padStart(2, '0');
+    return `#${hexMatch[1]}${alpha}`;
+  }
+
+  // Named colour or rgb()/rgba() — cannot safely re-alpha, pass through as-is.
+  return tint;
+}
+
 /**
  * A Liquid Glass view component that provides iOS 26+ glass effects.
  *
@@ -123,23 +166,16 @@ export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
 }) => {
   const isIos = Platform.OS === 'ios';
 
-  // Only render on iOS 26+ (fallback otherwise)
+  // On Android and iOS < 26 the native glass API is unavailable, so we fall
+  // back to a strong, lightly-tinted blur that approximates liquid glass.
   if (!isIos || (isIos && Number.parseInt(String(Platform.Version), 10) < 26)) {
-    console.warn(
-      'LiquidGlassView is only supported on iOS. Rendering children without glass effect.'
-    );
-
-    // Compute overlay color with opacity for Android native handling
-    const overlayColorWithAlpha =
-      glassTintColor +
-      Math.floor(glassOpacity * 255)
-        .toString(16)
-        .padStart(2, '0');
-
     return (
       <BlurView
-        blurAmount={70}
-        overlayColor={overlayColorWithAlpha}
+        // "regular" is a subtle (~14% white) overlay. The default "xlight" is
+        // ~55% opaque and would make the fallback look like a solid panel.
+        blurType="regular"
+        blurAmount={FALLBACK_BLUR_AMOUNT}
+        overlayColor={getFallbackOverlayColor(glassTintColor, glassOpacity)}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
         ignoreSafeArea={ignoreSafeArea}
         style={style}
