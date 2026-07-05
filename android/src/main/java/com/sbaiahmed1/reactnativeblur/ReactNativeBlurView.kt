@@ -50,7 +50,15 @@ class ReactNativeBlurView : BlurViewGroup {
     private const val TAG = "ReactNativeBlurView"
     private const val MAX_BLUR_RADIUS = 100f
     private const val DEFAULT_BLUR_RADIUS = 10f
-    private const val DEFAULT_BLUR_ROUNDS = 5
+    // Number of native box-blur passes. Each round is a full pass over the
+    // downsampled capture bitmap, so this is a direct CPU cost multiplier.
+    // At the current downsample factor 3 passes are visually indistinguishable
+    // from 5 while cutting blur work by ~40%.
+    private const val DEFAULT_BLUR_ROUNDS = 3
+    // Capture/blur bitmap is scaled down by this factor before the root is
+    // drawn into it. A higher factor shrinks the raster area quadratically,
+    // reducing both the software capture cost and the blur cost.
+    private const val DEFAULT_DOWNSAMPLE_FACTOR = 8.0f
     private const val DEBUG = false
 
     private const val MIN_BLUR_AMOUNT = 0f
@@ -89,7 +97,7 @@ class ReactNativeBlurView : BlurViewGroup {
     clipChildren = true
     clipToOutline = true
     blurRounds = currentBlurRounds
-    super.setDownsampleFactor(6.0F)
+    super.setDownsampleFactor(DEFAULT_DOWNSAMPLE_FACTOR)
   }
 
   override fun onAttachedToWindow() {

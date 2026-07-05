@@ -28,6 +28,10 @@ import kotlin.math.max
 class ReactNativeProgressiveBlurView : FrameLayout {
   private var blurView: BlurView? = null
   private val gradientPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+  // Hoisted out of dispatchDraw so the mask xfermode is not reallocated on
+  // every frame. gradientPaint is only ever used for the DST_IN mask, so the
+  // xfermode can stay set for the paint's whole lifetime.
+  private val dstInXfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
 
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
   private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
@@ -44,7 +48,10 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     private const val TAG = "ReactNativeProgressiveBlur"
     private const val MAX_BLUR_RADIUS = 100f
     private const val DEFAULT_BLUR_RADIUS = 10f
-    private const val DEFAULT_BLUR_ROUNDS = 5
+    // See ReactNativeBlurView for the rationale behind these two values: fewer
+    // blur passes and a smaller capture bitmap both reduce per-frame CPU cost.
+    private const val DEFAULT_BLUR_ROUNDS = 3
+    private const val DEFAULT_DOWNSAMPLE_FACTOR = 8.0f
     private const val DEBUG = false
 
     // Cross-platform blur amount constants
@@ -91,8 +98,10 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    * Blur child creation is deferred to onAttachedToWindow.
    */
   private fun setupView() {
-    // Set up the gradient paint
+    // Set up the gradient paint. The DST_IN xfermode is set once here rather
+    // than on every dispatchDraw call.
     gradientPaint.style = Paint.Style.FILL
+    gradientPaint.xfermode = dstInXfermode
     setWillNotDraw(false)
 
     // Set transparent background for the container
@@ -131,7 +140,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
       if (blurView == null) {
         blurView = BlurView(context, null).apply {
           layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-          setDownsampleFactor(6.0F)
+          setDownsampleFactor(DEFAULT_DOWNSAMPLE_FACTOR)
           blurRounds = currentBlurRounds
         }
         addView(blurView)
@@ -380,10 +389,10 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     // Draw the blur view
     super.dispatchDraw(canvas)
 
-    // Apply gradient mask using DST_IN to make the blur gradually transparent
-    gradientPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+    // Apply gradient mask using DST_IN to make the blur gradually transparent.
+    // The xfermode is already set on the paint (see setupView), so this draw
+    // allocates nothing per frame.
     canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), gradientPaint)
-    gradientPaint.xfermode = null
 
     canvas.restoreToCount(saveCount)
   }
