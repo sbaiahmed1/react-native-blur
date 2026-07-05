@@ -27,6 +27,7 @@ open class VariableBlurView: UIVisualEffectView {
   private var maxBlurRadius: CGFloat = 20
   private var direction: VariableBlurDirection = .blurredTopClearBottom
   private var startOffset: CGFloat = 0
+  private var foregroundObserver: NSObjectProtocol?
 
   public init(
     maxBlurRadius: CGFloat = 20,
@@ -41,11 +42,34 @@ open class VariableBlurView: UIVisualEffectView {
     super.init(effect: UIBlurEffect(style: blurStyle))
 
     setupVariableBlur()
+    registerForegroundObserver()
   }
 
   required public init?(coder: NSCoder) {
     super.init(coder: coder)
     setupVariableBlur()
+    registerForegroundObserver()
+  }
+
+  // UIKit resets UIVisualEffectView's internal layer configuration when the
+  // app returns from the background, which wipes the custom variableBlur
+  // filter from the backdrop layer and restores the overlay subviews. Without
+  // this, the view briefly shows the plain uniform blur on resume (issue
+  // #111). Reapply before the first foreground frame is rendered.
+  private func registerForegroundObserver() {
+    foregroundObserver = NotificationCenter.default.addObserver(
+      forName: UIApplication.willEnterForegroundNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      self?.setupVariableBlur()
+    }
+  }
+
+  deinit {
+    if let foregroundObserver {
+      NotificationCenter.default.removeObserver(foregroundObserver)
+    }
   }
 
   public func updateBlur(

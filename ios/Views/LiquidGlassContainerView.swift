@@ -50,14 +50,46 @@ import UIKit
   private var bottomRightRadius: CGFloat = 0
   private var allBorderRadius: CGFloat = 0
 
+  private var foregroundObserver: NSObjectProtocol?
+
   public override init(frame: CGRect) {
     super.init(frame: frame)
     setupView()
+    registerForegroundObserver()
   }
 
   required init?(coder: NSCoder) {
     super.init(coder: coder)
     setupView()
+    registerForegroundObserver()
+  }
+
+  // The glass/blur effect is assigned to the UIVisualEffectView once. UIKit
+  // breaks the effect when an ancestor animates alpha (fade navigation
+  // transitions, issue #109) and can reset it across background/foreground
+  // cycles. Reassign whenever the view (re-)enters a window and on foreground
+  // so the effect always recovers.
+  public override func didMoveToWindow() {
+    super.didMoveToWindow()
+    if window != nil {
+      updateEffect()
+    }
+  }
+
+  private func registerForegroundObserver() {
+    foregroundObserver = NotificationCenter.default.addObserver(
+      forName: UIApplication.willEnterForegroundNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      self?.updateEffect()
+    }
+  }
+
+  deinit {
+    if let foregroundObserver {
+      NotificationCenter.default.removeObserver(foregroundObserver)
+    }
   }
 
   private func setupView() {
