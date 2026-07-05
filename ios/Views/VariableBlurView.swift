@@ -126,6 +126,11 @@ open class VariableBlurView: UIVisualEffectView {
     super.didMoveToWindow()
     guard let window, let backdropLayer = subviews.first?.layer else { return }
 
+    // UIKit can strip the custom filter while the view is detached (or during
+    // transitions). Reapply on window re-entry so the view is self-healing
+    // even when used standalone, without the ProgressiveBlurView wrapper.
+    setupVariableBlur()
+
     let newScale = window.traitCollection.displayScale
     let currentScale = backdropLayer.value(forKey: "scale") as? CGFloat
 

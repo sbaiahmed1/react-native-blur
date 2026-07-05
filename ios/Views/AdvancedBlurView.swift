@@ -17,26 +17,53 @@ import UIKit
   }
 
   @objc public var ignoreSafeArea: Bool = false {
-    didSet { updateBlur() }
+    didSet { setNeedsLayout() }
   }
+
+  private var reduceTransparencyObserver: NSObjectProtocol?
 
   public override init(frame: CGRect) {
     super.init(frame: frame)
-    blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-    blurView.frame = bounds
-    addSubview(blurView)
+    setupBlurView()
   }
 
   required init?(coder: NSCoder) {
     super.init(coder: coder)
-    blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    setupBlurView()
+  }
+
+  private func setupBlurView() {
     blurView.frame = bounds
     addSubview(blurView)
+
+    // Re-evaluate the blur/fallback state when the user toggles Reduce
+    // Transparency while the view is mounted — otherwise the state computed
+    // at the last prop change goes stale.
+    reduceTransparencyObserver = NotificationCenter.default.addObserver(
+      forName: UIAccessibility.reduceTransparencyStatusDidChangeNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      self?.updateBlur()
+    }
+  }
+
+  deinit {
+    if let reduceTransparencyObserver {
+      NotificationCenter.default.removeObserver(reduceTransparencyObserver)
+    }
   }
 
   public override func layoutSubviews() {
     super.layoutSubviews()
-    blurView.frame = bounds
+    // ignoreSafeArea == false confines the blur to the safe area; true (the
+    // JS-side default) lets it fill the whole view.
+    blurView.frame = ignoreSafeArea ? bounds : bounds.inset(by: safeAreaInsets)
+  }
+
+  public override func safeAreaInsetsDidChange() {
+    super.safeAreaInsetsDidChange()
+    setNeedsLayout()
   }
 
   private func updateBlur() {
