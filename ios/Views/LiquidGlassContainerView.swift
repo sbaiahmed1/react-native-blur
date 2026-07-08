@@ -121,7 +121,14 @@ import UIKit
       
       // Always create a new effect to ensure proper rendering
       let effect = UIGlassEffect(style: style)
-      effect.tintColor = glassTintColor.withAlphaComponent(glassOpacity)
+      // A zero-alpha tint means "no tint". Running it through
+      // withAlphaComponent(glassOpacity) resurrects UIColor.clear (black at
+      // alpha 0) as opaque black (issue #113) — leave the glass untinted.
+      if glassTintColor.cgColor.alpha == 0 {
+        effect.tintColor = nil
+      } else {
+        effect.tintColor = glassTintColor.withAlphaComponent(glassOpacity)
+      }
       effect.isInteractive = isInteractive
       
       glassEffectView?.effect = effect

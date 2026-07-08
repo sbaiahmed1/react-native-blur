@@ -38,6 +38,15 @@ class BlurEffectView: UIVisualEffectView {
     }
   }
 
+  // draw(_:) is called by UIVisualEffectView whenever the effect needs to
+  // refresh (expo-blur's approach). It heals cases the two hooks above miss:
+  // the animator being flushed by an in-place alpha animation while the view
+  // stays in the window and the app stays foreground.
+  override func draw(_ rect: CGRect) {
+    super.draw(rect)
+    rebuildAnimator()
+  }
+
   // Paused animators do not survive backgrounding — the system finishes them,
   // leaving the effect at full intensity (or stripped entirely). Rebuild
   // before the first foreground frame is rendered to avoid a visible flash.
