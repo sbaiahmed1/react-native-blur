@@ -1,0 +1,91 @@
+---
+title: Migration & breaking changes
+description: Upgrading from v3.x, and migrating from @react-native-community/blur or expo-blur.
+order: 9
+---
+
+## Breaking changes in v4.0.0
+
+Version 3.x had a single `BlurView` component with a `type` prop that switched between blur and liquid glass modes:
+
+```tsx
+// v3.x — deprecated
+<BlurView
+  type="blur" // or "liquidGlass"
+  blurType="light"
+  blurAmount={10}
+  glassType="regular"
+  glassTintColor="#007AFF"
+/>
+```
+
+v4.0.0 separated this into two dedicated components:
+
+```tsx
+// v4.0.0+
+import { BlurView, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+
+<BlurView blurType="light" blurAmount={10} />
+
+<LiquidGlassView glassType="regular" glassTintColor="#007AFF" glassOpacity={0.8} />
+```
+
+### Why the split
+
+- **Cleaner APIs** — each component only exposes props relevant to its own effect.
+- **Better tree-shaking** — import only what you use.
+- **Type safety** — separate TypeScript definitions prevent mixing incompatible props.
+- **Clearer code** — explicit about which effect is being used.
+
+### Migrating from 3.x
+
+```tsx
+// Before
+<BlurView type="blur" blurType="light" blurAmount={10} />
+// After
+<BlurView blurType="light" blurAmount={10} />
+```
+
+```tsx
+// Before
+<BlurView type="liquidGlass" glassType="regular" glassTintColor="#007AFF" glassOpacity={0.8} />
+// After
+import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+<LiquidGlassView glassType="regular" glassTintColor="#007AFF" glassOpacity={0.8} />
+```
+
+## Migrating from @react-native-community/blur
+
+```tsx
+// Before
+import { BlurView } from '@react-native-community/blur';
+
+// After — same shape, now with a dedicated glass component available too
+import { BlurView, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+
+<BlurView blurType="light" blurAmount={10} />
+<LiquidGlassView glassType="regular" glassTintColor="#007AFF" glassOpacity={0.8} />
+```
+
+## Migrating from expo-blur
+
+```tsx
+// Before
+import { BlurView } from 'expo-blur';
+<BlurView intensity={50} tint="light" />;
+
+// After
+import { BlurView } from '@sbaiahmed1/react-native-blur';
+<BlurView blurAmount={50} blurType="light" />;
+```
+
+Migration steps:
+
+1. `npm uninstall @react-native-community/blur expo-blur`
+2. `npm install @sbaiahmed1/react-native-blur`
+3. Update imports
+4. `cd ios && pod install`
+
+## Release history
+
+There is no `CHANGELOG.md` in the repository yet — release notes currently live in [GitHub Releases](https://github.com/sbaiahmed1/react-native-blur/releases) and tags. The most notable recent addition is `LiquidGlassContainer` (v4.1.2), which groups `LiquidGlassView` elements with configurable spacing via iOS 26+'s `UIGlassContainerEffect`.

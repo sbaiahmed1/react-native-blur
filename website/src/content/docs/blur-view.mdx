@@ -1,0 +1,56 @@
+---
+title: BlurView
+description: Native blur effects for iOS and Android with precise intensity control.
+order: 2
+platforms: [ios, android]
+---
+
+import PropsTable from '../../components/PropsTable.astro';
+import { blurViewProps } from '../props-data/blur-view';
+
+`BlurView` is the standard, cross-platform blur component. On iOS it uses `UIVisualEffectView` through a SwiftUI implementation; on Android it uses [QmBlurView](https://github.com/QmDeve/QmBlurView) for hardware-accelerated blur, with a lightweight overlay fallback on limited devices.
+
+## Basic usage
+
+```tsx
+import { BlurView } from '@sbaiahmed1/react-native-blur';
+
+<BlurView
+  blurType="light"
+  blurAmount={20}
+  style={{
+    position: 'absolute',
+    top: 100,
+    left: 50,
+    right: 50,
+    height: 200,
+    borderRadius: 20,
+  }}
+>
+  <Text>Content with blur background</Text>
+</BlurView>
+```
+
+## Advanced usage
+
+```tsx
+<BlurView
+  blurType="systemMaterial"
+  blurAmount={50}
+  reducedTransparencyFallbackColor="#FFFFFF80"
+  style={{ padding: 20, borderRadius: 15 }}
+>
+  <Text>Advanced blur with a custom accessibility fallback</Text>
+</BlurView>
+```
+
+<figure class="glass-panel overflow-hidden p-2">
+  <img src="/react-native-blur/media/videos/ios-demo.gif" alt="BlurView demo on iOS" loading="lazy" class="w-full rounded-[0.9rem]" />
+  <figcaption class="px-2 pb-1 pt-3 text-center text-sm text-white/60">BlurView on iOS</figcaption>
+</figure>
+
+## Props
+
+<PropsTable rows={blurViewProps} />
+
+See the [props reference](/react-native-blur/docs/props-reference) for the full list of `BlurType` values.

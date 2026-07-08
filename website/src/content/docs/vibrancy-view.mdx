@@ -1,0 +1,31 @@
+---
+title: VibrancyView
+description: iOS vibrancy effects that make content shine through a blurred background.
+order: 3
+platforms: [ios]
+badge: iOS only
+---
+
+import PropsTable from '../../components/PropsTable.astro';
+import DemoVideo from '../../components/DemoVideo.astro';
+import { vibrancyViewProps } from '../props-data/vibrancy-view';
+
+`VibrancyView` applies iOS's native `UIVibrancyEffect`, making content (typically text or symbols) appear vivid against a blurred backdrop — the same effect used throughout iOS system UI like Control Center and notifications.
+
+This component is **iOS only**. On Android, it renders the same output as `BlurView` with the given props (there is no vibrancy-equivalent concept in Android's material system).
+
+## Usage
+
+```tsx
+import { VibrancyView } from '@sbaiahmed1/react-native-blur';
+
+<VibrancyView blurType="dark" blurAmount={20} style={{ padding: 20, borderRadius: 16 }}>
+  <Text>Vibrant content over a blurred background</Text>
+</VibrancyView>
+```
+
+<DemoVideo src="vibrancy-ios.mp4" caption="VibrancyView on iOS" />
+
+## Props
+
+<PropsTable rows={vibrancyViewProps} />

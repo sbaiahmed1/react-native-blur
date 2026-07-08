@@ -1,4 +1,5 @@
 {
+  "exclude": ["node_modules", "website"],
   "compilerOptions": {
     "rootDir": ".",
     "paths": {

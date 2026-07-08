@@ -1,0 +1,79 @@
+---
+title: LiquidGlassView
+description: iOS 26+ UIGlassEffect liquid glass, with a tinted-blur fallback everywhere else.
+order: 4
+platforms: [ios, android]
+badge: iOS 26+
+---
+
+import PropsTable from '../../components/PropsTable.astro';
+import DemoVideo from '../../components/DemoVideo.astro';
+import { liquidGlassViewProps } from '../props-data/liquid-glass-view';
+import { glassTypeValues } from '../props-data/enums';
+
+`LiquidGlassView` uses Apple's `UIGlassEffect` API (iOS 26+) for true liquid glass rendering, with customizable tint color, opacity, and touch interactivity.
+
+## Platform fallback behavior
+
+- **iOS 26+**: native `UIGlassEffect`, hardware-accelerated, with optional touch interactivity via `isInteractive`.
+- **iOS below 26, and Android**: automatically falls back to `BlurView` with `blurType="regular"`, `blurAmount={70}`, and a tinted `overlayColor` computed from `glassTintColor`/`glassOpacity` (capped at 35% alpha) — a deliberately engineered approximation of the glass look, not a generic blur.
+- When "Reduce Transparency" is enabled on iOS 26+, the glass effect is hidden and a solid `reducedTransparencyFallbackColor` view is shown instead.
+
+> **Note:** the component's actual runtime default for `ignoreSafeArea` is `true`. (An earlier version of the inline type documentation stated `false` — the table below reflects the real behavior.)
+
+<DemoVideo src="ios-liquid-glass-demo.mp4" caption="LiquidGlassView on iOS 26+" />
+
+## Basic usage
+
+```tsx
+import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+
+<LiquidGlassView
+  glassType="regular"
+  glassTintColor="#007AFF"
+  glassOpacity={0.8}
+  style={{ padding: 20, borderRadius: 20 }}
+>
+  <Text>Beautiful liquid glass effect</Text>
+</LiquidGlassView>
+```
+
+## Interactive glass
+
+```tsx
+<LiquidGlassView
+  glassType="regular"
+  glassTintColor="#007AFF"
+  glassOpacity={0.9}
+  isInteractive={true} // iOS 26+ only
+  ignoreSafeArea={false}
+  style={{ flex: 1, padding: 30 }}
+>
+  <Text>Interactive liquid glass that responds to touch</Text>
+</LiquidGlassView>
+```
+
+<DemoVideo src="android-liquid-glass-demo.mp4" caption="Android fallback: enhanced blur with tint overlay" />
+
+## Glass types
+
+<table class="glass-panel-subtle my-6 w-full border-collapse text-left text-sm">
+  <thead>
+    <tr class="text-white/50">
+      <th class="p-3 font-medium">Value</th>
+      <th class="p-3 font-medium">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    {glassTypeValues.map((g) => (
+      <tr class="border-t border-white/10">
+        <td class="p-3 font-mono text-white">{g.value}</td>
+        <td class="p-3 text-white/70">{g.description}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+## Props
+
+<PropsTable rows={liquidGlassViewProps} />

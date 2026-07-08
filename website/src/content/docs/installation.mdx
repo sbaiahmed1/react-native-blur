@@ -1,0 +1,58 @@
+---
+title: Installation
+description: Requirements and setup steps for @sbaiahmed1/react-native-blur on iOS and Android.
+order: 1
+---
+
+## Requirements
+
+| Platform | Minimum version |
+| --- | --- |
+| iOS | 13.0+ |
+| Xcode | 16 minimum; 26.0+ for liquid glass support |
+| React Native | 0.68+ (New Architecture / Fabric) |
+| Android | API 24+ (Android 7.0) |
+| Android Gradle Plugin | 8.9.1+ |
+
+`LiquidGlassView` and `LiquidGlassContainer` need Xcode 26.0+ and iOS 26+ for the full glass effect — on older iOS versions and on Android, they automatically fall back to an enhanced blur approximation.
+
+## Install the package
+
+```bash
+npm install @sbaiahmed1/react-native-blur
+# or
+yarn add @sbaiahmed1/react-native-blur
+```
+
+## iOS setup
+
+Install pods after adding the package:
+
+```bash
+cd ios && pod install
+```
+
+## Android setup
+
+No additional configuration is required beyond meeting the minimum requirements:
+
+- **Min SDK:** API 24 (Android 7.0)
+- **Android Gradle Plugin:** 8.9.1 or newer
+
+Check `android/build.gradle` if you hit a build error related to AGP:
+
+```gradle
+classpath "com.android.tools.build:gradle:8.9.1" // or higher
+```
+
+The library depends on [QmBlurView](https://github.com/QmDeve/QmBlurView) from Maven Central (`com.qmdeve.blurview:core:1.1.4`), pulled in automatically — no manual Gradle dependency setup needed.
+
+Under the hood, Android blur support is version-aware:
+
+- **Android 12+** — uses `RenderEffectBlur`
+- **Android 10–11** — falls back to `RenderScriptBlur`
+- **Older versions** — lightweight translucent overlay fallback
+
+## Next steps
+
+Head to [BlurView](/react-native-blur/docs/blur-view) for the most common component, or browse the [props reference](/react-native-blur/docs/props-reference) for a consolidated view of every component's API.

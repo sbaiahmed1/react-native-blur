@@ -1,0 +1,79 @@
+---
+const rows = [
+  {
+    label: 'Component architecture',
+    thisLib: 'Six dedicated components, each with a focused API',
+    community: 'Single BlurView with a mode-switching prop',
+    expo: 'Single BlurView component',
+  },
+  {
+    label: 'Liquid glass effects (iOS 26+)',
+    thisLib: true,
+    community: false,
+    expo: false,
+  },
+  {
+    label: 'New Architecture (Fabric) support',
+    thisLib: 'Built for Fabric/Turbo Modules from the ground up',
+    community: 'Partial',
+    expo: 'Partial',
+  },
+  {
+    label: 'Android blur',
+    thisLib: 'Real hardware-accelerated blur (QmBlurView)',
+    community: 'Varies',
+    expo: 'Experimental',
+  },
+  {
+    label: 'Requires Expo',
+    thisLib: false,
+    community: false,
+    expo: true,
+  },
+  {
+    label: 'Per-component TypeScript prop types',
+    thisLib: true,
+    community: false,
+    expo: false,
+  },
+];
+
+function renderCell(value: string | boolean) {
+  if (value === true) return '✅';
+  if (value === false) return '—';
+  return value;
+}
+---
+
+<section class="mx-auto max-w-6xl px-6 py-16">
+  <h2 class="text-2xl font-semibold text-white sm:text-3xl">How it compares</h2>
+  <p class="mt-3 max-w-2xl text-white/65">
+    Compared against <code>@react-native-community/blur</code> and <code>expo-blur</code>, the two most
+    commonly used alternatives.
+  </p>
+
+  <div class="glass-panel mt-8 overflow-x-auto p-2">
+    <table class="w-full min-w-[640px] border-collapse text-left text-sm">
+      <thead>
+        <tr class="text-white/50">
+          <th class="p-4 font-medium">&nbsp;</th>
+          <th class="p-4 font-medium text-white">@sbaiahmed1/react-native-blur</th>
+          <th class="p-4 font-medium">@react-native-community/blur</th>
+          <th class="p-4 font-medium">expo-blur</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          rows.map((row) => (
+            <tr class="border-t border-white/10">
+              <td class="p-4 font-medium text-white/80">{row.label}</td>
+              <td class="p-4 text-white">{renderCell(row.thisLib)}</td>
+              <td class="p-4 text-white/60">{renderCell(row.community)}</td>
+              <td class="p-4 text-white/60">{renderCell(row.expo)}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

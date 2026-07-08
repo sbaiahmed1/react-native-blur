@@ -1,0 +1,36 @@
+---
+interface Props {
+  command?: string;
+}
+
+const { command = 'npm install @sbaiahmed1/react-native-blur' } = Astro.props;
+---
+
+<div class="glass-panel flex max-w-xl items-center justify-between gap-3 px-5 py-3">
+  <code class="overflow-x-auto whitespace-nowrap font-mono text-sm text-white/90">{command}</code>
+  <button
+    type="button"
+    data-copy-command={command}
+    class="shrink-0 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white/80 transition hover:bg-white/20"
+  >
+    Copy
+  </button>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('button[data-copy-command]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const text = button.dataset.copyCommand ?? '';
+      try {
+        await navigator.clipboard.writeText(text);
+        const original = button.textContent;
+        button.textContent = 'Copied!';
+        setTimeout(() => {
+          button.textContent = original;
+        }, 1500);
+      } catch {
+        /* clipboard API unavailable, silently ignore */
+      }
+    });
+  });
+</script>

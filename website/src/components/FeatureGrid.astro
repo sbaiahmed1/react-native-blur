@@ -1,0 +1,48 @@
+---
+const features = [
+  {
+    title: 'Six specialized components',
+    description:
+      'BlurView, VibrancyView, LiquidGlassView, LiquidGlassContainer, ProgressiveBlurView, and BlurSwitch — each with a focused, dedicated API instead of one component switching modes.',
+  },
+  {
+    title: 'Liquid glass, for real',
+    description:
+      "The only React Native blur library with iOS 26+ UIGlassEffect and UIGlassContainerEffect support, with a well-engineered tinted-blur fallback everywhere else.",
+  },
+  {
+    title: 'Real Android blur',
+    description:
+      'Hardware-accelerated blur via QmBlurView on Android — RenderEffectBlur on API 31+, RenderScriptBlur below that, not a translucent overlay hack.',
+  },
+  {
+    title: 'New Architecture ready',
+    description:
+      'Built as Fabric/Turbo Module native views from the ground up, with SwiftUI on iOS and Kotlin on Android.',
+  },
+  {
+    title: 'Full TypeScript support',
+    description:
+      'Every component ships its own prop types and enums (BlurType, GlassType, ProgressiveBlurDirection) for precise autocomplete and type checking.',
+  },
+  {
+    title: 'Accessible by default',
+    description:
+      'All blur and glass effects automatically respect the "Reduce Transparency" setting, with a configurable fallback color.',
+  },
+];
+---
+
+<section class="mx-auto max-w-6xl px-6 py-16">
+  <h2 class="text-2xl font-semibold text-white sm:text-3xl">Everything you need for glass and blur UI</h2>
+  <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      features.map((feature) => (
+        <div class="glass-panel p-6">
+          <h3 class="text-base font-semibold text-white">{feature.title}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-white/65">{feature.description}</p>
+        </div>
+      ))
+    }
+  </div>
+</section>

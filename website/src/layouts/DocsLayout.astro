@@ -1,0 +1,120 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import DocsSidebar from '../components/DocsSidebar.astro';
+import { withBase } from '../lib/paths';
+
+interface Props {
+  title: string;
+  description: string;
+  currentId?: string;
+}
+
+const { title, description, currentId } = Astro.props;
+const entries = await getCollection('docs');
+const sorted = [...entries].sort((a, b) => a.data.order - b.data.order);
+const currentIndex = sorted.findIndex((entry) => entry.id === currentId);
+const prev = currentIndex > 0 ? sorted[currentIndex - 1] : undefined;
+const next = currentIndex >= 0 && currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : undefined;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="mx-auto flex max-w-6xl gap-10 px-6 py-12">
+    <DocsSidebar entries={entries} currentId={currentId} />
+
+    <main class="min-w-0 flex-1 pb-16">
+      <article class="prose-docs">
+        <slot />
+      </article>
+
+      <div class="mt-16 flex items-center justify-between gap-4 border-t border-white/10 pt-6 text-sm">
+        {
+          prev ? (
+            <a href={withBase(`/docs/${prev.id}`)} class="text-white/60 transition hover:text-white">
+              &larr; {prev.data.title}
+            </a>
+          ) : <span />
+        }
+        {
+          next && (
+            <a href={withBase(`/docs/${next.id}`)} class="text-right text-white/60 transition hover:text-white">
+              {next.data.title} &rarr;
+            </a>
+          )
+        }
+      </div>
+    </main>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .prose-docs h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+  .prose-docs h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: white;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .prose-docs h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .prose-docs p {
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.75;
+    margin-bottom: 1rem;
+  }
+  .prose-docs ul,
+  .prose-docs ol {
+    color: rgba(255, 255, 255, 0.7);
+    margin: 1rem 0 1rem 1.25rem;
+    line-height: 1.75;
+  }
+  .prose-docs ul {
+    list-style: disc;
+  }
+  .prose-docs ol {
+    list-style: decimal;
+  }
+  .prose-docs a {
+    color: #7dd3fc;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose-docs code {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 0.3rem;
+    padding: 0.1rem 0.4rem;
+    font-size: 0.85em;
+  }
+  .prose-docs pre {
+    background: #0b0d14;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    margin: 1.25rem 0;
+  }
+  .prose-docs pre code {
+    background: none;
+    padding: 0;
+  }
+  .prose-docs blockquote {
+    border-left: 3px solid rgba(125, 211, 252, 0.6);
+    padding-left: 1rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 1.25rem 0;
+  }
+  .prose-docs table {
+    width: 100%;
+  }
+</style>

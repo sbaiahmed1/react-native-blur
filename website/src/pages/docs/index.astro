@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { withBase } from '../../lib/paths';
+
+const entries = await getCollection('docs');
+const sorted = [...entries].sort((a, b) => a.data.order - b.data.order);
+---
+
+<DocsLayout
+  title="Documentation"
+  description="Installation, component reference, and migration guides for @sbaiahmed1/react-native-blur."
+>
+  <h1>Documentation</h1>
+  <p>
+    <code>@sbaiahmed1/react-native-blur</code> ships six components for native blur, vibrancy, and iOS 26+
+    liquid glass effects. Start with installation, then look up whichever component fits your use case.
+  </p>
+
+  <div class="not-prose mt-8 grid gap-4 sm:grid-cols-2">
+    {
+      sorted.map((entry) => (
+        <a href={withBase(`/docs/${entry.id}`)} class="glass-panel block p-5 transition hover:bg-white/10">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-semibold text-white">{entry.data.title}</h2>
+            {entry.data.badge && <span class="text-xs text-accent-soft">{entry.data.badge}</span>}
+          </div>
+          <p class="mt-2 text-sm text-white/60">{entry.data.description}</p>
+        </a>
+      ))
+    }
+  </div>
+</DocsLayout>

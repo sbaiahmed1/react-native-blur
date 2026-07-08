@@ -1,0 +1,17 @@
+---
+const REPO_URL = 'https://github.com/sbaiahmed1/react-native-blur';
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="mt-24 border-t border-white/10 py-10 text-sm text-white/50">
+  <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 sm:flex-row">
+    <p>&copy; {currentYear} Ahmed Sbai &middot; MIT License</p>
+    <div class="flex items-center gap-5">
+      <a href={REPO_URL} target="_blank" rel="noreferrer" class="transition hover:text-white">GitHub</a>
+      <a href={`${REPO_URL}/issues`} target="_blank" rel="noreferrer" class="transition hover:text-white">Issues</a>
+      <a href={`${REPO_URL}/blob/main/CONTRIBUTING.md`} target="_blank" rel="noreferrer" class="transition hover:text-white">
+        Contributing
+      </a>
+    </div>
+  </div>
+</footer>

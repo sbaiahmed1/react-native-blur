@@ -1,0 +1,52 @@
+---
+import { withBase } from '../lib/paths';
+
+interface Props {
+  /** Path relative to public/media/videos, e.g. "ios-liquid-glass-demo.mp4" */
+  src: string;
+  caption?: string;
+  class?: string;
+}
+
+const { src, caption, class: className = '' } = Astro.props;
+const videoSrc = withBase(`/media/videos/${src}`);
+---
+
+<figure class={`glass-panel overflow-hidden p-2 ${className}`}>
+  <video
+    data-lazy-video
+    data-src={videoSrc}
+    muted
+    loop
+    playsinline
+    preload="none"
+    class="aspect-auto w-full rounded-[0.9rem] bg-black/40"
+  >
+  </video>
+  {caption && <figcaption class="px-2 pb-1 pt-3 text-center text-sm text-white/60">{caption}</figcaption>}
+</figure>
+
+<script>
+  const videos = document.querySelectorAll<HTMLVideoElement>('video[data-lazy-video]');
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const video = entry.target as HTMLVideoElement;
+        const source = video.dataset.src;
+        if (source && !video.src) {
+          video.src = source;
+          video.load();
+          video.play().catch(() => {
+            /* autoplay can be blocked; user can still tap play controls if added later */
+          });
+        }
+        observer.unobserve(video);
+      }
+    },
+    { rootMargin: '200px' }
+  );
+
+  videos.forEach((video) => observer.observe(video));
+</script>

@@ -1,0 +1,36 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { withBase } from '../lib/paths';
+
+interface Props {
+  entries: CollectionEntry<'docs'>[];
+  currentId?: string;
+}
+
+const { entries, currentId } = Astro.props;
+const sorted = [...entries].sort((a, b) => a.data.order - b.data.order);
+---
+
+<nav class="glass-panel-subtle sticky top-24 hidden h-fit w-56 shrink-0 p-4 lg:block">
+  <p class="px-2 pb-2 text-xs font-medium tracking-wide text-white/40 uppercase">Documentation</p>
+  <ul class="space-y-0.5">
+    {
+      sorted.map((entry) => {
+        const isActive = entry.id === currentId;
+        return (
+          <li>
+            <a
+              href={withBase(`/docs/${entry.id}`)}
+              class={`flex items-center justify-between rounded-lg px-3 py-1.5 text-sm transition ${
+                isActive ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <span>{entry.data.title}</span>
+              {entry.data.badge && <span class="text-[10px] text-accent-soft">{entry.data.badge}</span>}
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>

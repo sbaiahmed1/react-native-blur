@@ -1,0 +1,40 @@
+---
+import DemoVideo from './DemoVideo.astro';
+import InstallSnippet from './InstallSnippet.astro';
+import { withBase } from '../lib/paths';
+---
+
+<section class="mx-auto max-w-6xl px-6 pb-20 pt-16 sm:pt-24">
+  <div class="grid items-center gap-12 lg:grid-cols-2">
+    <div>
+      <p class="glass-panel-subtle inline-flex items-center gap-2 px-4 py-1.5 text-xs font-medium tracking-wide text-white/70 uppercase">
+        New Architecture &middot; Fabric ready
+      </p>
+
+      <h1 class="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+        Native blur &amp; <span class="text-gradient">liquid glass</span> for React Native
+      </h1>
+
+      <p class="mt-5 max-w-xl text-lg text-white/70">
+        Six specialized components for real, hardware-accelerated blur and iOS 26+ liquid glass
+        effects &mdash; SwiftUI on iOS, Kotlin on Android, full TypeScript support, and smart
+        fallbacks everywhere else.
+      </p>
+
+      <div class="mt-8">
+        <InstallSnippet />
+      </div>
+
+      <div class="mt-6 flex flex-wrap items-center gap-4 text-sm text-white/60">
+        <a href="https://github.com/sbaiahmed1/react-native-blur" target="_blank" rel="noreferrer" class="glass-panel-subtle rounded-full px-5 py-2 font-medium text-white transition hover:bg-white/10">
+          View on GitHub
+        </a>
+        <a href={withBase('/docs/')} class="font-medium text-accent-soft transition hover:text-white">
+          Read the docs &rarr;
+        </a>
+      </div>
+    </div>
+
+    <DemoVideo src="ios-liquid-glass-demo.mp4" caption="LiquidGlassView on iOS 26+ (falls back to enhanced blur elsewhere)" />
+  </div>
+</section>

@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-glass-tint: rgba(255, 255, 255, 0.08);
+  --color-glass-border: rgba(255, 255, 255, 0.16);
+  --color-accent: #0a84ff;
+  --color-accent-soft: #7dd3fc;
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% 0%, rgba(10, 132, 255, 0.35), transparent 45%),
+    radial-gradient(circle at 85% 20%, rgba(191, 90, 242, 0.3), transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(48, 209, 88, 0.15), transparent 55%),
+    #05060a;
+  background-attachment: fixed;
+  color: #f2f4f8;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+/* Glass surface utilities used across the marketing hero + feature cards */
+.glass-panel {
+  background: var(--color-glass-tint);
+  border: 1px solid var(--color-glass-border);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border-radius: 1.25rem;
+}
+
+.glass-panel-subtle {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  border-radius: 0.85rem;
+}
+
+.text-gradient {
+  background: linear-gradient(120deg, #7dd3fc, #c084fc 55%, #f472b6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+code, pre {
+  font-family: var(--font-mono);
+}

@@ -1,0 +1,97 @@
+---
+title: ProgressiveBlurView
+description: Smooth, variable/gradient blur transitions on both iOS and Android.
+order: 6
+platforms: [ios, android]
+---
+
+import PropsTable from '../../components/PropsTable.astro';
+import DemoVideo from '../../components/DemoVideo.astro';
+import { progressiveBlurViewProps } from '../props-data/progressive-blur-view';
+import { progressiveBlurDirectionValues } from '../props-data/enums';
+
+`ProgressiveBlurView` renders a variable/gradient blur that transitions smoothly instead of applying a uniform blur intensity. It works on **both iOS and Android**, though the underlying implementations differ:
+
+- **iOS**: private Core Animation filters for true variable blur.
+- **Android**: extends QmBlurView's `BlurView` with custom gradient masking.
+
+Progressive blur `startOffset` behaves slightly differently between the two platforms — test both when tuning a design.
+
+## Basic usage
+
+```tsx
+import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
+
+<ProgressiveBlurView
+  blurType="light"
+  blurAmount={30}
+  direction="blurredTopClearBottom"
+  startOffset={0}
+  style={{ height: 200 }}
+>
+  <Text>Progressive blur from top (blurred) to bottom (clear)</Text>
+</ProgressiveBlurView>
+```
+
+<DemoVideo src="progressive-blur-ios.mp4" caption="ProgressiveBlurView on iOS" />
+<DemoVideo src="progressive-blur-android.mp4" caption="ProgressiveBlurView on Android" />
+
+## Center blur
+
+`direction="blurredCenterClearTopAndBottom"` creates a blur body that peaks in the center and fades to clear at both edges.
+
+```tsx
+<ProgressiveBlurView
+  blurType="regular"
+  blurAmount={35}
+  direction="blurredCenterClearTopAndBottom"
+  startOffset={0} // keep 0 for the longest blur body; raise toward 0.3 to shorten it
+  style={{ height: 220, borderRadius: 16 }}
+>
+  <Text>Clear at top</Text>
+  <Text>Blurred at center</Text>
+  <Text>Clear at bottom</Text>
+</ProgressiveBlurView>
+```
+
+## Locked content / paywall pattern
+
+```tsx
+<View style={{ position: 'relative' }}>
+  <Text>Long content here...</Text>
+
+  <ProgressiveBlurView
+    blurType="light"
+    blurAmount={20}
+    direction="blurredBottomClearTop"
+    startOffset={0.2}
+    style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 200 }}
+  >
+    <Text>🔒 Unlock to read more</Text>
+    <Button title="Purchase" />
+  </ProgressiveBlurView>
+</View>
+```
+
+## Direction values
+
+<table class="glass-panel-subtle my-6 w-full border-collapse text-left text-sm">
+  <thead>
+    <tr class="text-white/50">
+      <th class="p-3 font-medium">Value</th>
+      <th class="p-3 font-medium">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    {progressiveBlurDirectionValues.map((d) => (
+      <tr class="border-t border-white/10">
+        <td class="p-3 font-mono text-white">{d.value}</td>
+        <td class="p-3 text-white/70">{d.description}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+## Props
+
+<PropsTable rows={progressiveBlurViewProps} />

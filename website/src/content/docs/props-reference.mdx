@@ -1,0 +1,103 @@
+---
+title: Props reference
+description: Consolidated prop tables for all six components, plus the BlurType and GlassType enums.
+order: 8
+---
+
+import PropsTable from '../../components/PropsTable.astro';
+import { blurViewProps } from '../props-data/blur-view';
+import { vibrancyViewProps } from '../props-data/vibrancy-view';
+import { liquidGlassViewProps } from '../props-data/liquid-glass-view';
+import { liquidGlassContainerProps } from '../props-data/liquid-glass-container';
+import { progressiveBlurViewProps } from '../props-data/progressive-blur-view';
+import { blurSwitchProps } from '../props-data/blur-switch';
+import { blurTypeValues, glassTypeValues, progressiveBlurDirectionValues } from '../props-data/enums';
+
+A single scannable page listing every component's props side by side. For usage examples and platform-specific notes, see each component's own page.
+
+## BlurView
+
+<PropsTable rows={blurViewProps} />
+
+## VibrancyView
+
+<PropsTable rows={vibrancyViewProps} />
+
+## LiquidGlassView
+
+<PropsTable rows={liquidGlassViewProps} />
+
+## LiquidGlassContainer
+
+<PropsTable rows={liquidGlassContainerProps} />
+
+## ProgressiveBlurView
+
+<PropsTable rows={progressiveBlurViewProps} />
+
+## BlurSwitch
+
+<PropsTable rows={blurSwitchProps} />
+
+## BlurType values
+
+Shared by `BlurView`, `VibrancyView`, and `ProgressiveBlurView`.
+
+<table class="glass-panel-subtle my-6 w-full border-collapse text-left text-sm">
+  <thead>
+    <tr class="text-white/50">
+      <th class="p-3 font-medium">Value</th>
+      <th class="p-3 font-medium">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    {blurTypeValues.map((b) => (
+      <tr class="border-t border-white/10">
+        <td class="p-3 font-mono text-white">{b.value}</td>
+        <td class="p-3 text-white/70">{b.description}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+## GlassType values
+
+Used by `LiquidGlassView` on iOS 26+.
+
+<table class="glass-panel-subtle my-6 w-full border-collapse text-left text-sm">
+  <thead>
+    <tr class="text-white/50">
+      <th class="p-3 font-medium">Value</th>
+      <th class="p-3 font-medium">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    {glassTypeValues.map((g) => (
+      <tr class="border-t border-white/10">
+        <td class="p-3 font-mono text-white">{g.value}</td>
+        <td class="p-3 text-white/70">{g.description}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+## ProgressiveBlurDirection values
+
+Used by `ProgressiveBlurView`.
+
+<table class="glass-panel-subtle my-6 w-full border-collapse text-left text-sm">
+  <thead>
+    <tr class="text-white/50">
+      <th class="p-3 font-medium">Value</th>
+      <th class="p-3 font-medium">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    {progressiveBlurDirectionValues.map((d) => (
+      <tr class="border-t border-white/10">
+        <td class="p-3 font-mono text-white">{d.value}</td>
+        <td class="p-3 text-white/70">{d.description}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>

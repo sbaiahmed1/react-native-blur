@@ -1,0 +1,65 @@
+---
+title: LiquidGlassContainer
+description: Group multiple glass elements with configurable spacing using UIGlassContainerEffect.
+order: 5
+platforms: [ios]
+badge: iOS 26+
+---
+
+import PropsTable from '../../components/PropsTable.astro';
+import { liquidGlassContainerProps } from '../props-data/liquid-glass-container';
+
+`LiquidGlassContainer` wraps iOS 26+'s `UIGlassContainerEffect`, grouping multiple `LiquidGlassView` children together with configurable spacing between them. On Android and iOS versions below 26, it falls back to a plain `View`.
+
+## Basic usage
+
+```tsx
+import { LiquidGlassContainer, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+
+<LiquidGlassContainer spacing={20} style={{ flex: 1 }}>
+  <LiquidGlassView
+    glassType="clear"
+    glassTintColor="#000000"
+    glassOpacity={0.3}
+    style={{ width: 120, height: 120, borderRadius: 60 }}
+  >
+    <Text>Circle 1</Text>
+  </LiquidGlassView>
+  <LiquidGlassView
+    glassType="clear"
+    glassTintColor="#000000"
+    glassOpacity={0.3}
+    style={{ width: 120, height: 120, borderRadius: 60 }}
+  >
+    <Text>Circle 2</Text>
+  </LiquidGlassView>
+</LiquidGlassContainer>
+```
+
+## Animated container
+
+```tsx
+import { Animated } from 'react-native';
+import { LiquidGlassContainer, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
+
+function AnimatedGlassContainer() {
+  const translateX = useRef(new Animated.Value(0)).current;
+
+  return (
+    <LiquidGlassContainer spacing={30} style={{ flexDirection: 'row' }}>
+      <LiquidGlassView glassType="clear" style={{ width: 100, height: 100, borderRadius: 50 }}>
+        <Text>Static</Text>
+      </LiquidGlassView>
+      <Animated.View style={{ transform: [{ translateX }] }}>
+        <LiquidGlassView glassType="clear" style={{ width: 100, height: 100, borderRadius: 50 }}>
+          <Text>Animated</Text>
+        </LiquidGlassView>
+      </Animated.View>
+    </LiquidGlassContainer>
+  );
+}
+```
+
+## Props
+
+<PropsTable rows={liquidGlassContainerProps} />

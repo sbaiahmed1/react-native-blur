@@ -1,0 +1,37 @@
+---
+import type { PropRow } from '../content/props-data/types';
+
+interface Props {
+  rows: PropRow[];
+}
+
+const { rows } = Astro.props;
+---
+
+<div class="glass-panel-subtle my-6 overflow-x-auto p-2">
+  <table class="w-full min-w-[560px] border-collapse text-left text-sm">
+    <thead>
+      <tr class="text-white/50">
+        <th class="p-3 font-medium">Prop</th>
+        <th class="p-3 font-medium">Type</th>
+        <th class="p-3 font-medium">Default</th>
+        <th class="p-3 font-medium">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((row) => (
+          <tr class="border-t border-white/10 align-top">
+            <td class="p-3 font-mono text-white">{row.name}</td>
+            <td class="p-3 font-mono text-white/70">{row.type}</td>
+            <td class="p-3 font-mono text-white/70">{row.default}</td>
+            <td class="p-3 text-white/70">
+              {row.platform && <span class="mr-2 rounded-full bg-white/10 px-2 py-0.5 text-xs text-accent-soft">{row.platform}</span>}
+              {row.description}
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>

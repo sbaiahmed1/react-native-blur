@@ -1,0 +1,29 @@
+---
+import { withBase } from '../lib/paths';
+
+const REPO_URL = 'https://github.com/sbaiahmed1/react-native-blur';
+const NPM_URL = 'https://www.npmjs.com/package/@sbaiahmed1/react-native-blur';
+---
+
+<header class="sticky top-0 z-50 border-b border-white/10 bg-black/30 backdrop-blur-xl">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+    <a href={withBase('/')} class="flex items-center gap-2 text-sm font-semibold tracking-tight text-white">
+      <span class="inline-flex h-7 w-7 items-center justify-center rounded-full glass-panel-subtle text-accent-soft">◐</span>
+      react-native-blur
+    </a>
+
+    <nav class="flex items-center gap-6 text-sm text-white/80">
+      <a href={withBase('/')} class="transition hover:text-white">Home</a>
+      <a href={withBase('/docs/')} class="transition hover:text-white">Docs</a>
+      <a href={NPM_URL} target="_blank" rel="noreferrer" class="transition hover:text-white">npm</a>
+      <a
+        href={REPO_URL}
+        target="_blank"
+        rel="noreferrer"
+        class="glass-panel-subtle rounded-full px-4 py-1.5 font-medium text-white transition hover:bg-white/10"
+      >
+        GitHub
+      </a>
+    </nav>
+  </div>
+</header>
