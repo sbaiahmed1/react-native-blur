@@ -15,6 +15,7 @@ html {
 }
 
 body {
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 15% 0%, rgba(10, 132, 255, 0.35), transparent 45%),
     radial-gradient(circle at 85% 20%, rgba(191, 90, 242, 0.3), transparent 45%),
