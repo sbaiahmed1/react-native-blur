@@ -9,6 +9,8 @@ class BlurEffectView: UIVisualEffectView {
   private var blurStyle: UIBlurEffect.Style = .systemMaterial
   private var blurIntensity: Double = 1.0
   private var foregroundObserver: NSObjectProtocol?
+  private var stabilizationDisplayLink: CADisplayLink?
+  private var stabilizationFramesRemaining = 0
 
   override init(effect: UIVisualEffect?) {
     super.init(effect: effect)
@@ -24,6 +26,7 @@ class BlurEffectView: UIVisualEffectView {
     blurStyle = style
     blurIntensity = intensity
     rebuildAnimator()
+    startStabilizationIfNeeded()
   }
 
   // The paused-animator trick is fragile: UIKit flushes the underlying CA
@@ -35,7 +38,11 @@ class BlurEffectView: UIVisualEffectView {
     super.didMoveToWindow()
     if window != nil {
       rebuildAnimator()
+      startStabilizationIfNeeded()
+      return
     }
+
+    stopStabilization()
   }
 
   // draw(_:) is called by UIVisualEffectView whenever the effect needs to
@@ -76,7 +83,51 @@ class BlurEffectView: UIVisualEffectView {
     animator?.fractionComplete = CGFloat(blurIntensity)
   }
 
+  private func startStabilizationIfNeeded() {
+    stopStabilization()
+
+    guard window != nil else {
+      return
+    }
+
+    // UIKit can still invalidate the paused blur animator during the first few
+    // transition frames after mount. Rebuild across a tiny bounded window so
+    // the correct material state is restored without a user-visible delay.
+    stabilizationFramesRemaining = 3
+
+    let displayLink = CADisplayLink(target: self, selector: #selector(handleStabilizationTick))
+    displayLink.add(to: .main, forMode: .common)
+    stabilizationDisplayLink = displayLink
+  }
+
+  private func stopStabilization() {
+    stabilizationDisplayLink?.invalidate()
+    stabilizationDisplayLink = nil
+    stabilizationFramesRemaining = 0
+  }
+
+  @objc
+  private func handleStabilizationTick() {
+    guard window != nil else {
+      stopStabilization()
+      return
+    }
+
+    guard stabilizationFramesRemaining > 0 else {
+      stopStabilization()
+      return
+    }
+
+    rebuildAnimator()
+    stabilizationFramesRemaining -= 1
+
+    if stabilizationFramesRemaining == 0 {
+      stopStabilization()
+    }
+  }
+
   deinit {
+    stopStabilization()
     animator?.stopAnimation(true)
     if let foregroundObserver {
       NotificationCenter.default.removeObserver(foregroundObserver)
