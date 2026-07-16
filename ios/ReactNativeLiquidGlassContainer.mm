@@ -72,13 +72,13 @@ using namespace facebook::react;
     const auto &props = *std::static_pointer_cast<ReactNativeLiquidGlassContainerProps const>(_props);
     const auto borderMetrics = props.resolveBorderMetrics(_layoutMetrics);
 
-    // Use topLeft.horizontal same as React Native RCTViewComponentView implementation
+    // Use topLeft.horizontal same as React Native RCTViewComponentView
+    // implementation. Applied unconditionally so a radius of 0 clears any stale
+    // rounding rather than leaving it from a previous mount.
     CGFloat radius = borderMetrics.borderRadii.topLeft.horizontal;
 
-    if (radius > 0) {
-      _containerView.layer.cornerRadius = radius;
-      _containerView.layer.masksToBounds = YES;
-    }
+    _containerView.layer.cornerRadius = radius;
+    _containerView.layer.masksToBounds = radius > 0;
   }
 }
 
@@ -101,16 +101,19 @@ using namespace facebook::react;
 
 - (void)mountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
 {
-  if (@available(iOS 26.0, *)) {
-    // On iOS 26+, add children to the contentView if available
-    if ([_containerView isKindOfClass:[UIVisualEffectView class]]) {
-      UIVisualEffectView *effectView = (UIVisualEffectView *)_containerView;
-      [effectView.contentView insertSubview:childComponentView atIndex:index];
-      return;
-    }
+  // Route children into contentView whenever the container actually is a
+  // UIVisualEffectView, decided by the runtime class rather than the OS
+  // version. Built with Xcode 26, the Swift LiquidGlassContainer is a
+  // UIVisualEffectView even on iOS < 26 (its effect just stays nil there), and
+  // adding subviews straight to a UIVisualEffectView is forbidden by UIKit and
+  // throws — contentView is always the correct target for one.
+  if ([_containerView isKindOfClass:[UIVisualEffectView class]]) {
+    UIVisualEffectView *effectView = (UIVisualEffectView *)_containerView;
+    [effectView.contentView insertSubview:childComponentView atIndex:index];
+    return;
   }
 
-  // Fallback: add directly to container view
+  // Fallback: pre-Xcode-26 builds where LiquidGlassContainer is a plain UIView.
   [_containerView insertSubview:childComponentView atIndex:index];
 }
 

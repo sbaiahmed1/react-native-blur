@@ -37,31 +37,37 @@ import UIKit
     }
   }
 
+  // false confines the glass to the safe area; true (the JS-side default) lets
+  // it fill the whole view. Applied in layoutSubviews.
   @objc public var ignoreSafeArea: Bool = false {
     didSet {
-      // Not used in UIKit approach
+      if ignoreSafeArea != oldValue {
+        setNeedsLayout()
+      }
     }
   }
 
-  // Border radius storage for React Native's style system
+  // Per-corner radii in points. The iOS 26 path applies all four via
+  // cornerConfiguration; the pre-26 / reduced-transparency fallback can only
+  // render a uniform CALayer cornerRadius, so it uses topLeftRadius.
   private var topLeftRadius: CGFloat = 0
   private var topRightRadius: CGFloat = 0
   private var bottomLeftRadius: CGFloat = 0
   private var bottomRightRadius: CGFloat = 0
-  private var allBorderRadius: CGFloat = 0
 
   private var foregroundObserver: NSObjectProtocol?
+  private var reduceTransparencyObserver: NSObjectProtocol?
 
   public override init(frame: CGRect) {
     super.init(frame: frame)
     setupView()
-    registerForegroundObserver()
+    registerObservers()
   }
 
   required init?(coder: NSCoder) {
     super.init(coder: coder)
     setupView()
-    registerForegroundObserver()
+    registerObservers()
   }
 
   // The glass/blur effect is assigned to the UIVisualEffectView once. UIKit
@@ -76,9 +82,20 @@ import UIKit
     }
   }
 
-  private func registerForegroundObserver() {
+  private func registerObservers() {
     foregroundObserver = NotificationCenter.default.addObserver(
       forName: UIApplication.willEnterForegroundNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      self?.updateEffect()
+    }
+
+    // Re-evaluate the glass/fallback state when the user toggles Reduce
+    // Transparency while the view is mounted, so the accessibility fallback
+    // takes effect immediately instead of only on the next prop change.
+    reduceTransparencyObserver = NotificationCenter.default.addObserver(
+      forName: UIAccessibility.reduceTransparencyStatusDidChangeNotification,
       object: nil,
       queue: .main
     ) { [weak self] _ in
@@ -90,51 +107,71 @@ import UIKit
     if let foregroundObserver {
       NotificationCenter.default.removeObserver(foregroundObserver)
     }
+    if let reduceTransparencyObserver {
+      NotificationCenter.default.removeObserver(reduceTransparencyObserver)
+    }
   }
 
   private func setupView() {
     let effectView = UIVisualEffectView()
     effectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     effectView.frame = bounds
-    
+
     // Don't clip bounds to allow interactive glass animations to be visible
     effectView.clipsToBounds = false
-    
+
     addSubview(effectView)
     self.glassEffectView = effectView
-    
+
     updateEffect()
   }
 
   // MARK: - Border Radius Methods (called by React Native's style system)
-  
+
   @objc public func setBorderRadius(_ radius: CGFloat) {
-    allBorderRadius = radius
+    setBorderRadii(topLeft: radius, topRight: radius, bottomLeft: radius, bottomRight: radius)
+  }
+
+  @objc public func setBorderRadii(topLeft: CGFloat, topRight: CGFloat, bottomLeft: CGFloat, bottomRight: CGFloat) {
+    topLeftRadius = topLeft
+    topRightRadius = topRight
+    bottomLeftRadius = bottomLeft
+    bottomRightRadius = bottomRight
     updateBorderRadius()
   }
 
   private func updateEffect() {
+    // Honor Reduce Transparency on every path, including the iOS 26 glass API,
+    // which otherwise renders full glass and leaves reducedTransparencyFallbackColor
+    // dead (the accessibility setting was never observed either).
+    if UIAccessibility.isReduceTransparencyEnabled {
+      updateFallback()
+      return
+    }
+
     // Check if we can use the new API (iOS 26+)
     if #available(iOS 26.0, *) {
       #if compiler(>=6.2)
       let style: UIGlassEffect.Style = glassType == "regular" ? .regular : .clear
-      
+
       // Always create a new effect to ensure proper rendering
       let effect = UIGlassEffect(style: style)
-      // A zero-alpha tint means "no tint". Running it through
-      // withAlphaComponent(glassOpacity) resurrects UIColor.clear (black at
-      // alpha 0) as opaque black (issue #113) — leave the glass untinted.
-      if glassTintColor.cgColor.alpha == 0 {
+      // A zero-alpha tint means "no tint": running UIColor.clear (black at
+      // alpha 0) through withAlphaComponent would resurrect it as opaque black
+      // (issue #113). Otherwise multiply the tint's own alpha by glassOpacity
+      // instead of replacing it, so a semi-transparent tint stays semi-transparent.
+      let tintAlpha = glassTintColor.cgColor.alpha
+      if tintAlpha == 0 {
         effect.tintColor = nil
       } else {
-        effect.tintColor = glassTintColor.withAlphaComponent(glassOpacity)
+        effect.tintColor = glassTintColor.withAlphaComponent(tintAlpha * glassOpacity)
       }
       effect.isInteractive = isInteractive
-      
+
       glassEffectView?.effect = effect
       glassEffect = effect
       currentGlassStyle = glassType
-      
+
       updateBorderRadius()
       #else
       // Fallback for older compilers (Xcode < 16.x) even on newer iOS
@@ -169,39 +206,42 @@ import UIKit
       glassEffectView?.contentView.backgroundColor = .clear
     }
 
-    layer.cornerRadius = allBorderRadius
-    glassEffectView?.layer.cornerRadius = allBorderRadius
+    // Fallback layers can only render a uniform corner radius.
+    layer.cornerRadius = topLeftRadius
+    glassEffectView?.layer.cornerRadius = topLeftRadius
     glassEffectView?.layer.masksToBounds = true
   }
 
   private func updateBorderRadius() {
     if #available(iOS 26.0, *) {
       #if compiler(>=6.2)
-      let topLeft = UICornerRadius(floatLiteral: Double(allBorderRadius))
-      let topRight = UICornerRadius(floatLiteral: Double(allBorderRadius))
-      let bottomLeft = UICornerRadius(floatLiteral: Double(allBorderRadius))
-      let bottomRight = UICornerRadius(floatLiteral: Double(allBorderRadius))
-      
       glassEffectView?.cornerConfiguration = .corners(
-        topLeftRadius: topLeft,
-        topRightRadius: topRight,
-        bottomLeftRadius: bottomLeft,
-        bottomRightRadius: bottomRight
+        topLeftRadius: UICornerRadius(floatLiteral: Double(topLeftRadius)),
+        topRightRadius: UICornerRadius(floatLiteral: Double(topRightRadius)),
+        bottomLeftRadius: UICornerRadius(floatLiteral: Double(bottomLeftRadius)),
+        bottomRightRadius: UICornerRadius(floatLiteral: Double(bottomRightRadius))
       )
       #else
-      layer.cornerRadius = allBorderRadius
+      layer.cornerRadius = topLeftRadius
       layer.masksToBounds = true
       #endif
     } else {
-      layer.cornerRadius = allBorderRadius
+      layer.cornerRadius = topLeftRadius
     }
   }
 
   public override func layoutSubviews() {
     super.layoutSubviews()
-    glassEffectView?.frame = bounds
+    // ignoreSafeArea == false confines the glass to the safe area; true (the
+    // JS-side default) lets it fill the whole view.
+    glassEffectView?.frame = ignoreSafeArea ? bounds : bounds.inset(by: safeAreaInsets)
   }
-  
+
+  public override func safeAreaInsetsDidChange() {
+    super.safeAreaInsetsDidChange()
+    setNeedsLayout()
+  }
+
   // For child view mounting
   @objc public func getContentView() -> UIView? {
     if #available(iOS 26.0, *) {

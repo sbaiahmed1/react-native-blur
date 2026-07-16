@@ -190,13 +190,13 @@ using namespace facebook::react;
   const auto &oldViewProps = *std::static_pointer_cast<ReactNativeLiquidGlassViewProps const>(_props);
   const auto &newViewProps = *std::static_pointer_cast<ReactNativeLiquidGlassViewProps const>(props);
 
-  // Update glassTintColor if it has changed
+  // Update glassTintColor if it has changed. Apply even for an empty string:
+  // colorFromString maps "" to clear, and the view treats a zero-alpha tint as
+  // "no tint", so clearing a previously-set tint actually takes effect.
   if (oldViewProps.glassTintColor != newViewProps.glassTintColor) {
-    if (!newViewProps.glassTintColor.empty()) {
-      NSString *glassTintColorString = [[NSString alloc] initWithUTF8String:newViewProps.glassTintColor.c_str()];
-      UIColor *newGlassTintColor = [ReactNativeLiquidGlassView colorFromString:glassTintColorString];
-      [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassTintColor:newGlassTintColor];
-    }
+    NSString *glassTintColorString = [[NSString alloc] initWithUTF8String:newViewProps.glassTintColor.c_str()];
+    UIColor *newGlassTintColor = [ReactNativeLiquidGlassView colorFromString:glassTintColorString];
+    [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassTintColor:newGlassTintColor];
   }
 
   // Update glassOpacity if it has changed
@@ -223,13 +223,13 @@ using namespace facebook::react;
     [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIgnoringSafeArea:newViewProps.ignoreSafeArea];
   }
 
-  // Update reducedTransparencyFallbackColor if it has changed
+  // Update reducedTransparencyFallbackColor if it has changed. Apply even when
+  // empty so clearing the prop resets to the parsed default rather than
+  // stranding the previous colour.
   if (oldViewProps.reducedTransparencyFallbackColor != newViewProps.reducedTransparencyFallbackColor) {
-    if (!newViewProps.reducedTransparencyFallbackColor.empty()) {
-      NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:newViewProps.reducedTransparencyFallbackColor.c_str()];
-      UIColor *fallbackColor = [ReactNativeLiquidGlassView colorFromString:fallbackColorString];
-      [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:fallbackColor];
-    }
+    NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:newViewProps.reducedTransparencyFallbackColor.c_str()];
+    UIColor *fallbackColor = [ReactNativeLiquidGlassView colorFromString:fallbackColorString];
+    [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:fallbackColor];
   }
 
   // Store the new props
@@ -274,17 +274,18 @@ using namespace facebook::react;
 {
   [super finalizeUpdates:updateMask];
 
-  // Apply border radius from layout metrics to the inner glass view (Callstack pattern)
+  // Apply per-corner border radius from layout metrics to the inner glass view.
+  // Applied unconditionally (including 0) so animating a radius down to 0 or
+  // recycling a rounded view into an unrounded mount actually squares the
+  // corners instead of keeping the stale radius.
   if (@available(iOS 26.0, *)) {
     const auto &props = *std::static_pointer_cast<ReactNativeLiquidGlassViewProps const>(_props);
     const auto borderMetrics = props.resolveBorderMetrics(_layoutMetrics);
 
-    // Use topLeft.horizontal same as React Native RCTViewComponentView implementation
-    CGFloat radius = borderMetrics.borderRadii.topLeft.horizontal;
-
-    if (radius > 0) {
-      [_liquidGlassView setBorderRadius:radius];
-    }
+    [_liquidGlassView setBorderRadiiWithTopLeft:borderMetrics.borderRadii.topLeft.horizontal
+                                       topRight:borderMetrics.borderRadii.topRight.horizontal
+                                     bottomLeft:borderMetrics.borderRadii.bottomLeft.horizontal
+                                    bottomRight:borderMetrics.borderRadii.bottomRight.horizontal];
   }
 }
 
