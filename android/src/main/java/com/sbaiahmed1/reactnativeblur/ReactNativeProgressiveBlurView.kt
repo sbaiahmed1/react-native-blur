@@ -51,9 +51,10 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     private const val TAG = "ReactNativeProgressiveBlur"
     private const val MAX_BLUR_RADIUS = 100f
     private const val DEFAULT_BLUR_RADIUS = 10f
-    // See ReactNativeBlurView for the rationale behind these two values: fewer
-    // blur passes and a smaller capture bitmap both reduce per-frame CPU cost.
-    private const val DEFAULT_BLUR_ROUNDS = 3
+    // Kept at 5 to match the JS wrapper and codegen default (one source of
+    // truth); the wrapper always sends blurRounds so a lower internal default
+    // was never reachable. See ReactNativeBlurView for the downsample rationale.
+    private const val DEFAULT_BLUR_ROUNDS = 5
     private const val DEFAULT_DOWNSAMPLE_FACTOR = 8.0f
     private const val DEBUG = false
 
@@ -76,7 +77,8 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     }
 
     /**
-     * Maps blur amount (0-100) to Android blur radius (0-25).
+     * Maps blur amount (0-100) 1:1 to the QmBlurView blur radius, matching
+     * ReactNativeBlurView.
      */
     private fun mapBlurAmountToRadius(amount: Float): Float {
       if (amount.isNaN() || amount.isInfinite()) {
@@ -84,7 +86,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
         return DEFAULT_BLUR_RADIUS
       }
       val clampedAmount = amount.coerceIn(MIN_BLUR_AMOUNT, MAX_BLUR_AMOUNT)
-      return (clampedAmount / MAX_BLUR_RADIUS) * MAX_BLUR_RADIUS
+      return (clampedAmount / MAX_BLUR_AMOUNT) * MAX_BLUR_RADIUS
     }
   }
 

@@ -31,7 +31,11 @@ class ReactNativeBlurSwitch : BlurSwitchButtonView {
     private const val DEFAULT_HEIGHT_DP = 36f
     private const val MIN_BLUR_AMOUNT = 0f
     private const val MAX_BLUR_AMOUNT = 100f
-    private const val MAX_BLUR_RADIUS = 25f
+    // Kept equal to MAX_BLUR_AMOUNT so blurAmount maps 1:1 to the QmBlurView
+    // radius, matching ReactNativeBlurView and ReactNativeProgressiveBlurView.
+    // (The switch previously used 25f, making the same blurAmount render a
+    // weaker blur than the other components.)
+    private const val MAX_BLUR_RADIUS = 100f
     private const val DEBUG = false
 
     private fun logDebug(message: String) {
@@ -49,9 +53,10 @@ class ReactNativeBlurSwitch : BlurSwitchButtonView {
     }
 
     /**
-     * Maps blur amount (0-100) to blur radius (0-25).
+     * Maps blur amount (0-100) 1:1 to the QmBlurView blur radius, matching the
+     * other blur components.
      * @param amount The blur amount from 0-100
-     * @return The corresponding blur radius from 0-25
+     * @return The corresponding blur radius
      */
     private fun mapBlurAmountToRadius(amount: Float): Float {
       val clampedAmount = amount.coerceIn(MIN_BLUR_AMOUNT, MAX_BLUR_AMOUNT)

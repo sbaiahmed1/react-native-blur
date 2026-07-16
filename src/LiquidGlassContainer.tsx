@@ -54,3 +54,5 @@ export const LiquidGlassContainer: React.FC<LiquidGlassContainerProps> = ({
     </ReactNativeLiquidGlassContainer>
   );
 };
+
+export default LiquidGlassContainer;

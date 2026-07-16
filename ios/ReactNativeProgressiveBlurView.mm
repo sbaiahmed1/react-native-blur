@@ -150,7 +150,10 @@ using namespace facebook::react;
     // Set initial properties from default props
     [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withBlurAmount:pbvProps.blurAmount];
 
-    if (pbvProps.blurType != facebook::react::ReactNativeProgressiveBlurViewBlurType::Xlight) {
+    // This component's default blurType is Regular (not Xlight); compare
+    // against the correct default so the initial apply is skipped only when the
+    // value actually is the default.
+    if (pbvProps.blurType != facebook::react::ReactNativeProgressiveBlurViewBlurType::Regular) {
       NSString *blurTypeString = [[NSString alloc] initWithUTF8String:toString(pbvProps.blurType).c_str()];
       [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withBlurType:blurTypeString];
     }

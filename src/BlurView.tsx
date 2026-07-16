@@ -54,7 +54,7 @@ export interface BlurViewProps {
   style?: StyleProp<ViewStyle>;
 
   /**
-   * @description style object for the blur view
+   * @description Whether the blur view should ignore safe area insets
    *
    * @default true
    */
