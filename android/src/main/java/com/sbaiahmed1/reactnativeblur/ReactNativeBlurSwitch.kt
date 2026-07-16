@@ -92,17 +92,15 @@ class ReactNativeBlurSwitch : BlurSwitchButtonView {
   }
 
   /**
-   * Called when the view is detached from a window.
-   * Performs cleanup to prevent memory leaks.
-   */
-  override fun onDetachedFromWindow() {
-    super.onDetachedFromWindow()
-    cleanup()
-  }
-
-  /**
    * Cleanup method to reset state.
-   * Helps prevent memory leaks and ensures clean state.
+   *
+   * Only called from the view manager's onDropViewInstance, i.e. when React
+   * Native is truly done with this view. It must NOT run on a plain
+   * onDetachedFromWindow: react-native-screens detaches inactive screens and
+   * FlatList's removeClippedSubviews detaches off-screen cells, and the
+   * listeners are only wired in the constructor and createViewInstance. Tearing
+   * them down on detach left the switch permanently unable to report toggles
+   * after the user navigated away and back.
    */
   fun cleanup() {
     setOnCheckedChangeListener(null)

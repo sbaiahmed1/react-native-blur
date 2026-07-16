@@ -15,7 +15,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.view.View.MeasureSpec
 import com.qmdeve.blurview.widget.BlurView
-import kotlin.math.max
 
 /**
  * Android implementation of React Native ProgressiveBlurView component.
@@ -33,13 +32,17 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   // xfermode can stay set for the paint's whole lifetime.
   private val dstInXfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
 
+  // Raw blur amount (0-100) as received from JS. Kept separate from
+  // currentBlurRadius because the effective radius also depends on the current
+  // direction (center is scaled down), and direction can change after the
+  // amount is set, so the radius must be derivable at any time.
+  private var currentBlurAmount = DEFAULT_BLUR_RADIUS
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
   private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
   private var currentOverlayColor = Color.TRANSPARENT
   private var currentBlurType = "xlight"
   private var currentDirection = "topToBottom"
   private var currentStartOffset = 0.0f
-  private var hasExplicitBackground: Boolean = false
   private var isBlurInitialized: Boolean = false
   private var initRunnable: Runnable? = null
   private var swapRootRunnable: Runnable? = null
@@ -304,7 +307,12 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     try {
       val gradient = when (currentDirection) {
         "center" -> {
-          val startEdge = max(currentStartOffset, 0.01f)
+          // Clamp to [0.01, 0.3]: above 0.3 the derived stops
+          // (centerLow = 0.2 + startEdge, centerHigh = 0.8 - startEdge) cross
+          // over, producing a non-monotonic position array that LinearGradient
+          // renders undefined. At 0.3 they meet (0.5, 0.5), the tightest valid
+          // center band.
+          val startEdge = currentStartOffset.coerceIn(0.01f, 0.3f)
           val endEdge = 1f - startEdge
           val centerLow = 0.2f + startEdge
           val centerHigh = 0.8f - startEdge
@@ -410,7 +418,6 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    * Resets initialization state so blur is re-initialized on next attach.
    */
   fun cleanup() {
-    hasExplicitBackground = false
     isBlurInitialized = false
     initRunnable?.let { removeCallbacks(it) }
     initRunnable = null
@@ -443,13 +450,25 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    * @param amount The blur amount value (0-100), will be mapped to Android's 0-25 radius range
    */
   fun setBlurAmount(amount: Float) {
-    var radius = mapBlurAmountToRadius(amount)
+    currentBlurAmount = amount
+    applyBlurRadius()
+  }
+
+  /**
+   * Derives the effective blur radius from the raw amount and the current
+   * direction, then applies it. Called from both setBlurAmount and setDirection
+   * so the center-direction scale-down is applied regardless of the order in
+   * which those two props arrive (the JS wrapper emits blurAmount before
+   * direction, so applying the factor only inside setBlurAmount missed it).
+   */
+  private fun applyBlurRadius() {
+    var radius = mapBlurAmountToRadius(currentBlurAmount)
     if (currentDirection == "center") {
       // Center direction tends to look stronger; scale it down for parity with iOS
       radius *= 0.35f
     }
     currentBlurRadius = radius
-    logDebug("setBlurAmount: $amount -> $currentBlurRadius (direction=$currentDirection)")
+    logDebug("applyBlurRadius: amount=$currentBlurAmount -> $currentBlurRadius (direction=$currentDirection)")
 
     try {
       blurView?.setBlurRadius(currentBlurRadius)
@@ -494,6 +513,8 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     logDebug("setDirection: $direction -> $currentDirection")
 
     try {
+      // Recompute the radius: switching to/from center changes the scale factor.
+      applyBlurRadius()
       updateGradient()
     } catch (e: Exception) {
       logError("Failed to set gradient direction: ${e.message}", e)
