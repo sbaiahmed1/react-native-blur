@@ -57,7 +57,7 @@ export interface LiquidGlassViewProps {
   /**
    * @description Whether the glass view should ignore safe area insets
    *
-   * @default false
+   * @default true
    *
    * @platform iOS
    */

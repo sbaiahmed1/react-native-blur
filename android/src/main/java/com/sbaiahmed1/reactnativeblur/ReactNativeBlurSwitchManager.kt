@@ -1,17 +1,27 @@
 package com.sbaiahmed1.reactnativeblur
 
-import android.graphics.Color
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.common.MapBuilder
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
+import com.facebook.react.uimanager.ViewManagerDelegate
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.events.RCTEventEmitter
+import com.facebook.react.viewmanagers.ReactNativeBlurSwitchManagerInterface
+import com.facebook.react.viewmanagers.ReactNativeBlurSwitchManagerDelegate
 import androidx.core.graphics.toColorInt
 
 @ReactModule(name = ReactNativeBlurSwitchManager.NAME)
-class ReactNativeBlurSwitchManager : SimpleViewManager<ReactNativeBlurSwitch>() {
+class ReactNativeBlurSwitchManager : SimpleViewManager<ReactNativeBlurSwitch>(),
+  ReactNativeBlurSwitchManagerInterface<ReactNativeBlurSwitch> {
+
+  private val mDelegate: ViewManagerDelegate<ReactNativeBlurSwitch> =
+    ReactNativeBlurSwitchManagerDelegate(this)
+
+  override fun getDelegate(): ViewManagerDelegate<ReactNativeBlurSwitch> {
+    return mDelegate
+  }
 
   override fun getName(): String {
     return NAME
@@ -31,22 +41,22 @@ class ReactNativeBlurSwitchManager : SimpleViewManager<ReactNativeBlurSwitch>() 
   }
 
   @ReactProp(name = "value")
-  fun setValue(view: ReactNativeBlurSwitch?, value: Boolean) {
+  override fun setValue(view: ReactNativeBlurSwitch?, value: Boolean) {
     view?.setValue(value)
   }
 
-  @ReactProp(name = "blurAmount", defaultDouble = 10.0)
-  fun setBlurAmount(view: ReactNativeBlurSwitch?, blurAmount: Double) {
+  @ReactProp(name = "blurAmount")
+  override fun setBlurAmount(view: ReactNativeBlurSwitch?, blurAmount: Double) {
     view?.setBlurAmount(blurAmount.toFloat())
   }
 
   @ReactProp(name = "blurRounds")
-  fun setBlurRounds(view: ReactNativeBlurSwitch?, blurRounds: Int) {
+  override fun setBlurRounds(view: ReactNativeBlurSwitch?, blurRounds: Int) {
     view?.setRounds(blurRounds)
   }
 
   @ReactProp(name = "thumbColor")
-  fun setThumbColor(view: ReactNativeBlurSwitch?, color: String?) {
+  override fun setThumbColor(view: ReactNativeBlurSwitch?, color: String?) {
     color?.let {
       try {
         view?.setThumbColor(it.toColorInt())
@@ -57,7 +67,7 @@ class ReactNativeBlurSwitchManager : SimpleViewManager<ReactNativeBlurSwitch>() 
   }
 
   @ReactProp(name = "trackColorOff")
-  fun setTrackColorOff(view: ReactNativeBlurSwitch?, color: String?) {
+  override fun setTrackColorOff(view: ReactNativeBlurSwitch?, color: String?) {
     color?.let {
       try {
         view?.setTrackColorOff(it.toColorInt())
@@ -68,18 +78,18 @@ class ReactNativeBlurSwitchManager : SimpleViewManager<ReactNativeBlurSwitch>() 
   }
 
   @ReactProp(name = "trackColorOn")
-  fun setTrackColorOn(view: ReactNativeBlurSwitch?, color: String?) {
+  override fun setTrackColorOn(view: ReactNativeBlurSwitch?, color: String?) {
     color?.let {
-     try {
-       view?.setTrackColorOn(it.toColorInt())
-     } catch (e: Exception) {
-       android.util.Log.w("ReactNativeBlurSwitchManager", "Invalid trackColorOn: $color", e)
-     }
+      try {
+        view?.setTrackColorOn(it.toColorInt())
+      } catch (e: Exception) {
+        android.util.Log.w("ReactNativeBlurSwitchManager", "Invalid trackColorOn: $color", e)
+      }
     }
   }
 
   @ReactProp(name = "disabled")
-  fun setDisabled(view: ReactNativeBlurSwitch?, disabled: Boolean) {
+  override fun setDisabled(view: ReactNativeBlurSwitch?, disabled: Boolean) {
     view?.setDisabled(disabled)
   }
 
@@ -88,7 +98,7 @@ class ReactNativeBlurSwitchManager : SimpleViewManager<ReactNativeBlurSwitch>() 
    */
   override fun onDropViewInstance(view: ReactNativeBlurSwitch) {
     super.onDropViewInstance(view)
-    // Call cleanup to reset state and prevent white screen artifacts
+    // Reset state and drop listeners now that React Native is done with the view.
     view.cleanup()
   }
 
@@ -102,4 +112,3 @@ class ReactNativeBlurSwitchManager : SimpleViewManager<ReactNativeBlurSwitch>() 
     const val NAME = "ReactNativeBlurSwitch"
   }
 }
-
