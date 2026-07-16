@@ -5,7 +5,7 @@ import type {
   WithDefault,
 } from 'react-native/Libraries/Types/CodegenTypes';
 
-interface NativeProps extends ViewProps {
+export interface NativeProps extends ViewProps {
   spacing?: WithDefault<Double, 0>;
 }
 

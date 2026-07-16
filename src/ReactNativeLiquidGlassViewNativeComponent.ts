@@ -7,7 +7,7 @@ import type {
 
 export type GlassType = 'clear' | 'regular';
 
-interface NativeProps extends ViewProps {
+export interface NativeProps extends ViewProps {
   glassType?: WithDefault<GlassType, 'clear'>;
   glassTintColor?: WithDefault<string, 'clear'>;
   glassOpacity?: WithDefault<Double, 1.0>;

@@ -34,7 +34,7 @@ export type ProgressiveBlurDirection =
   | 'blurredBottomClearTop'
   | 'blurredCenterClearTopAndBottom';
 
-interface NativeProps extends ViewProps {
+export interface NativeProps extends ViewProps {
   blurAmount?: WithDefault<Double, 20.0>;
   blurType?: WithDefault<BlurType, 'regular'>;
   blurRounds?: WithDefault<Int32, 5>;

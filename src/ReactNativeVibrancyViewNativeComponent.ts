@@ -28,7 +28,7 @@ export type BlurType =
   | 'systemThickMaterialDark'
   | 'systemChromeMaterialDark';
 
-interface NativeProps extends ViewProps {
+export interface NativeProps extends ViewProps {
   blurAmount?: WithDefault<Double, 10.0>;
   blurType?: WithDefault<BlurType, 'xlight'>;
 }
