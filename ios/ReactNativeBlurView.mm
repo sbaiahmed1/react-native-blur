@@ -194,13 +194,13 @@ using namespace facebook::react;
     [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withBlurType:blurTypeString];
   }
 
-  // Update reducedTransparencyFallbackColor if it has changed
+  // Update reducedTransparencyFallbackColor if it has changed. Apply even when
+  // empty so clearing the prop resets rather than stranding the old colour
+  // (this conditional-skip was the recycling-staleness vector for this view).
   if (oldViewProps.reducedTransparencyFallbackColor != newViewProps.reducedTransparencyFallbackColor) {
-    if (!newViewProps.reducedTransparencyFallbackColor.empty()) {
-      NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:newViewProps.reducedTransparencyFallbackColor.c_str()];
-      UIColor *fallbackColor = [ReactNativeBlurView colorFromString:fallbackColorString];
-      [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withReducedTransparencyFallbackColor:fallbackColor];
-    }
+    NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:newViewProps.reducedTransparencyFallbackColor.c_str()];
+    UIColor *fallbackColor = [ReactNativeBlurView colorFromString:fallbackColorString];
+    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withReducedTransparencyFallbackColor:fallbackColor];
   }
 
   // Update ignoreSafeArea if it has changed
@@ -212,6 +212,30 @@ using namespace facebook::react;
   _props = props;
 
   [super updateProps:props oldProps:oldProps];
+}
+
+// Fabric recycles component views. Reset cached props and the inner view's
+// visual state to defaults so no blur amount/type/fallback/safe-area setting
+// leaks into the next mount.
+- (void)prepareForRecycle
+{
+  [super prepareForRecycle];
+
+  static const auto defaultProps = std::make_shared<const ReactNativeBlurViewProps>();
+  _props = defaultProps;
+
+  const auto &bvProps = *std::static_pointer_cast<const ReactNativeBlurViewProps>(defaultProps);
+
+  [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withBlurAmount:bvProps.blurAmount];
+
+  NSString *blurTypeString = [[NSString alloc] initWithUTF8String:toString(bvProps.blurType).c_str()];
+  [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withBlurType:blurTypeString];
+
+  NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:bvProps.reducedTransparencyFallbackColor.c_str()];
+  UIColor *fallbackColor = [ReactNativeBlurView colorFromString:fallbackColorString];
+  [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withReducedTransparencyFallbackColor:fallbackColor];
+
+  [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringSafeArea:bvProps.ignoreSafeArea];
 }
 
 - (void)layoutSubviews

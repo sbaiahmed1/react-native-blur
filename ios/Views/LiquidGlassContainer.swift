@@ -6,7 +6,7 @@ import UIKit
 @objc public class LiquidGlassContainer: UIVisualEffectView {
   @objc public var spacing: CGFloat = 0 {
     didSet {
-      if #available(iOS 26.0, *) {
+      if spacing != oldValue, #available(iOS 26.0, *) {
         setupView()
       }
     }
@@ -15,7 +15,13 @@ import UIKit
   public override func layoutSubviews() {
     super.layoutSubviews()
     if #available(iOS 26.0, *) {
-      setupView()
+      // Only (re)build the container effect when it is missing. UIKit can drop
+      // it across transitions/backgrounding, and a layout pass runs on window
+      // re-entry, so this self-heals. Rebuilding on every layout pass instead
+      // restarted the glass-merge animation each frame (perf churn).
+      if effect == nil {
+        setupView()
+      }
     }
   }
 

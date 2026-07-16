@@ -58,6 +58,11 @@ import UIKit
   private var foregroundObserver: NSObjectProtocol?
   private var reduceTransparencyObserver: NSObjectProtocol?
 
+  // While true, prop setters skip rebuilding the effect. The Fabric layer wraps
+  // a single updateProps commit in beginBatchUpdate/endBatchUpdate so several
+  // changed props rebuild the UIGlassEffect once instead of once per property.
+  private var isBatchingUpdates = false
+
   public override init(frame: CGRect) {
     super.init(frame: frame)
     setupView()
@@ -140,7 +145,20 @@ import UIKit
     updateBorderRadius()
   }
 
+  // MARK: - Batched prop updates
+
+  @objc public func beginBatchUpdate() {
+    isBatchingUpdates = true
+  }
+
+  @objc public func endBatchUpdate() {
+    isBatchingUpdates = false
+    updateEffect()
+  }
+
   private func updateEffect() {
+    if isBatchingUpdates { return }
+
     // Honor Reduce Transparency on every path, including the iOS 26 glass API,
     // which otherwise renders full glass and leaves reducedTransparencyFallbackColor
     // dead (the accessibility setting was never observed either).
@@ -184,6 +202,8 @@ import UIKit
   }
 
   private func updateFallback() {
+    if isBatchingUpdates { return }
+
     if UIAccessibility.isReduceTransparencyEnabled {
       backgroundColor = reducedTransparencyFallbackColor
       glassEffectView?.effect = nil
