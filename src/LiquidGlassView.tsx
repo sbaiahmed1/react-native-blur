@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef, memo, useMemo } from 'react';
 import { Platform } from 'react-native';
 import type { ViewStyle, StyleProp } from 'react-native';
 import ReactNativeLiquidGlassView, {
@@ -94,7 +94,7 @@ const MAX_FALLBACK_TINT_ALPHA = 0.35;
  * capped alpha so the fallback approximates glass rather than a solid fill.
  * Non-hex colours (named colours, rgb/rgba) are passed through unchanged.
  */
-function getFallbackOverlayColor(
+export function getFallbackOverlayColor(
   tint: string | undefined,
   opacity: number
 ): string | undefined {
@@ -171,53 +171,81 @@ function getFallbackOverlayColor(
  *
  * @platform ios
  */
-export const LiquidGlassView: React.FC<LiquidGlassViewProps> = ({
-  glassType = 'clear',
-  glassTintColor = 'clear',
-  glassOpacity = 1.0,
-  reducedTransparencyFallbackColor = '#FFFFFF',
-  isInteractive = true,
-  ignoreSafeArea = true,
-  style,
-  children,
-  ...props
-}) => {
-  const isIos = Platform.OS === 'ios';
+/**
+ * Ref to the underlying native liquid glass view. On the fallback path
+ * (Android or iOS < 26, which render a BlurView) the ref is not attached.
+ */
+export type LiquidGlassViewRef = React.ComponentRef<
+  typeof ReactNativeLiquidGlassView
+>;
 
-  // On Android and iOS < 26 the native glass API is unavailable, so we fall
-  // back to a strong, lightly-tinted blur that approximates liquid glass.
-  if (!isIos || (isIos && Number.parseInt(String(Platform.Version), 10) < 26)) {
+const LiquidGlassViewComponent = forwardRef<
+  LiquidGlassViewRef,
+  LiquidGlassViewProps
+>(
+  (
+    {
+      glassType = 'clear',
+      glassTintColor = 'clear',
+      glassOpacity = 1.0,
+      reducedTransparencyFallbackColor = '#FFFFFF',
+      isInteractive = true,
+      ignoreSafeArea = true,
+      style,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const isIos = Platform.OS === 'ios';
+    const fallbackOverlayColor = useMemo(
+      () => getFallbackOverlayColor(glassTintColor, glassOpacity),
+      [glassTintColor, glassOpacity]
+    );
+
+    // On Android and iOS < 26 the native glass API is unavailable, so we fall
+    // back to a strong, lightly-tinted blur that approximates liquid glass.
+    if (
+      !isIos ||
+      (isIos && Number.parseInt(String(Platform.Version), 10) < 26)
+    ) {
+      return (
+        <BlurView
+          // "regular" is a subtle (~14% white) overlay. The default "xlight" is
+          // ~55% opaque and would make the fallback look like a solid panel.
+          blurType="regular"
+          blurAmount={FALLBACK_BLUR_AMOUNT}
+          overlayColor={fallbackOverlayColor}
+          reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+          ignoreSafeArea={ignoreSafeArea}
+          style={style}
+        >
+          {children}
+        </BlurView>
+      );
+    }
+
+    // If children exist, use the absolute positioning pattern
     return (
-      <BlurView
-        // "regular" is a subtle (~14% white) overlay. The default "xlight" is
-        // ~55% opaque and would make the fallback look like a solid panel.
-        blurType="regular"
-        blurAmount={FALLBACK_BLUR_AMOUNT}
-        overlayColor={getFallbackOverlayColor(glassTintColor, glassOpacity)}
+      <ReactNativeLiquidGlassView
+        ref={ref}
+        glassType={glassType}
+        glassTintColor={glassTintColor}
+        glassOpacity={glassOpacity}
         reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+        isInteractive={isInteractive}
         ignoreSafeArea={ignoreSafeArea}
         style={style}
+        {...props}
       >
         {children}
-      </BlurView>
+      </ReactNativeLiquidGlassView>
     );
   }
+);
 
-  // If children exist, use the absolute positioning pattern
-  return (
-    <ReactNativeLiquidGlassView
-      glassType={glassType}
-      glassTintColor={glassTintColor}
-      glassOpacity={glassOpacity}
-      reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-      isInteractive={isInteractive}
-      ignoreSafeArea={ignoreSafeArea}
-      style={style}
-      {...props}
-    >
-      {children}
-    </ReactNativeLiquidGlassView>
-  );
-};
+LiquidGlassViewComponent.displayName = 'LiquidGlassView';
+
+export const LiquidGlassView = memo(LiquidGlassViewComponent);
 
 export default LiquidGlassView;

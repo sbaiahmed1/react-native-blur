@@ -1,4 +1,4 @@
-import React, { Children } from 'react';
+import React, { Children, forwardRef, memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
 import ReactNativeProgressiveBlurView, {
@@ -82,6 +82,11 @@ export interface ProgressiveBlurViewProps {
   children?: React.ReactNode;
 }
 
+/** Ref to the underlying native progressive blur view. */
+export type ProgressiveBlurViewRef = React.ComponentRef<
+  typeof ReactNativeProgressiveBlurView
+>;
+
 /**
  * A progressive blur view component that provides variable/gradient blur effects.
  *
@@ -94,6 +99,8 @@ export interface ProgressiveBlurViewProps {
  *
  * This component uses the same positioning pattern as BlurView where the blur
  * effect is positioned absolutely behind the content.
+ *
+ * A forwarded ref resolves to the underlying native progressive blur view.
  *
  * @example
  * ```tsx
@@ -108,69 +115,73 @@ export interface ProgressiveBlurViewProps {
  *   <Text>Content on top of progressive blur</Text>
  * </ProgressiveBlurView>
  * ```
- *
- * @example
- * ```tsx
- * // Blur that fades from bottom (blurred) to top (clear)
- * <ProgressiveBlurView
- *   blurType="dark"
- *   blurAmount={40}
- *   direction="blurredBottomClearTop"
- *   style={{ height: 200 }}
- * >
- *   <Text>Content visible at top, blurred at bottom</Text>
- * </ProgressiveBlurView>
- * ```
  */
-export const ProgressiveBlurView: React.FC<ProgressiveBlurViewProps> = ({
-  blurType = 'regular',
-  blurAmount = 20,
-  blurRounds = 5,
-  direction = 'blurredTopClearBottom',
-  startOffset = 0.0,
-  reducedTransparencyFallbackColor = '#FFFFFF',
-  overlayColor,
-  style,
-  children,
-  ...props
-}) => {
-  const overlay = { backgroundColor: overlayColor };
+const ProgressiveBlurViewComponent = forwardRef<
+  ProgressiveBlurViewRef,
+  ProgressiveBlurViewProps
+>(
+  (
+    {
+      blurType = 'regular',
+      blurAmount = 20,
+      blurRounds = 5,
+      direction = 'blurredTopClearBottom',
+      startOffset = 0.0,
+      reducedTransparencyFallbackColor = '#FFFFFF',
+      overlayColor,
+      style,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const overlay = useMemo(
+      () => ({ backgroundColor: overlayColor }),
+      [overlayColor]
+    );
 
-  // If no children, render the blur view directly (for background use)
-  if (!Children.count(children)) {
+    // If no children, render the blur view directly (for background use)
+    if (!Children.count(children)) {
+      return (
+        <ReactNativeProgressiveBlurView
+          ref={ref}
+          blurType={blurType}
+          blurAmount={blurAmount}
+          blurRounds={blurRounds}
+          direction={direction}
+          startOffset={startOffset}
+          reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+          style={[style, overlay]}
+          {...props}
+        />
+      );
+    }
+
+    // If children exist, use the absolute positioning pattern
     return (
-      <ReactNativeProgressiveBlurView
-        blurType={blurType}
-        blurAmount={blurAmount}
-        blurRounds={blurRounds}
-        direction={direction}
-        startOffset={startOffset}
-        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-        style={[style, overlay]}
-        {...props}
-      />
+      <View style={[styles.container, style, overlay]}>
+        {/* Blur effect positioned absolutely behind content */}
+        <ReactNativeProgressiveBlurView
+          ref={ref}
+          blurType={blurType}
+          blurAmount={blurAmount}
+          blurRounds={blurRounds}
+          direction={direction}
+          startOffset={startOffset}
+          reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+          style={StyleSheet.absoluteFill}
+          {...props}
+        />
+
+        {children}
+      </View>
     );
   }
+);
 
-  // If children exist, use the absolute positioning pattern
-  return (
-    <View style={[styles.container, style, overlay]}>
-      {/* Blur effect positioned absolutely behind content */}
-      <ReactNativeProgressiveBlurView
-        blurType={blurType}
-        blurAmount={blurAmount}
-        blurRounds={blurRounds}
-        direction={direction}
-        startOffset={startOffset}
-        reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-        style={StyleSheet.absoluteFill}
-        {...props}
-      />
+ProgressiveBlurViewComponent.displayName = 'ProgressiveBlurView';
 
-      {children}
-    </View>
-  );
-};
+export const ProgressiveBlurView = memo(ProgressiveBlurViewComponent);
 
 export default ProgressiveBlurView;
 

@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { Platform, StyleSheet, Switch } from 'react-native';
 import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
 import ReactNativeBlurSwitch from './ReactNativeBlurSwitchNativeComponent';
 
-const toColorString = (
+type NativeBlurSwitchProps = React.ComponentProps<typeof ReactNativeBlurSwitch>;
+
+export const toColorString = (
   color: ColorValue | undefined,
   fallback: string
 ): string => {
@@ -102,7 +104,7 @@ export interface BlurSwitchProps {
  * />
  * ```
  */
-export const BlurSwitch: React.FC<BlurSwitchProps> = ({
+const BlurSwitchComponent: React.FC<BlurSwitchProps> = ({
   value = false,
   blurAmount = 10,
   blurRounds = 5,
@@ -113,6 +115,15 @@ export const BlurSwitch: React.FC<BlurSwitchProps> = ({
   style,
   ...props
 }) => {
+  const handleNativeValueChange = useCallback<
+    NonNullable<NativeBlurSwitchProps['onValueChange']>
+  >(
+    (event) => {
+      onValueChange?.(event.nativeEvent.value);
+    },
+    [onValueChange]
+  );
+
   if (Platform.OS === 'ios') {
     return (
       <Switch
@@ -131,9 +142,7 @@ export const BlurSwitch: React.FC<BlurSwitchProps> = ({
     <ReactNativeBlurSwitch
       style={[styles.switch, style]}
       value={value}
-      onValueChange={(event) => {
-        onValueChange?.(event.nativeEvent.value);
-      }}
+      onValueChange={handleNativeValueChange}
       blurAmount={blurAmount}
       blurRounds={blurRounds}
       thumbColor={toColorString(thumbColor, '#FFFFFF')}
@@ -144,6 +153,10 @@ export const BlurSwitch: React.FC<BlurSwitchProps> = ({
     />
   );
 };
+
+BlurSwitchComponent.displayName = 'BlurSwitch';
+
+export const BlurSwitch = memo(BlurSwitchComponent);
 
 const styles = StyleSheet.create({
   switch: {
