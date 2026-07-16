@@ -90,7 +90,7 @@ import UIKit
     blurEffectView.effect = nil
     vibrancyEffectView.effect = nil
 
-    let style = styleFromString(blurType)
+    let style = blurStyleFromString(blurType)
     let blurEffect = UIBlurEffect(style: style)
     let vibrancyEffect = UIVibrancyEffect(blurEffect: blurEffect)
 
@@ -134,31 +134,4 @@ import UIKit
       NotificationCenter.default.removeObserver(foregroundObserver)
     }
   }
-
-    // Helper to parse string to UIBlurEffect.Style
-    private func styleFromString(_ style: String) -> UIBlurEffect.Style {
-        switch style {
-        case "xlight": return .extraLight
-        case "light": return .light
-        case "dark": return .dark
-        case "regular": return .regular
-        case "prominent": return .prominent
-        case "systemUltraThinMaterial": return .systemUltraThinMaterial
-        case "systemThinMaterial": return .systemThinMaterial
-        case "systemMaterial": return .systemMaterial
-        case "systemThickMaterial": return .systemThickMaterial
-        case "systemChromeMaterial": return .systemChromeMaterial
-        case "systemUltraThinMaterialLight": return .systemUltraThinMaterialLight
-        case "systemThinMaterialLight": return .systemThinMaterialLight
-        case "systemMaterialLight": return .systemMaterialLight
-        case "systemThickMaterialLight": return .systemThickMaterialLight
-        case "systemChromeMaterialLight": return .systemChromeMaterialLight
-        case "systemUltraThinMaterialDark": return .systemUltraThinMaterialDark
-        case "systemThinMaterialDark": return .systemThinMaterialDark
-        case "systemMaterialDark": return .systemMaterialDark
-        case "systemThickMaterialDark": return .systemThickMaterialDark
-        case "systemChromeMaterialDark": return .systemChromeMaterialDark
-        default: return .regular
-        }
-    }
 }

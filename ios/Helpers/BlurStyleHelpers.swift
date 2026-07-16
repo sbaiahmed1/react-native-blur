@@ -71,21 +71,6 @@ func interfaceStyleForBlurType(_ styleString: String) -> UIUserInterfaceStyle? {
   }
 }
 
-/// Maps string glass type names to Glass effect values (iOS 26.0+)
-#if compiler(>=6.2)
-@available(iOS 26.0, *)
-func glassEffectFromString(_ glassTypeString: String) -> UIGlassEffect.Style {
-  switch glassTypeString {
-  case "regular":
-    return .regular
-  case "clear":
-    return .clear
-  default:
-    return .clear
-  }
-}
-#endif
-
 // MARK: - Blur Amount Mapping
 
 /// Maps blur amount (0-100) to proper blur intensity using UIViewPropertyAnimator approach

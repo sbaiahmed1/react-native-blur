@@ -1,8 +1,8 @@
 #import <React/RCTViewComponentView.h>
 #import <UIKit/UIKit.h>
 
-#ifndef NativeComponentExampleComponentView_h
-#define NativeComponentExampleComponentView_h
+#ifndef ReactNativeProgressiveBlurView_h
+#define ReactNativeProgressiveBlurView_h
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -11,4 +11,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-#endif /* NativeComponentExampleComponentView_h */
+#endif /* ReactNativeProgressiveBlurView_h */

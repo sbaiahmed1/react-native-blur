@@ -57,9 +57,11 @@ A modern React Native library providing **six specialized components** for advan
 | ------------------------- | ----------------------------------------------------- |
 | **iOS**                   | iOS 13.0+                                             |
 | **Xcode**                 | min: Xcode 16; Xcode 26.0+ (for liquid glass support) |
-| **React Native**          | 0.68+ (New Architecture)                              |
+| **React Native**          | 0.76+ (New Architecture only)                         |
 | **Android**               | API 24+ (Android 7.0)                                 |
 | **Android Gradle Plugin** | 8.9.1+                                                |
+
+> ⚠️ **New Architecture required**: this library ships Fabric components only and does not support the legacy (Paper) architecture. Use React Native 0.76+ with the New Architecture enabled.
 
 > ⚠️ **Note**: LiquidGlassView requires Xcode 26.0+ and iOS 26+ for full glass effects. The component automatically falls back to enhanced blur on older versions.
 
@@ -626,7 +628,7 @@ All props are optional and have sensible defaults.
 | ---------------------------------- | ------------ | ----------- | ----------------------------------------------------------------------------- |
 | `blurType`                         | `BlurType`   | `'xlight'`  | The type of blur effect to apply                                              |
 | `blurAmount`                       | `number`     | `10.0`      | The intensity of the blur effect (0-100)                                      |
-| `blurRounds`                       | `number`     | `5`         | The number of blur interactions must be an integer value (1-15)               |
+| `blurRounds`                       | `number`     | `5`         | (Android only) The number of blur interactions must be an integer value (1-15)               |
 | `ignoreSafeArea`                   | `boolean`    | `true`      | (iOS only) Controls whether the blur effect should ignore all safe area edges |
 | `reducedTransparencyFallbackColor` | `string`     | `'#FFFFFF'` | Fallback color when reduced transparency is enabled                           |
 | `overlayColor`                     | `ColorValue` | `undefined` | The overlay color to apply on top of the blur effect                          |
@@ -652,7 +654,7 @@ All props are optional and have sensible defaults.
 | ---------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------- | --------------------------------------------------------------- |
 | `blurType`                         | `BlurType`                                                                               | `'regular'`               | The type of blur effect to apply                                |
 | `blurAmount`                       | `number`                                                                                 | `20.0`                    | Maximum blur radius in pixels                                   |
-| `blurRounds`                       | `number`                                                                                 | `5`                       | The number of blur interactions must be an integer value (1-15) |
+| `blurRounds`                       | `number`                                                                                 | `5`                       | (Android only) The number of blur interactions must be an integer value (1-15) |
 | `direction`                        | `'blurredTopClearBottom' \| 'blurredBottomClearTop' \| 'blurredCenterClearTopAndBottom'` | `'blurredTopClearBottom'` | Direction of the blur gradient                                  |
 | `startOffset`                      | `number`                                                                                 | `0.0`                     | Where the gradient starts (0.0 to 1.0)                          |
 | `reducedTransparencyFallbackColor` | `string`                                                                                 | `'#FFFFFF'`               | Fallback color when reduced transparency is enabled             |
@@ -699,7 +701,7 @@ All props are optional and have sensible defaults.
 | `value`         | `boolean`                                   | `false`                                 | The current value of the switch                                                                          |
 | `onValueChange` | `(value: boolean) => void`                  | `undefined`                             | Callback invoked when the switch value changes                                                           |
 | `blurAmount`    | `number`                                    | `10.0`                                  | (Android only) The intensity of the blur effect (0-100)                                                  |
-| `blurRounds`    | `number`                                    | `5`                                     | The number of blur interactions must be an integer value (1-15)                                          |
+| `blurRounds`    | `number`                                    | `5`                                     | (Android only) The number of blur interactions must be an integer value (1-15)                                          |
 | `thumbColor`    | `ColorValue`                                | `'#FFFFFF'`                             | (iOS only) The color of the switch thumb                                                                 |
 | `trackColor`    | `{ false?: ColorValue; true?: ColorValue }` | `{ false: '#E5E5EA', true: '#34C759' }` | Track colors. On Android, only `true` is used - QmBlurView auto-calculates on/off colors from base color |
 | `disabled`      | `boolean`                                   | `false`                                 | Whether the switch is disabled (prevents interaction but maintains current value)                        |

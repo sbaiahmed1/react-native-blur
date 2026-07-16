@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => min_ios_version_supported }
-  s.source       = { :git => "https://github.com/sbaiahmed1/sbaiahmed1-react-native-blur.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/sbaiahmed1/react-native-blur.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,cpp,swift}"
   s.swift_version = '5.0'

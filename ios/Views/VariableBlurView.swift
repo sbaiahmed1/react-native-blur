@@ -22,6 +22,19 @@ public enum VariableBlurDirection: String {
   }
 }
 
+/// Variable (gradient) blur backed by the private `CAFilter` `variableBlur`
+/// type, which UIKit does not expose publicly.
+///
+/// RISK: this depends on private Core Animation API. It is reached by
+/// class/selector name (assembled from reversed string literals) and applied
+/// with KVC, all guarded so that if the private class/keys are unavailable the
+/// view degrades gracefully to a uniform blur rather than crashing. Two things
+/// to keep in mind:
+///   - App Store review can flag private-API access; the string obfuscation
+///     evades static symbol scanning and is itself a review-policy risk.
+///   - A future OS release can rename the filter or reorder the effect view's
+///     backdrop subviews, silently dropping the gradient (again, no crash).
+/// If Apple ships a public variable-blur API, migrate to it and delete this.
 open class VariableBlurView: UIVisualEffectView {
 
   private var maxBlurRadius: CGFloat = 20
