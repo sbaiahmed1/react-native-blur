@@ -6,6 +6,8 @@ import UIKit
   private let vibrancyEffectView = UIVisualEffectView()
   private var blurAnimator: UIViewPropertyAnimator?
   private var foregroundObserver: NSObjectProtocol?
+  private var stabilizationDisplayLink: CADisplayLink?
+  private var stabilizationFramesRemaining = 0
 
   @objc public var blurType: String = "xlight" {
     didSet {
@@ -56,16 +58,18 @@ import UIKit
     blurEffectView.contentView.addSubview(vibrancyEffectView)
   }
 
-  // The vibrancy intensity is baked with a UIViewPropertyAnimator. UIKit resets
-  // the effect views' state across background/foreground cycles and can flush a
-  // baked animator during transitions, leaving the vibrancy at full intensity.
-  // Rebuild whenever the view (re-)enters a window and on foreground so the
-  // intensity is restored, matching BlurEffectView.
+  // Partial UIVisualEffectView intensity depends on a live property animator.
+  // UIKit can flush that animator during mounting, transitions, and
+  // background/foreground cycles, so rebuild it at each lifecycle boundary.
   public override func didMoveToWindow() {
     super.didMoveToWindow()
     if window != nil {
       updateEffect()
+      startStabilizationIfNeeded()
+      return
     }
+
+    stopStabilization()
   }
 
   private func registerForegroundObserver() {
@@ -82,10 +86,7 @@ import UIKit
     let interfaceStyle = interfaceStyleForBlurType(blurType) ?? .unspecified
     overrideUserInterfaceStyle = interfaceStyle
 
-    if let animator = blurAnimator {
-      finalizeAnimator(animator)
-    }
-    blurAnimator = nil
+    blurAnimator?.stopAnimation(true)
 
     blurEffectView.effect = nil
     vibrancyEffectView.effect = nil
@@ -94,42 +95,54 @@ import UIKit
     let blurEffect = UIBlurEffect(style: style)
     let vibrancyEffect = UIVibrancyEffect(blurEffect: blurEffect)
 
-    blurEffectView.effect = blurEffect
-    vibrancyEffectView.effect = vibrancyEffect
-
     let animator = UIViewPropertyAnimator(duration: 1, curve: .linear) { [weak self] in
-      self?.blurEffectView.effect = nil
-      self?.vibrancyEffectView.effect = nil
+      self?.blurEffectView.effect = blurEffect
+      self?.vibrancyEffectView.effect = vibrancyEffect
     }
     blurAnimator = animator
 
     let intensity = min(max(blurAmount / 100.0, 0.0), 1.0)
-    animator.fractionComplete = 1.0 - intensity
-
-    DispatchQueue.main.async { [weak self, weak animator] in
-      guard let self = self, let currentAnimator = animator, self.blurAnimator === currentAnimator else { return }
-      self.finalizeAnimator(currentAnimator)
-    }
+    animator.fractionComplete = intensity
   }
 
-  // Move the animator to .inactive without violating the UIViewPropertyAnimator
-  // state machine: stopAnimation(true) followed by finishAnimation(at:) throws,
-  // because finishAnimation is only valid on a stopped animator. Stop it if
-  // running, then finish it if stopped, so the effect is baked at its current
-  // fraction with no exception.
-  private func finalizeAnimator(_ animator: UIViewPropertyAnimator) {
-    if animator.state == .active {
-      animator.stopAnimation(false)
+  private func startStabilizationIfNeeded() {
+    stopStabilization()
+
+    guard window != nil else {
+      return
     }
-    if animator.state == .stopped {
-      animator.finishAnimation(at: .current)
+
+    stabilizationFramesRemaining = 3
+
+    let displayLink = CADisplayLink(target: self, selector: #selector(handleStabilizationTick))
+    displayLink.add(to: .main, forMode: .common)
+    stabilizationDisplayLink = displayLink
+  }
+
+  private func stopStabilization() {
+    stabilizationDisplayLink?.invalidate()
+    stabilizationDisplayLink = nil
+    stabilizationFramesRemaining = 0
+  }
+
+  @objc
+  private func handleStabilizationTick() {
+    guard window != nil, stabilizationFramesRemaining > 0 else {
+      stopStabilization()
+      return
+    }
+
+    updateEffect()
+    stabilizationFramesRemaining -= 1
+
+    if stabilizationFramesRemaining == 0 {
+      stopStabilization()
     }
   }
 
   deinit {
-    if let animator = blurAnimator {
-      finalizeAnimator(animator)
-    }
+    stopStabilization()
+    blurAnimator?.stopAnimation(true)
     if let foregroundObserver {
       NotificationCenter.default.removeObserver(foregroundObserver)
     }
