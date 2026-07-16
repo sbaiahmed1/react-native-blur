@@ -1,4 +1,4 @@
-import React, { Children } from 'react';
+import React, { Children, forwardRef, memo, useMemo } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
 import ReactNativeBlurView, {
@@ -68,6 +68,9 @@ export interface BlurViewProps {
   children?: React.ReactNode;
 }
 
+/** Ref to the underlying native blur view. */
+export type BlurViewRef = React.ComponentRef<typeof ReactNativeBlurView>;
+
 /**
  * A cross-platform blur view component that provides native blur effects.
  *
@@ -77,6 +80,8 @@ export interface BlurViewProps {
  * This component automatically handles the proper positioning pattern where the blur
  * effect is positioned absolutely behind the content, ensuring interactive elements
  * work correctly.
+ *
+ * A forwarded ref resolves to the underlying native blur view.
  *
  * @example
  * ```tsx
@@ -90,61 +95,89 @@ export interface BlurViewProps {
  * </BlurView>
  * ```
  */
-export const BlurView: React.FC<BlurViewProps> = ({
-  blurType = 'xlight',
-  blurAmount = 10,
-  blurRounds = 5,
-  reducedTransparencyFallbackColor = '#FFFFFF',
-  overlayColor,
-  style,
-  children,
-  ignoreSafeArea = true,
-  ...props
-}) => {
-  const overlay = { backgroundColor: overlayColor };
-  const commonProps: BlurViewProps = {
-    blurType,
-    blurAmount,
-    blurRounds,
-    ignoreSafeArea,
-    reducedTransparencyFallbackColor,
-  };
-
-  // If no children, render the blur view directly (for background use)
-  if (!Children.count(children)) {
-    return (
-      <ReactNativeBlurView
-        style={[style, overlay]}
-        {...commonProps}
-        {...props}
-      />
+const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
+  (
+    {
+      blurType = 'xlight',
+      blurAmount = 10,
+      blurRounds = 5,
+      reducedTransparencyFallbackColor = '#FFFFFF',
+      overlayColor,
+      style,
+      children,
+      ignoreSafeArea = true,
+      ...props
+    },
+    ref
+  ) => {
+    const overlay = useMemo(
+      () => ({ backgroundColor: overlayColor }),
+      [overlayColor]
     );
-  }
+    const commonProps = useMemo<BlurViewProps>(
+      () => ({
+        blurType,
+        blurAmount,
+        blurRounds,
+        ignoreSafeArea,
+        reducedTransparencyFallbackColor,
+      }),
+      [
+        blurType,
+        blurAmount,
+        blurRounds,
+        ignoreSafeArea,
+        reducedTransparencyFallbackColor,
+      ]
+    );
 
-  // If children exist, use the style default for Android
-  if (Platform.OS === 'android') {
+    // If no children, render the blur view directly (for background use)
+    if (!Children.count(children)) {
+      return (
+        <ReactNativeBlurView
+          ref={ref}
+          style={[style, overlay]}
+          {...commonProps}
+          {...props}
+        />
+      );
+    }
+
+    // If children exist, use the style default for Android
+    if (Platform.OS === 'android') {
+      return (
+        <ReactNativeBlurView
+          ref={ref}
+          style={style}
+          {...commonProps}
+          {...props}
+        >
+          <View style={[StyleSheet.absoluteFill, overlay]} />
+
+          {children}
+        </ReactNativeBlurView>
+      );
+    }
+
+    // If children exist, use the absolute positioning pattern for iOS and others
     return (
-      <ReactNativeBlurView style={style} {...commonProps} {...props}>
-        <View style={[StyleSheet.absoluteFill, overlay]} />
-
+      <View style={[styles.container, style, overlay]}>
+        {/* Blur effect positioned absolutely behind content */}
+        <ReactNativeBlurView
+          ref={ref}
+          style={StyleSheet.absoluteFill}
+          {...commonProps}
+          {...props}
+        />
         {children}
-      </ReactNativeBlurView>
+      </View>
     );
   }
+);
 
-  // If children exist, use the absolute positioning pattern for iOS and others
-  return (
-    <View style={[styles.container, style, overlay]}>
-      {/* Blur effect positioned absolutely behind content */}
-      <ReactNativeBlurView
-        style={StyleSheet.absoluteFill}
-        {...commonProps}
-        {...props}
-      />
-      {children}
-    </View>
-  );
-};
+BlurViewComponent.displayName = 'BlurView';
+
+export const BlurView = memo(BlurViewComponent);
 
 export default BlurView;
 

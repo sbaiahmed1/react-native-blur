@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef, memo } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 import type { ViewStyle, StyleProp } from 'react-native';
 import ReactNativeVibrancyView, {
@@ -42,36 +42,48 @@ export interface VibrancyViewProps {
  * On iOS, this uses UIVibrancyEffect.
  * On Android, this falls back to a simple View (or BlurView behavior if implemented).
  */
-export const VibrancyView: React.FC<VibrancyViewProps> = ({
-  blurType = 'xlight',
-  blurAmount = 10,
-  style,
-  children,
-  ...props
-}) => {
-  if (Platform.OS === 'android') {
+/**
+ * Ref to the underlying native vibrancy view. On Android (which falls back to
+ * BlurView) the ref is not attached.
+ */
+export type VibrancyViewRef = React.ComponentRef<
+  typeof ReactNativeVibrancyView
+>;
+
+const VibrancyViewComponent = forwardRef<VibrancyViewRef, VibrancyViewProps>(
+  (
+    { blurType = 'xlight', blurAmount = 10, style, children, ...props },
+    ref
+  ) => {
+    if (Platform.OS === 'android') {
+      return (
+        <BlurView
+          blurType={blurType}
+          blurAmount={blurAmount}
+          style={style}
+          {...props}
+        >
+          {children}
+        </BlurView>
+      );
+    }
     return (
-      <BlurView
+      <ReactNativeVibrancyView
+        ref={ref}
         blurType={blurType}
         blurAmount={blurAmount}
-        style={style}
+        style={[styles.container, style]}
         {...props}
       >
         {children}
-      </BlurView>
+      </ReactNativeVibrancyView>
     );
   }
-  return (
-    <ReactNativeVibrancyView
-      blurType={blurType}
-      blurAmount={blurAmount}
-      style={[styles.container, style]}
-      {...props}
-    >
-      {children}
-    </ReactNativeVibrancyView>
-  );
-};
+);
+
+VibrancyViewComponent.displayName = 'VibrancyView';
+
+export const VibrancyView = memo(VibrancyViewComponent);
 
 const styles = StyleSheet.create({
   container: {

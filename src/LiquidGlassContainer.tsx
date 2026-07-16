@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef, memo } from 'react';
 import { Platform, View, type ViewProps } from 'react-native';
 import ReactNativeLiquidGlassContainer from './ReactNativeLiquidGlassContainerNativeComponent';
 
@@ -30,12 +30,18 @@ export interface LiquidGlassContainerProps extends ViewProps {
  * </LiquidGlassContainer>
  * ```
  */
-export const LiquidGlassContainer: React.FC<LiquidGlassContainerProps> = ({
-  spacing = 0,
-  style,
-  children,
-  ...rest
-}) => {
+/**
+ * Ref to the underlying native glass container. On the fallback path
+ * (non-iOS or iOS < 26, which render a plain View) the ref is not attached.
+ */
+export type LiquidGlassContainerRef = React.ComponentRef<
+  typeof ReactNativeLiquidGlassContainer
+>;
+
+const LiquidGlassContainerComponent = forwardRef<
+  LiquidGlassContainerRef,
+  LiquidGlassContainerProps
+>(({ spacing = 0, style, children, ...rest }, ref) => {
   const isCompatibleIOS =
     Platform.OS === 'ios' && parseInt(Platform.Version as string, 10) >= 26;
 
@@ -49,10 +55,19 @@ export const LiquidGlassContainer: React.FC<LiquidGlassContainerProps> = ({
   }
 
   return (
-    <ReactNativeLiquidGlassContainer spacing={spacing} style={style} {...rest}>
+    <ReactNativeLiquidGlassContainer
+      ref={ref}
+      spacing={spacing}
+      style={style}
+      {...rest}
+    >
       {children}
     </ReactNativeLiquidGlassContainer>
   );
-};
+});
+
+LiquidGlassContainerComponent.displayName = 'LiquidGlassContainer';
+
+export const LiquidGlassContainer = memo(LiquidGlassContainerComponent);
 
 export default LiquidGlassContainer;
