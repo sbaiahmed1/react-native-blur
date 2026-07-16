@@ -105,8 +105,22 @@ class ReactNativeBlurView : BlurViewGroup {
 
     if (isBlurInitialized) return
 
-    swapBlurRootToScreenAncestor()
-    initializeBlur()
+    // Defer the root swap and blur init to the next frame rather than running
+    // them synchronously here. On a re-attach during navigation (react-native
+    // -screens detaches inactive screens), the parent chain up to the Screen
+    // ancestor and the QmBlurView library's own decor-view registration are
+    // not always settled at onAttachedToWindow time, so a synchronous swap
+    // could miss the Screen root and fall back to whole-screen blur. Posting
+    // lets both settle first, matching ReactNativeProgressiveBlurView. The
+    // runnable is tracked so cleanup() can cancel it if the view detaches
+    // again before it runs.
+    val runnable = Runnable {
+      initRunnable = null
+      swapBlurRootToScreenAncestor()
+      initializeBlur()
+    }
+    initRunnable = runnable
+    post(runnable)
   }
 
   private fun swapBlurRootToScreenAncestor() {
@@ -270,6 +284,7 @@ class ReactNativeBlurView : BlurViewGroup {
       } catch (e: Exception) {
         logWarning("Invalid color format for glass tint: $color")
         glassTintColor = Color.TRANSPARENT
+        updateGlassEffect()
       }
     } ?: run {
       glassTintColor = Color.TRANSPARENT
@@ -370,11 +385,14 @@ class ReactNativeBlurView : BlurViewGroup {
 
   private fun updateCornerRadius() {
     try {
+      // Unset per-corner radii use the sentinel -1f (see the field defaults), so
+      // test >= 0: an explicit 0 must override the base radius to square that
+      // corner, only a negative sentinel falls back to baseRadius.
       val baseRadius = convertDpToPx(borderRadius)
-      val topLeft = if (borderTopLeftRadius > 0) convertDpToPx(borderTopLeftRadius) else baseRadius
-      val topRight = if (borderTopRightRadius > 0) convertDpToPx(borderTopRightRadius) else baseRadius
-      val bottomLeft = if (borderBottomLeftRadius > 0) convertDpToPx(borderBottomLeftRadius) else baseRadius
-      val bottomRight = if (borderBottomRightRadius > 0) convertDpToPx(borderBottomRightRadius) else baseRadius
+      val topLeft = if (borderTopLeftRadius >= 0) convertDpToPx(borderTopLeftRadius) else baseRadius
+      val topRight = if (borderTopRightRadius >= 0) convertDpToPx(borderTopRightRadius) else baseRadius
+      val bottomLeft = if (borderBottomLeftRadius >= 0) convertDpToPx(borderBottomLeftRadius) else baseRadius
+      val bottomRight = if (borderBottomRightRadius >= 0) convertDpToPx(borderBottomRightRadius) else baseRadius
 
       super.setTopLeftCornerRadius(topLeft)
       super.setTopRightCornerRadius(topRight)

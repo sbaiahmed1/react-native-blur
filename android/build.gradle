@@ -32,6 +32,9 @@ android {
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
+    // Ship keep rules into the AAR so a consumer app's R8 does not strip the
+    // QmBlurView fields we access by reflection (see consumer-rules.pro).
+    consumerProguardFiles "consumer-rules.pro"
   }
 
   buildFeatures {
