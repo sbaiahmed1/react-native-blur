@@ -153,6 +153,9 @@ using namespace facebook::react;
 
     _liquidGlassView = [ReactNativeLiquidGlassViewHelper createLiquidGlassViewWithFrame:frame];
 
+    // Coalesce the initial prop setters into a single effect rebuild.
+    [_liquidGlassView beginBatchUpdate];
+
     // Set initial glassTintColor from default props
     NSString *defaultGlassTintColorString = [[NSString alloc] initWithUTF8String:lgProps.glassTintColor.c_str()];
     UIColor *defaultGlassTintColor = [ReactNativeLiquidGlassView colorFromString:defaultGlassTintColorString];
@@ -180,6 +183,8 @@ using namespace facebook::react;
       [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:fallbackColor];
     }
 
+    [_liquidGlassView endBatchUpdate];
+
     [self addSubview:_liquidGlassView];
   }
   return self;
@@ -189,6 +194,9 @@ using namespace facebook::react;
 {
   const auto &oldViewProps = *std::static_pointer_cast<ReactNativeLiquidGlassViewProps const>(_props);
   const auto &newViewProps = *std::static_pointer_cast<ReactNativeLiquidGlassViewProps const>(props);
+
+  // Coalesce the individual prop setters below into a single effect rebuild.
+  [_liquidGlassView beginBatchUpdate];
 
   // Update glassTintColor if it has changed. Apply even for an empty string:
   // colorFromString maps "" to clear, and the view treats a zero-alpha tint as
@@ -231,6 +239,9 @@ using namespace facebook::react;
     UIColor *fallbackColor = [ReactNativeLiquidGlassView colorFromString:fallbackColorString];
     [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:fallbackColor];
   }
+
+  // Apply all of the above in one effect rebuild.
+  [_liquidGlassView endBatchUpdate];
 
   // Store the new props
   _props = props;

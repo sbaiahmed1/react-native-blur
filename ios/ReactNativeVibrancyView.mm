@@ -67,6 +67,21 @@ using namespace facebook::react;
   [super updateProps:props oldProps:oldProps];
 }
 
+// Fabric recycles component views. Reset cached props and the inner view's
+// visual state to defaults so no blur type/amount leaks into the next mount.
+- (void)prepareForRecycle
+{
+  [super prepareForRecycle];
+
+  static const auto defaultProps = std::make_shared<const ReactNativeVibrancyViewProps>();
+  _props = defaultProps;
+
+  const auto &props = *std::static_pointer_cast<const ReactNativeVibrancyViewProps>(defaultProps);
+  NSString *blurType = [[NSString alloc] initWithUTF8String:toString(props.blurType).c_str()];
+  [ReactNativeVibrancyViewHelper updateVibrancyView:_vibrancyView withBlurType:blurType];
+  [ReactNativeVibrancyViewHelper updateVibrancyView:_vibrancyView withBlurAmount:props.blurAmount];
+}
+
 - (void)layoutSubviews
 {
   [super layoutSubviews];
@@ -82,6 +97,12 @@ using namespace facebook::react;
 - (void)unmountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
 {
     [childComponentView removeFromSuperview];
+}
+
+- (void)dealloc
+{
+  [_vibrancyView removeFromSuperview];
+  _vibrancyView = nil;
 }
 
 @end
