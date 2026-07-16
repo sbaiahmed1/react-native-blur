@@ -10,9 +10,11 @@ order: 1
 | --- | --- |
 | iOS | 13.0+ |
 | Xcode | 16 minimum; 26.0+ for liquid glass support |
-| React Native | 0.68+ (New Architecture / Fabric) |
+| React Native | 0.76+ (New Architecture required) |
 | Android | API 24+ (Android 7.0) |
 | Android Gradle Plugin | 8.9.1+ |
+
+> This library ships Fabric components only and does not support the legacy (Paper) architecture. Use React Native 0.76+ with the New Architecture enabled.
 
 `LiquidGlassView` and `LiquidGlassContainer` need Xcode 26.0+ and iOS 26+ for the full glass effect — on older iOS versions and on Android, they automatically fall back to an enhanced blur approximation.
 
@@ -45,13 +47,9 @@ Check `android/build.gradle` if you hit a build error related to AGP:
 classpath "com.android.tools.build:gradle:8.9.1" // or higher
 ```
 
-The library depends on [QmBlurView](https://github.com/QmDeve/QmBlurView) from Maven Central (`com.qmdeve.blurview:core:1.1.4`), pulled in automatically — no manual Gradle dependency setup needed.
+The library depends on [QmBlurView](https://github.com/QmDeve/QmBlurView) (`com.github.qmdeve:qmblurview:v1.1.5`, resolved from JitPack), pulled in automatically — no manual Gradle dependency setup needed.
 
-Under the hood, Android blur support is version-aware:
-
-- **Android 12+** — uses `RenderEffectBlur`
-- **Android 10–11** — falls back to `RenderScriptBlur`
-- **Older versions** — lightweight translucent overlay fallback
+Under the hood, Android blur is produced by capturing the view into a downsampled bitmap and applying a native blur pass. Downsampling (and the configurable `blurRounds`) keeps it fast across all supported API levels (24+).
 
 ## Next steps
 

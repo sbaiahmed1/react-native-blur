@@ -4,6 +4,34 @@ description: Upgrading from v3.x, and migrating from @react-native-community/blu
 order: 9
 ---
 
+## Breaking changes in v5.0.0
+
+### New Architecture is now required
+
+The library ships **Fabric components only** and no longer includes the legacy (Paper) view managers. You must be on **React Native 0.76+ with the New Architecture enabled**. `peerDependencies` now require `react-native >= 0.76.0` and `react >= 18.2.0` (previously unpinned).
+
+There is no code change to make in your app beyond being on a supported New Architecture setup — if you were already on it (which prior versions effectively required), nothing else changes.
+
+### Raw native components are deprecated
+
+The raw `ReactNative*` codegen components (`ReactNativeBlurView`, `ReactNativeLiquidGlassView`, and friends) are still exported but now marked `@deprecated` and will be **removed in a future major**. Always use the wrapper components (`BlurView`, `LiquidGlassView`, …), which handle platform fallbacks, defaults and refs:
+
+```tsx
+// Deprecated — do not import the raw native component
+import { ReactNativeBlurView } from '@sbaiahmed1/react-native-blur';
+
+// Use the wrapper instead
+import { BlurView } from '@sbaiahmed1/react-native-blur';
+```
+
+### Android BlurSwitch blur strength
+
+On Android, `BlurSwitch` now maps `blurAmount` to the same strength as `BlurView` and `ProgressiveBlurView` (previously it rendered a weaker blur for the same value). If you tuned `blurAmount` on a `BlurSwitch` for a specific look, re-check it.
+
+### New: ref forwarding
+
+Not breaking, but new in v5: `BlurView`, `ProgressiveBlurView`, `VibrancyView`, `LiquidGlassView` and `LiquidGlassContainer` now forward a `ref` to their underlying native view (on the primary platform path).
+
 ## Breaking changes in v4.0.0
 
 Version 3.x had a single `BlurView` component with a `type` prop that switched between blur and liquid glass modes:

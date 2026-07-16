@@ -95,6 +95,19 @@ We use [TypeScript](https://www.typescriptlang.org/) for type checking, [ESLint]
 
 Our pre-commit hooks verify that the linter and tests pass when committing.
 
+### Documentation
+
+The documentation site lives in [`website/`](./website) (an Astro project) and is the source of truth for the docs — the root `README.md` is intentionally short and links to it.
+
+**When you change the public API — add or rename a prop, change a default, add or remove a component, change platform support or requirements, or make a breaking change — update the website in the same pull request.** In particular:
+
+- Prop tables are data-driven from `website/src/content/props-data/*.ts` — edit the relevant file.
+- Component guides and the props reference live in `website/src/content/docs/*.mdx`.
+- Requirements / setup changes go in `website/src/content/docs/installation.mdx`.
+- Breaking changes go in `website/src/content/docs/migration.mdx`.
+
+Run `cd website && yarn build` to confirm the site still builds (the website is a standalone package, not part of the root Yarn workspace).
+
 ### Publishing to npm
 
 We use [release-it](https://github.com/release-it/release-it) to make it easier to publish new versions. It handles common tasks like bumping version based on semver, creating tags and releases etc.
@@ -125,6 +138,7 @@ When you're sending a pull request:
 
 - Prefer small pull requests focused on one change.
 - Verify that linters and tests are passing.
+- If you changed the public API, update the `website/` docs in the same PR (see [Documentation](#documentation)).
 - Review the documentation to make sure it looks good.
 - Follow the pull request template when opening a pull request.
 - For pull requests that change the API or implementation, discuss with maintainers first by opening an issue.
