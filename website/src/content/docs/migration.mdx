@@ -8,7 +8,7 @@ order: 9
 
 ### New Architecture is now required
 
-The library ships **Fabric components only** and no longer includes the legacy (Paper) view managers. You must be on **React Native 0.80+ with the New Architecture enabled**. `peerDependencies` now require `react-native >= 0.80.0` and `react >= 18.2.0` (previously unpinned). The 0.80 floor comes from the codegen specs importing `codegenNativeComponent` from the `react-native` root (the deep `react-native/Libraries/...` import paths are deprecated), which older versions don't export.
+The library ships **Fabric components only** and no longer includes the legacy (Paper) view managers. You must be on **React Native 0.80+ with the New Architecture enabled**. `peerDependencies` now require `react-native >= 0.80.0` and `react >= 18.2.0`. The 0.80 floor comes from the codegen specs importing `codegenNativeComponent` from the `react-native` root (the deep `react-native/Libraries/...` import paths are deprecated), which older versions don't export.
 
 There is no code change to make in your app beyond being on a supported New Architecture setup — if you were already on it (which prior versions effectively required), nothing else changes.
 
