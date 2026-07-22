@@ -16,7 +16,7 @@ import { glassTypeValues } from '../props-data/enums';
 ## Platform fallback behavior
 
 - **iOS 26+**: native `UIGlassEffect`, hardware-accelerated, with optional touch interactivity via `isInteractive`.
-- **iOS below 26, and Android**: automatically falls back to `BlurView` with `blurType="regular"`, `blurAmount={70}`, and a tinted `overlayColor` computed from `glassTintColor`/`glassOpacity` (capped at 35% alpha) — a deliberately engineered approximation of the glass look, not a generic blur.
+- **iOS below 26, Android, and Web**: automatically falls back to `BlurView` with `blurType="regular"`, `blurAmount={70}`, and a tinted `overlayColor` computed from `glassTintColor`/`glassOpacity` (capped at 35% alpha) — a deliberately engineered approximation of the glass look, not a generic blur. On web this renders with CSS `backdrop-filter`; `glassType` and `isInteractive` are no-ops there.
 - When "Reduce Transparency" is enabled on iOS 26+, the glass effect is hidden and a solid `reducedTransparencyFallbackColor` view is shown instead.
 
 > **Note:** the component's actual runtime default for `ignoreSafeArea` is `true`. (An earlier version of the inline type documentation stated `false` — the table below reflects the real behavior.)

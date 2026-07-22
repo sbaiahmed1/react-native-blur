@@ -9,7 +9,7 @@ badge: iOS 26+
 import PropsTable from '../../components/PropsTable.astro';
 import { liquidGlassContainerProps } from '../props-data/liquid-glass-container';
 
-`LiquidGlassContainer` wraps iOS 26+'s `UIGlassContainerEffect`, grouping multiple `LiquidGlassView` children together with configurable spacing between them. On Android and iOS versions below 26, it falls back to a plain `View`.
+`LiquidGlassContainer` wraps iOS 26+'s `UIGlassContainerEffect`, grouping multiple `LiquidGlassView` children together with configurable spacing between them. On Android, Web, and iOS versions below 26, it falls back to a plain `View` (`spacing` has no effect there).
 
 ## Basic usage
 

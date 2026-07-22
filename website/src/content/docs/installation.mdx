@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Requirements and setup steps for @sbaiahmed1/react-native-blur on iOS and Android.
+description: Requirements and setup steps for @sbaiahmed1/react-native-blur on iOS, Android, and Web.
 order: 1
 ---
 
@@ -13,6 +13,7 @@ order: 1
 | React Native | 0.76+ (New Architecture required) |
 | Android | API 24+ (Android 7.0) |
 | Android Gradle Plugin | 8.9.1+ |
+| Web | react-native-web (any modern browser; blur needs `backdrop-filter` support) |
 
 > This library ships Fabric components only and does not support the legacy (Paper) architecture. Use React Native 0.76+ with the New Architecture enabled.
 
@@ -50,6 +51,14 @@ classpath "com.android.tools.build:gradle:8.9.1" // or higher
 The library depends on [QmBlurView](https://github.com/QmDeve/QmBlurView) (`com.github.qmdeve:qmblurview:v1.1.5`, resolved from JitPack), pulled in automatically — no manual Gradle dependency setup needed.
 
 Under the hood, Android blur is produced by capturing the view into a downsampled bitmap and applying a native blur pass. Downsampling (and the configurable `blurRounds`) keeps it fast across all supported API levels (24+).
+
+## Web setup
+
+No configuration is needed: in an Expo Web or react-native-web project (Metro, webpack, or Vite), the package automatically resolves its web implementations, which render the effects with CSS `backdrop-filter`.
+
+- **Browser support:** `backdrop-filter` is available in Chrome 76+, Edge 79+, Safari 9+ (via `-webkit-`), and Firefox 103+ — ~97% of global usage. In browsers without it (and while server-side rendering), components gracefully degrade to their semi-transparent tint without blur.
+- **Server-side rendering:** fully supported, including Expo Router static output (`web.output: "static"`).
+- Native-only props (`blurRounds`, `reducedTransparencyFallbackColor`, `ignoreSafeArea`, `isInteractive`, `spacing`) are accepted and ignored on web; each component's page lists its web behavior.
 
 ## Next steps
 

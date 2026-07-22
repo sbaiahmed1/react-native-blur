@@ -1,8 +1,8 @@
 ---
 title: ProgressiveBlurView
-description: Smooth, variable/gradient blur transitions on both iOS and Android.
+description: Smooth, variable/gradient blur transitions on iOS, Android, and Web.
 order: 6
-platforms: [ios, android]
+platforms: [ios, android, web]
 ---
 
 import PropsTable from '../../components/PropsTable.astro';
@@ -10,12 +10,13 @@ import DemoVideo from '../../components/DemoVideo.astro';
 import { progressiveBlurViewProps } from '../props-data/progressive-blur-view';
 import { progressiveBlurDirectionValues } from '../props-data/enums';
 
-`ProgressiveBlurView` renders a variable/gradient blur that transitions smoothly instead of applying a uniform blur intensity. It works on **both iOS and Android**, though the underlying implementations differ:
+`ProgressiveBlurView` renders a variable/gradient blur that transitions smoothly instead of applying a uniform blur intensity. It works on **iOS, Android, and Web**, though the underlying implementations differ:
 
 - **iOS**: private Core Animation filters for true variable blur.
 - **Android**: extends QmBlurView's `BlurView` with custom gradient masking.
+- **Web**: stacks several CSS `backdrop-filter` layers with gradient masks, halving the radius per layer — a genuine blur-radius ramp (from `blurAmount` px down to sharp), not a single blur fading in opacity.
 
-Progressive blur `startOffset` behaves slightly differently between the two platforms — test both when tuning a design.
+Progressive blur `startOffset` behaves slightly differently between platforms — test each when tuning a design. On web, `blurAmount` is the maximum radius in px (matching native), and browsers without `backdrop-filter` fall back to the directional tint gradient alone.
 
 ## Basic usage
 

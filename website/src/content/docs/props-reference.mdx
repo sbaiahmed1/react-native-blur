@@ -15,7 +15,7 @@ import { blurTypeValues, glassTypeValues, progressiveBlurDirectionValues } from 
 
 A single scannable page listing every component's props side by side. For usage examples and platform-specific notes, see each component's own page.
 
-> **Refs:** the five view components (`BlurView`, `ProgressiveBlurView`, `VibrancyView`, `LiquidGlassView`, `LiquidGlassContainer`) forward a `ref` to their underlying native view on the primary platform path.
+> **Refs:** the five view components (`BlurView`, `ProgressiveBlurView`, `VibrancyView`, `LiquidGlassView`, `LiquidGlassContainer`) forward a `ref` to their underlying native view on the primary platform path. On web, refs resolve to the root `View` (a DOM element).
 >
 > **Deprecated:** the raw `ReactNative*` native components are deprecated and will be removed in a future major — use the wrappers documented here. See [Migration](/react-native-blur/docs/migration).
 
