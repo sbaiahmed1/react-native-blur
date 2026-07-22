@@ -1,6 +1,6 @@
 # @sbaiahmed1/react-native-blur
 
-Native blur, vibrancy, and iOS 26 liquid-glass effects for React Native. Six focused components: `BlurView`, `ProgressiveBlurView`, `VibrancyView`, `LiquidGlassView`, `LiquidGlassContainer`, and `BlurSwitch`. Built for the New Architecture (Fabric).
+Native blur, vibrancy, and iOS 26 liquid-glass effects for React Native — on iOS, Android, and Web. Six focused components: `BlurView`, `ProgressiveBlurView`, `VibrancyView`, `LiquidGlassView`, `LiquidGlassContainer`, and `BlurSwitch`. Built for the New Architecture (Fabric).
 
 <div align="center">
   <p>
@@ -42,7 +42,8 @@ Full documentation, guides, and the complete API reference live on the docs site
 
 - Six focused components for blur, vibrancy, progressive/gradient blur, iOS 26 liquid glass, and a blurred switch.
 - True native effects: `UIVisualEffectView` / `UIGlassEffect` on iOS, hardware-accelerated blur on Android.
-- iOS 26 liquid glass with automatic fallback to an enhanced blur on older iOS and Android.
+- Web support out of the box (Expo Web / react-native-web) via CSS `backdrop-filter`, including a real progressive-blur ramp.
+- iOS 26 liquid glass with automatic fallback to an enhanced blur on older iOS, Android, and Web.
 - New Architecture (Fabric) components with full TypeScript types.
 
 ## Requirements
@@ -52,6 +53,7 @@ Full documentation, guides, and the complete API reference live on the docs site
 | iOS | 13.0+ (Xcode 16; 26.0+ for liquid glass) |
 | React Native | 0.76+ (New Architecture required) |
 | Android | API 24+, AGP 8.9.1+ |
+| Web | react-native-web (blur needs [`backdrop-filter`](https://caniuse.com/css-backdrop-filter)) |
 
 ## Installation
 

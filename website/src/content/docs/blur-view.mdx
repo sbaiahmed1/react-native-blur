@@ -1,14 +1,14 @@
 ---
 title: BlurView
-description: Native blur effects for iOS and Android with precise intensity control.
+description: Native blur effects for iOS, Android, and Web with precise intensity control.
 order: 2
-platforms: [ios, android]
+platforms: [ios, android, web]
 ---
 
 import PropsTable from '../../components/PropsTable.astro';
 import { blurViewProps } from '../props-data/blur-view';
 
-`BlurView` is the standard, cross-platform blur component. On iOS it uses `UIVisualEffectView` through a SwiftUI implementation; on Android it uses [QmBlurView](https://github.com/QmDeve/QmBlurView) for hardware-accelerated blur, with a lightweight overlay fallback on limited devices.
+`BlurView` is the standard, cross-platform blur component. On iOS it uses `UIVisualEffectView` through a SwiftUI implementation; on Android it uses [QmBlurView](https://github.com/QmDeve/QmBlurView) for hardware-accelerated blur, with a lightweight overlay fallback on limited devices; on Web it uses CSS `backdrop-filter`.
 
 ## Basic usage
 
@@ -48,6 +48,15 @@ import { BlurView } from '@sbaiahmed1/react-native-blur';
   <img src="/react-native-blur/media/videos/ios-demo.gif" alt="BlurView demo on iOS" loading="lazy" class="w-full rounded-[0.9rem]" />
   <figcaption class="px-2 pb-1 pt-3 text-center text-sm text-white/60">BlurView on iOS</figcaption>
 </figure>
+
+## Web behavior
+
+On react-native-web, `BlurView` renders a `backdrop-filter: blur() saturate(180%)` layer plus a semi-transparent background tint derived from `blurType` (all 21 values are mapped to matching light/dark overlays). `blurAmount` (0-100) scales to the CSS blur radius, and children render above the blur, sharp — the same layering as native.
+
+- `overlayColor` paints above the blur, below children, like on native.
+- In browsers without `backdrop-filter` (and during server-side rendering), only the tint remains — the same graceful degradation `expo-blur` uses.
+- `blurRounds`, `reducedTransparencyFallbackColor`, and `ignoreSafeArea` are native-only no-ops.
+- A forwarded `ref` resolves to the root `View` (a DOM element) instead of a native view.
 
 ## Props
 

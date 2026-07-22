@@ -2,7 +2,7 @@
 title: BlurSwitch
 description: A switch button with a blurred track on Android.
 order: 7
-platforms: [ios, android]
+platforms: [ios, android, web]
 ---
 
 import PropsTable from '../../components/PropsTable.astro';
@@ -11,7 +11,7 @@ import { blurSwitchProps } from '../props-data/blur-switch';
 `BlurSwitch` renders a toggle switch. Its behavior differs meaningfully by platform:
 
 - **Android**: uses QmBlurView's `BlurSwitchButtonView` — the track itself is genuinely blurred, and colors are auto-calculated from a single base color.
-- **iOS**: renders React Native's built-in `Switch` component unmodified. There is no blur on iOS — `BlurSwitch` exists mainly for cross-platform API convenience, and `thumbColor`/`trackColor.false` only take effect there.
+- **iOS and Web**: renders React Native's built-in `Switch` component unmodified. There is no blur on these platforms — `BlurSwitch` exists mainly for cross-platform API convenience, and `thumbColor`/`trackColor.false` only take effect there.
 
 ## Basic usage
 
@@ -44,7 +44,7 @@ function BlurSwitchExample() {
 />
 ```
 
-> On Android, only set the base `trackColor.true` — QmBlurView automatically derives the off-state shade from it. `thumbColor` and `trackColor.false` are iOS-only.
+> On Android, only set the base `trackColor.true` — QmBlurView automatically derives the off-state shade from it. `thumbColor` and `trackColor.false` only take effect on iOS and Web.
 
 ## Disabled state
 

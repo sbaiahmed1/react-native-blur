@@ -8,7 +8,7 @@ const docs = defineCollection({
     title: z.string(),
     description: z.string(),
     order: z.number(),
-    platforms: z.array(z.enum(['ios', 'android'])).optional(),
+    platforms: z.array(z.enum(['ios', 'android', 'web'])).optional(),
     badge: z.string().optional(),
   }),
 });

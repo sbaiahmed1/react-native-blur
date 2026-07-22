@@ -26,7 +26,7 @@ export const blurSwitchProps: PropRow[] = [
     name: 'thumbColor',
     type: 'ColorValue',
     default: "'#FFFFFF'",
-    platform: 'iOS',
+    platform: 'iOS, Web',
     description: 'The color of the switch thumb.',
   },
   {
