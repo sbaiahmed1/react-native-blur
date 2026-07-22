@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   Text,
   StyleSheet,
   ImageBackground,
+  Modal,
+  Platform,
   ScrollView,
   Pressable,
   TouchableWithoutFeedback,
@@ -11,6 +13,32 @@ import {
 import { FullWindowOverlay } from 'react-native-screens';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { DEMO_IMAGES } from '@/constants/blur';
+
+// FullWindowOverlay is iOS-only (react-native-screens renders an unstyled View
+// elsewhere), so other platforms get the same full-window layer from a
+// transparent Modal covering the system bars.
+function ModalOverlay({
+  children,
+  onRequestClose,
+}: {
+  children: ReactNode;
+  onRequestClose: () => void;
+}) {
+  if (Platform.OS === 'ios') {
+    return <FullWindowOverlay>{children}</FullWindowOverlay>;
+  }
+  return (
+    <Modal
+      visible
+      transparent
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={onRequestClose}
+    >
+      {children}
+    </Modal>
+  );
+}
 
 export default function HomeScreen() {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
@@ -66,7 +94,7 @@ export default function HomeScreen() {
       </ScrollView>
 
       {isModalVisible && (
-        <FullWindowOverlay>
+        <ModalOverlay onRequestClose={() => setIsModalVisible(false)}>
           <TouchableWithoutFeedback onPress={() => setIsModalVisible(false)}>
             <BlurView
               ignoreSafeArea
@@ -80,7 +108,7 @@ export default function HomeScreen() {
               <Text>Hello this is a centred text in a modal</Text>
             </View>
           </View>
-        </FullWindowOverlay>
+        </ModalOverlay>
       )}
     </ImageBackground>
   );
