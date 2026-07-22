@@ -1,10 +1,5 @@
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
-import type { ViewProps } from 'react-native';
-import type {
-  WithDefault,
-  Double,
-  Int32,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import { codegenNativeComponent } from 'react-native';
+import type { CodegenTypes, ViewProps } from 'react-native';
 
 export type BlurType =
   | 'xlight'
@@ -35,12 +30,18 @@ export type ProgressiveBlurDirection =
   | 'blurredCenterClearTopAndBottom';
 
 export interface NativeProps extends ViewProps {
-  blurAmount?: WithDefault<Double, 20.0>;
-  blurType?: WithDefault<BlurType, 'regular'>;
-  blurRounds?: WithDefault<Int32, 5>;
-  direction?: WithDefault<ProgressiveBlurDirection, 'blurredTopClearBottom'>;
-  startOffset?: WithDefault<Double, 0.0>;
-  reducedTransparencyFallbackColor?: WithDefault<string, '#FFFFFF'>;
+  blurAmount?: CodegenTypes.WithDefault<CodegenTypes.Double, 20.0>;
+  blurType?: CodegenTypes.WithDefault<BlurType, 'regular'>;
+  blurRounds?: CodegenTypes.WithDefault<CodegenTypes.Int32, 5>;
+  direction?: CodegenTypes.WithDefault<
+    ProgressiveBlurDirection,
+    'blurredTopClearBottom'
+  >;
+  startOffset?: CodegenTypes.WithDefault<CodegenTypes.Double, 0.0>;
+  reducedTransparencyFallbackColor?: CodegenTypes.WithDefault<
+    string,
+    '#FFFFFF'
+  >;
 }
 
 export default codegenNativeComponent<NativeProps>(
