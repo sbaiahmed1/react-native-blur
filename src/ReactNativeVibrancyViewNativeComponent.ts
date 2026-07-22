@@ -1,9 +1,5 @@
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
-import type { ViewProps } from 'react-native';
-import type {
-  WithDefault,
-  Double,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import { codegenNativeComponent } from 'react-native';
+import type { CodegenTypes, ViewProps } from 'react-native';
 
 export type BlurType =
   | 'xlight'
@@ -29,8 +25,8 @@ export type BlurType =
   | 'systemChromeMaterialDark';
 
 export interface NativeProps extends ViewProps {
-  blurAmount?: WithDefault<Double, 10.0>;
-  blurType?: WithDefault<BlurType, 'xlight'>;
+  blurAmount?: CodegenTypes.WithDefault<CodegenTypes.Double, 10.0>;
+  blurType?: CodegenTypes.WithDefault<BlurType, 'xlight'>;
 }
 
 export default codegenNativeComponent<NativeProps>('ReactNativeVibrancyView', {

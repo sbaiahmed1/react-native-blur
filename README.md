@@ -27,7 +27,7 @@ Full documentation, guides, and the complete API reference live on the docs site
 - [Props reference](https://sbaiahmed1.github.io/react-native-blur/docs/props-reference)
 - [Migration & breaking changes](https://sbaiahmed1.github.io/react-native-blur/docs/migration)
 
-> ⚠️ **v5 is New Architecture only** (React Native 0.76+) and drops legacy Paper support. See [Migration & breaking changes](https://sbaiahmed1.github.io/react-native-blur/docs/migration).
+> ⚠️ **v5 is New Architecture only** (React Native 0.80+) and drops legacy Paper support. See [Migration & breaking changes](https://sbaiahmed1.github.io/react-native-blur/docs/migration).
 
 ## Demo
 
@@ -51,7 +51,7 @@ Full documentation, guides, and the complete API reference live on the docs site
 | Platform | Minimum version |
 | --- | --- |
 | iOS | 13.0+ (Xcode 16; 26.0+ for liquid glass) |
-| React Native | 0.76+ (New Architecture required) |
+| React Native | 0.80+ (New Architecture required) |
 | Android | API 24+, AGP 8.9.1+ |
 | Web | react-native-web (blur needs [`backdrop-filter`](https://caniuse.com/css-backdrop-filter)) |
 
@@ -63,7 +63,7 @@ yarn add @sbaiahmed1/react-native-blur
 cd ios && pod install
 ```
 
-Requires React Native 0.76+ with the New Architecture enabled. Full setup notes: [Installation docs](https://sbaiahmed1.github.io/react-native-blur/docs/installation).
+Requires React Native 0.80+ with the New Architecture enabled. Full setup notes: [Installation docs](https://sbaiahmed1.github.io/react-native-blur/docs/installation).
 
 ## Quick start
 

@@ -1,19 +1,18 @@
-import codegenNativeComponent from 'react-native/Libraries/Utilities/codegenNativeComponent';
-import type { ViewProps } from 'react-native';
-import type {
-  WithDefault,
-  Double,
-} from 'react-native/Libraries/Types/CodegenTypes';
+import { codegenNativeComponent } from 'react-native';
+import type { CodegenTypes, ViewProps } from 'react-native';
 
 export type GlassType = 'clear' | 'regular';
 
 export interface NativeProps extends ViewProps {
-  glassType?: WithDefault<GlassType, 'clear'>;
-  glassTintColor?: WithDefault<string, 'clear'>;
-  glassOpacity?: WithDefault<Double, 1.0>;
-  reducedTransparencyFallbackColor?: WithDefault<string, '#FFFFFF'>;
-  isInteractive?: WithDefault<boolean, true>;
-  ignoreSafeArea?: WithDefault<boolean, true>;
+  glassType?: CodegenTypes.WithDefault<GlassType, 'clear'>;
+  glassTintColor?: CodegenTypes.WithDefault<string, 'clear'>;
+  glassOpacity?: CodegenTypes.WithDefault<CodegenTypes.Double, 1.0>;
+  reducedTransparencyFallbackColor?: CodegenTypes.WithDefault<
+    string,
+    '#FFFFFF'
+  >;
+  isInteractive?: CodegenTypes.WithDefault<boolean, true>;
+  ignoreSafeArea?: CodegenTypes.WithDefault<boolean, true>;
 }
 
 export default codegenNativeComponent<NativeProps>(
