@@ -178,7 +178,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    * Redirects the internal BlurView's blur capture root from the activity decor view
    * to the nearest react-native-screens Screen ancestor.
    *
-   * BaseBlurView (QmBlurView 1.1.4) field visibility:
+   * BaseBlurView (QmBlurView 1.3.0) field visibility:
    *   public  — mDecorView, mDifferentRoot, preDrawListener (direct access)
    *   private — mForceRedraw (requires reflection)
    */
