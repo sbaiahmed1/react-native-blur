@@ -53,7 +53,7 @@ Full documentation, guides, and the complete API reference live on the docs site
 | iOS | 13.0+ (Xcode 16; 26.0+ for liquid glass) |
 | React Native | 0.76+ (New Architecture required) |
 | Android | API 24+, AGP 8.9.1+ |
-| Web | react-native-web (blur needs `backdrop-filter`, ~97% browser support) |
+| Web | react-native-web (blur needs [`backdrop-filter`](https://caniuse.com/css-backdrop-filter)) |
 
 ## Installation
 

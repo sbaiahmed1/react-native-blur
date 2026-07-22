@@ -28,10 +28,11 @@ const libModule = path.resolve(
 
 const IMPORT_RE = /(?:import|export)\s[^'"]*?from\s*['"]([^'"]+)['"]/g;
 const SIDE_EFFECT_IMPORT_RE = /import\s*['"]([^'"]+)['"]/g;
+const DYNAMIC_IMPORT_RE = /import\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
 
 function relativeSpecifiers(source) {
   const specs = new Set();
-  for (const re of [IMPORT_RE, SIDE_EFFECT_IMPORT_RE]) {
+  for (const re of [IMPORT_RE, SIDE_EFFECT_IMPORT_RE, DYNAMIC_IMPORT_RE]) {
     re.lastIndex = 0;
     for (const match of source.matchAll(re)) {
       if (match[1].startsWith('.')) specs.add(match[1]);
