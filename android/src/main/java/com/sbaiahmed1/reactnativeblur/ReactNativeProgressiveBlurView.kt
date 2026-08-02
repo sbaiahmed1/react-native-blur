@@ -15,14 +15,18 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.view.View.MeasureSpec
 import com.qmdeve.blurview.widget.BlurView
+import kotlin.math.roundToInt
 
 /**
  * Android implementation of React Native ProgressiveBlurView component.
- * Uses a combination of normal blur (BlurView) + linear gradient mask to create
- * a progressive blur effect that transitions from blurred to clear.
+ * Uses a combination of normal blur (BlurView) + eased gradient alpha mask to
+ * create a progressive blur effect that transitions from blurred to clear.
  *
- * This approach is more reliable than using the library's ProgressiveBlurView,
- * which has limited control over gradient direction and appearance.
+ * QmBlurView ships its own ProgressiveBlurView, but it is the same technique
+ * (uniform blur + DST_IN gradient) with a hardcoded 2-stop linear full-height
+ * ramp — the exact "no visible blur" failure mode of issue #119 — and offers
+ * no startOffset/plateau control, no center direction, and no curve tuning,
+ * so it is not a viable replacement for this class.
  */
 class ReactNativeProgressiveBlurView : FrameLayout {
   private var blurView: BlurView? = null
@@ -57,6 +61,26 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     private const val DEFAULT_BLUR_ROUNDS = 5
     private const val DEFAULT_DOWNSAMPLE_FACTOR = 8.0f
     private const val DEBUG = false
+
+    // The DST_IN mask cross-fades one fixed-radius blur in *opacity*, while iOS
+    // and web ramp the blur *radius*. A linear alpha ramp therefore reads as a
+    // weak ghosting cross-fade — at the perceptual midpoint the blur layer is
+    // only 50% opaque, whereas a half-radius blur on iOS still looks clearly
+    // blurred (issue #119: "ProgressiveBlurView renders no visible blur").
+    //
+    // The curve below is a hand-tuned compromise between two failure modes:
+    //  - too shallow (linear): the default full-height ramp never looks solid
+    //    and the blur reads as "nothing" under a tint (the original #119 bug);
+    //  - too steep (ease-out cubic): opacity saturates so close to the clear
+    //    edge that the plateau boundary startOffset moves becomes invisible —
+    //    every offset renders the same near-uniform frost.
+    // These stops rise above linear early (blur body shows by mid-ramp) but
+    // keep a genuine clear window near the clear edge and only saturate at
+    // ~3/4 of the ramp, so growing the plateau visibly changes the output.
+    private val RAMP_POSITIONS = floatArrayOf(0f, 0.15f, 0.3f, 0.45f, 0.6f, 0.75f, 1f)
+    private val RAMP_COLORS = floatArrayOf(0f, 0.08f, 0.3f, 0.52f, 0.75f, 0.9f, 1f)
+      .map { alpha -> Color.argb((alpha * 255f).roundToInt(), 255, 255, 255) }
+      .toIntArray()
 
     // Cross-platform blur amount constants
     private const val MIN_BLUR_AMOUNT = 0f
@@ -344,34 +368,40 @@ class ReactNativeProgressiveBlurView : FrameLayout {
           )
         }
         else -> {
+          // point0 is always the clear edge (alpha 0), point1 the point where
+          // the mask reaches full opacity. startOffset moves point1 toward the
+          // clear edge, growing a fully-blurred plateau from the blurred edge
+          // (Shader.TileMode.CLAMP keeps everything past point1 opaque) — the
+          // same semantics as the iOS and Web backends (unified in 6.0, see
+          // the docs' Platform differences).
           val (x0, y0, x1, y1) = when (currentDirection) {
             "bottomToTop" -> {
               // Blur at bottom, clear at top
-              // point0 (TRANSPARENT/clear) at top, point1 (WHITE/blur) at bottom adjusted by offset
               val offsetPixels = height * currentStartOffset
               floatArrayOf(0f, 0f, 0f, height - offsetPixels)
             }
             "topToBottom" -> {
               // Blur at top, clear at bottom (default)
-              // point0 (TRANSPARENT/clear) at bottom, point1 (WHITE/blur) at top adjusted by offset
               val offsetPixels = height * currentStartOffset
               floatArrayOf(0f, height.toFloat(), 0f, offsetPixels)
             }
             "leftToRight" -> {
-              val offsetPixels = width * currentStartOffset
-              floatArrayOf(offsetPixels, 0f, width.toFloat(), 0f)
-            }
-            "rightToLeft" -> {
+              // Blur at left, clear at right
               val offsetPixels = width * currentStartOffset
               floatArrayOf(width.toFloat(), 0f, offsetPixels, 0f)
+            }
+            "rightToLeft" -> {
+              // Blur at right, clear at left
+              val offsetPixels = width * currentStartOffset
+              floatArrayOf(0f, 0f, width - offsetPixels, 0f)
             }
             else -> floatArrayOf(0f, 0f, 0f, height.toFloat())
           }
 
           LinearGradient(
             x0, y0, x1, y1,
-            intArrayOf(Color.TRANSPARENT, Color.WHITE),
-            floatArrayOf(0f, 1f),
+            RAMP_COLORS,
+            RAMP_POSITIONS,
             Shader.TileMode.CLAMP
           )
         }
@@ -388,23 +418,33 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   }
 
   override fun dispatchDraw(canvas: Canvas) {
-    if (width <= 0 || height <= 0) {
+    val maskedChild = blurView
+    if (width <= 0 || height <= 0 || maskedChild == null) {
       super.dispatchDraw(canvas)
       return
     }
 
-    // Use a layer to apply the gradient mask
+    // Mask only the internal BlurView. Drawing ALL children into the layer
+    // would fade any React children toward the clear edge along with the blur
+    // (iOS renders children unmasked on top of the effect view). The JS
+    // wrapper hoists children out of the native view, but direct native usage
+    // can still put them here.
     val saveCount = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
-
-    // Draw the blur view
-    super.dispatchDraw(canvas)
+    drawChild(canvas, maskedChild, drawingTime)
 
     // Apply gradient mask using DST_IN to make the blur gradually transparent.
     // The xfermode is already set on the paint (see setupView), so this draw
     // allocates nothing per frame.
     canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), gradientPaint)
-
     canvas.restoreToCount(saveCount)
+
+    // Draw the remaining children unmasked, preserving order.
+    for (i in 0 until childCount) {
+      val child = getChildAt(i)
+      if (child !== maskedChild && child.visibility == View.VISIBLE) {
+        drawChild(canvas, child, drawingTime)
+      }
+    }
   }
 
   /**
