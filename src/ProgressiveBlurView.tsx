@@ -43,9 +43,11 @@ export interface ProgressiveBlurViewProps {
   direction?: ProgressiveBlurDirection;
 
   /**
-   * @description The offset where the gradient starts (0.0 to 1.0)
-   * 0.0 means the gradient starts immediately
-   * 1.0 means the gradient is delayed to the end
+   * @description Plateau size (0.0 to 1.0) reserved before the fade begins,
+   * with the same meaning on all platforms: for edge directions it grows the
+   * fully-blurred zone from the blurred edge; for the center direction it
+   * insets the fade start from the edges (clamped to 0.3).
+   * 0.0 spreads the fade across the whole view
    *
    * @default 0.0
    */

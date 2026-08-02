@@ -168,63 +168,65 @@ open class VariableBlurView: UIVisualEffectView {
         edgeOffset: startOffset
       )
     case .blurredTopClearBottom, .blurredBottomClearTop:
-      // Try smoothLinearGradient for smoother transitions
-      let ciGradientFilter = CIFilter.smoothLinearGradient()
-      ciGradientFilter.color0 = CIColor.black
-      ciGradientFilter.color1 = CIColor.clear
-      ciGradientFilter.point0 = CGPoint(x: 0, y: height)
-      ciGradientFilter.point1 = CGPoint(x: 0, y: startOffset * height)
-
-      if case .blurredBottomClearTop = direction {
-        ciGradientFilter.point0.y = 0
-        ciGradientFilter.point1.y = height - ciGradientFilter.point1.y
-      }
-
-      guard let output = ciGradientFilter.outputImage else {
-        return makeFallbackMask(width: width, height: height)
-      }
-
-      guard let cg = CIContext().createCGImage(
-        output,
-        from: CGRect(x: 0, y: 0, width: width, height: height)
-      ) else {
-        return makeFallbackMask(width: width, height: height)
-      }
-
-      return cg
+      return makeEdgeGradientImage(
+        width: width,
+        height: height,
+        startOffset: startOffset,
+        direction: direction
+      )
     }
   }
 
-  private func makeCenterGradientImage(
+  /// Edge-direction mask: a fully-opaque plateau grows from the blurred edge
+  /// (startOffset semantics shared with the Android and Web backends; before
+  /// 6.0 iOS grew the fully-clear zone from the clear edge instead), and the
+  /// fade zone applies an ease-in cubic to the mask alpha. The mask scales the
+  /// blur *radius*, and even a small radius fraction already smears text, so a
+  /// linear radius ramp reads as "everything blurred" the moment the fade
+  /// starts. The cubic keeps the radius near zero through the first part of
+  /// the fade — matching the readable window of Android's eased *opacity*
+  /// mask — then rises into the plateau.
+  private func makeEdgeGradientImage(
     width: CGFloat = 100,
     height: CGFloat = 100,
-    edgeOffset: CGFloat
+    startOffset: CGFloat,
+    direction: VariableBlurDirection
   ) -> CGImage {
-    let startEdge = max(min(edgeOffset, 0.2), 0.01)
-    let endEdge = 1 - startEdge
+    let offset = max(0, min(1, startOffset))
+    let fade = 1 - offset
+    let steps = 12
+
+    // Gradient locations run bottom (0) to top (1) of the rendered mask.
+    var locations: [CGFloat] = []
+    var alphas: [CGFloat] = []
+
+    if case .blurredBottomClearTop = direction {
+      // Plateau at the bottom, easing to clear at the top edge.
+      locations.append(0)
+      alphas.append(1)
+      for k in 0...steps {
+        let t = CGFloat(k) / CGFloat(steps)
+        locations.append(offset + fade * t)
+        alphas.append(pow(1 - t, 3))
+      }
+    } else {
+      // Clear at the bottom edge, easing up into the plateau at the top.
+      for k in 0...steps {
+        let t = CGFloat(k) / CGFloat(steps)
+        locations.append(fade * t)
+        alphas.append(pow(t, 3))
+      }
+      locations.append(1)
+      alphas.append(1)
+    }
+
     let colorSpace = CGColorSpaceCreateDeviceRGB()
+    var components: [CGFloat] = []
+    for alpha in alphas {
+      components.append(contentsOf: [0, 0, 0, alpha])
+    }
 
-    let centerLow: CGFloat = 0.5
-    let centerHigh: CGFloat = 0.5
-    let locations: [CGFloat] = [
-      0.0,
-      startEdge,
-      centerLow,
-      centerHigh,
-      endEdge,
-      1.0
-    ]
-
-    let colorComponents: [CGFloat] = [
-      0, 0, 0, 0, // top clear
-      0, 0, 0, 0, // clear until offset
-      0, 0, 0, 1, // ramp up to opaque
-      0, 0, 0, 1, // hold opaque plateau
-      0, 0, 0, 0, // back to clear
-      0, 0, 0, 0  // bottom clear
-    ]
-
-    let context = CGContext(
+    guard let context = CGContext(
       data: nil,
       width: Int(width),
       height: Int(height),
@@ -232,11 +234,70 @@ open class VariableBlurView: UIVisualEffectView {
       bytesPerRow: 0,
       space: colorSpace,
       bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-    )!
-
-    guard let gradient = CGGradient(
+    ), let gradient = CGGradient(
       colorSpace: colorSpace,
-      colorComponents: colorComponents,
+      colorComponents: components,
+      locations: locations,
+      count: locations.count
+    ) else {
+      return makeFallbackMask(width: width, height: height)
+    }
+
+    context.drawLinearGradient(
+      gradient,
+      start: CGPoint(x: 0, y: 0),
+      end: CGPoint(x: 0, y: height),
+      options: [.drawsBeforeStartLocation, .drawsAfterEndLocation]
+    )
+
+    return context.makeImage() ?? makeFallbackMask(width: width, height: height)
+  }
+
+  private func makeCenterGradientImage(
+    width: CGFloat = 100,
+    height: CGFloat = 100,
+    edgeOffset: CGFloat
+  ) -> CGImage {
+    // Same geometry as the Android backend: a clear inset of `edgeOffset` at
+    // each edge, an eased 20% fade band, and a solid plateau between
+    // [offset + 0.2, 0.8 - offset]. The clamp also matches Android's — at 0.3
+    // the plateau collapses to the center line. (Previously iOS ramped to a
+    // point-peak at the center with no plateau.)
+    let startEdge = max(min(edgeOffset, 0.3), 0.01)
+    let steps = 8
+
+    var locations: [CGFloat] = [0]
+    var alphas: [CGFloat] = [0]
+    for k in 0...steps {
+      let t = CGFloat(k) / CGFloat(steps)
+      locations.append(startEdge + 0.2 * t)
+      alphas.append(t * t * t)
+    }
+    for k in 0...steps {
+      let t = CGFloat(k) / CGFloat(steps)
+      locations.append((0.8 - startEdge) + 0.2 * t)
+      alphas.append(pow(1 - t, 3))
+    }
+    locations.append(1)
+    alphas.append(0)
+
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    var components: [CGFloat] = []
+    for alpha in alphas {
+      components.append(contentsOf: [0, 0, 0, alpha])
+    }
+
+    guard let context = CGContext(
+      data: nil,
+      width: Int(width),
+      height: Int(height),
+      bitsPerComponent: 8,
+      bytesPerRow: 0,
+      space: colorSpace,
+      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+    ), let gradient = CGGradient(
+      colorSpace: colorSpace,
+      colorComponents: components,
       locations: locations,
       count: locations.count
     ) else {
