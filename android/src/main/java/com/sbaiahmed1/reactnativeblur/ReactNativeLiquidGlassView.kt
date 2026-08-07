@@ -64,12 +64,19 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   // Shader engine state; only touched on API 33+.
   private var glassNode: RenderNode? = null
   private var liquidShader: RuntimeShader? = null
+  private var shaderFailed = false
+  // Resolved uniform corner radius in px for the shader's lens geometry (the
+  // per-corner-aware outline clip is handled separately in updateCornerRadius).
+  private var shaderRadiusPx = 0f
   private var captureBitmap: Bitmap? = null
   private var captureCanvas: Canvas? = null
   private var captureSource: ViewGroup? = null
   private var isCapturing = false
   private var effectDirty = true
   private var initRunnable: Runnable? = null
+  // Guards the visibility callbacks Android fires from the View super
+  // constructor, before this class's properties are initialized.
+  private var constructed = false
   private val capturePaint = Paint(Paint.FILTER_BITMAP_FLAG)
   private val nodeBounds = RectF()
   private val sourceLocation = IntArray(2)
@@ -114,14 +121,15 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
 
     private val isSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
-    private fun logWarning(message: String) {
-      Log.w(TAG, message)
+    private fun logWarning(message: String, throwable: Throwable? = null) {
+      Log.w(TAG, message, throwable)
     }
   }
 
   init {
     clipChildren = true
     clipToOutline = true
+    constructed = true
   }
 
   override fun onAttachedToWindow() {
@@ -141,8 +149,29 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     initRunnable = runnable
     post(runnable)
 
+    restartTickerIfVisible()
+  }
+
+  // The per-instance software capture is the main running cost, so the ticker
+  // only runs while the view can actually be seen: it stops when the view or
+  // its window is hidden (backgrounded app, covered screen, GONE subtree) and
+  // restarts when visibility returns.
+  private fun restartTickerIfVisible() {
+    if (!constructed) return
     removeCallbacks(backdropTicker)
-    postDelayed(backdropTicker, BACKDROP_REFRESH_MS)
+    if (isSupported && isAttachedToWindow && isShown && windowVisibility == VISIBLE) {
+      postDelayed(backdropTicker, BACKDROP_REFRESH_MS)
+    }
+  }
+
+  override fun onWindowVisibilityChanged(visibility: Int) {
+    super.onWindowVisibilityChanged(visibility)
+    restartTickerIfVisible()
+  }
+
+  override fun onVisibilityChanged(changedView: View, visibility: Int) {
+    super.onVisibilityChanged(changedView, visibility)
+    restartTickerIfVisible()
   }
 
   override fun onDetachedFromWindow() {
@@ -198,6 +227,10 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   @RequiresApi(Build.VERSION_CODES.TIRAMISU)
   private fun refreshBackdrop33(source: ViewGroup) {
     ensureEngine()
+    // Without a compiled shader the node would draw a raw, unshaded copy of
+    // the backdrop on top of the content; leave it without a display list so
+    // dispatchDraw skips it entirely.
+    if (shaderFailed) return
     val node = glassNode ?: return
 
     val bitmapWidth = (width / CAPTURE_DOWNSAMPLE).coerceAtLeast(1)
@@ -224,7 +257,7 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     try {
       source.draw(canvas)
     } catch (e: Exception) {
-      logWarning("Backdrop capture failed: ${e.message}")
+      logWarning("Backdrop capture failed", e)
     } finally {
       isCapturing = false
       canvas.restoreToCount(save)
@@ -254,8 +287,9 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     } catch (e: Exception) {
       // A shader compile failure would otherwise crash on first uniform set;
       // leave the engine dark (children still render) rather than crash.
-      logWarning("Failed to create liquid glass shader: ${e.message}")
+      logWarning("Failed to create liquid glass shader", e)
       liquidShader = null
+      shaderFailed = true
     }
   }
 
@@ -276,9 +310,10 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     val h = height.toFloat()
     if (w <= 0f || h <= 0f) return
 
-    // The shader models a single uniform-radius rounded rect; clamp like the
-    // library widget does so the geometry stays valid on small views.
-    val radius = convertDpToPx(borderRadius).coerceIn(0f, h / 2f)
+    // The shader models a single uniform-radius rounded rect; clamp against
+    // BOTH half-extents so the signed-distance geometry stays valid on views
+    // that are narrower than they are tall (and vice versa).
+    val radius = shaderRadiusPx.coerceIn(0f, minOf(w, h) / 2f)
 
     shader.setFloatUniform("size", floatArrayOf(w, h))
     shader.setFloatUniform("offset", floatArrayOf(0f, 0f))
@@ -355,7 +390,7 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
         try {
           color.toColorInt()
         } catch (e: Exception) {
-          logWarning("Invalid color format for glass tint: $color")
+          logWarning("Invalid color format for glass tint: $color", e)
           Color.TRANSPARENT
         }
       }
@@ -381,13 +416,16 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     when (event.actionMasked) {
       MotionEvent.ACTION_DOWN -> {
         animate().scaleX(PRESS_SCALE).scaleY(PRESS_SCALE).setDuration(120).start()
+        // Claim only the DOWN so the press animation gets its UP/CANCEL;
+        // moves are not consumed, leaving scroll parents free to intercept
+        // the gesture (which delivers the CANCEL that releases the scale).
         return true
       }
       MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
         animate().scaleX(1f).scaleY(1f).setDuration(160).start()
       }
     }
-    return super.onTouchEvent(event) || interactive
+    return super.onTouchEvent(event)
   }
 
   fun setBorderRadius(radius: Float) {
@@ -434,10 +472,16 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
 
     val isUniform = topLeft == topRight && topRight == bottomLeft && bottomLeft == bottomRight
 
+    // The shader lens geometry follows the resolved uniform radius (which may
+    // come from four equal per-corner values rather than borderRadius);
+    // non-uniform corners keep the base radius for the lens and rely on the
+    // outline clip for their exact shape.
+    shaderRadiusPx = if (isUniform) topLeft else baseRadius
+
     if (isUniform) {
       outlineProvider = object : ViewOutlineProvider() {
         override fun getOutline(view: View, outline: Outline?) {
-          outline?.setRoundRect(0, 0, view.width, view.height, baseRadius)
+          outline?.setRoundRect(0, 0, view.width, view.height, topLeft)
         }
       }
     } else {

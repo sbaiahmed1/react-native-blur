@@ -120,8 +120,9 @@ describe('wrapper rendering', () => {
       Platform,
       'Version'
     )!;
+    // API 33 exactly: the Android 13 boundary the gate must accept.
     Object.defineProperty(Platform, 'Version', {
-      value: 34,
+      value: 33,
       configurable: true,
     });
     try {

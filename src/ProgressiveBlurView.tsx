@@ -44,10 +44,12 @@ export interface ProgressiveBlurViewProps {
 
   /**
    * @description Plateau size (0.0 to 1.0) reserved before the fade begins,
-   * with the same meaning on all platforms: for edge directions it grows the
-   * fully-blurred zone from the blurred edge; for the center direction it
-   * insets the fade start from the edges (clamped to 0.3).
-   * 0.0 spreads the fade across the whole view
+   * with the same meaning on all platforms. For edge directions it grows the
+   * fully-blurred zone from the blurred edge; 0.0 spreads the fade across the
+   * whole view. For the center direction the fade always occupies fixed ~20%
+   * bands at the clear edges around a blurred center plateau; startOffset
+   * insets where those bands start (clamped to 0.3), so 0.0 keeps them at the
+   * very edges rather than spreading the fade
    *
    * @default 0.0
    */

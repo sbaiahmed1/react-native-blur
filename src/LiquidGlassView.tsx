@@ -23,20 +23,22 @@ export interface LiquidGlassViewProps {
 
   /**
    * @description The tint color of the glass effect. Accepts hex color strings
-   * like '#FFFFFF' or color names
+   * like '#FFFFFF' or color names. On platforms without native glass it also
+   * drives the tint of the BlurView/web fallback overlay
    *
    * @default 'clear'
    *
-   * @platform iOS 26+, Android 13+
+   * @platform iOS 26+, Android 13+ (fallback tint everywhere)
    */
   glassTintColor?: string;
 
   /**
-   * @description The opacity of the glass effect (0-1)
+   * @description The opacity of the glass effect (0-1). On platforms without
+   * native glass it also scales the BlurView/web fallback overlay tint
    *
    * @default 1.0
    *
-   * @platform iOS 26+, Android 13+
+   * @platform iOS 26+, Android 13+ (fallback tint everywhere)
    */
   glassOpacity?: number;
 
@@ -52,11 +54,12 @@ export interface LiquidGlassViewProps {
 
   /**
    * @description Whether the glass view should be interactive. On Android this
-   * toggles the press-elasticity animation of the glass
+   * toggles an iOS-style press-scale animation. No effect on the fallback
+   * paths (iOS < 26, Android < 13, web)
    *
    * @default true
    *
-   * @platform iOS, Android 13+
+   * @platform iOS 26+, Android 13+
    */
   isInteractive?: boolean;
 
