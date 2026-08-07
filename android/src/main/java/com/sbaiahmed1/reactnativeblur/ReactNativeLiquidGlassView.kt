@@ -1,80 +1,118 @@
 package com.sbaiahmed1.reactnativeblur
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Outline
+import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.RectF
+import android.graphics.RenderEffect
+import android.graphics.RenderNode
+import android.graphics.RuntimeShader
+import android.graphics.Shader
 import android.os.Build
 import android.util.Log
 import android.util.TypedValue
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
+import androidx.annotation.RequiresApi
 import androidx.core.graphics.toColorInt
-import com.example.liquidglass.GlassMaterial
-import com.example.liquidglass.LiquidGlassView
 
 /**
- * Android implementation of React Native LiquidGlassView, backed by the
- * Liquid-Glass-Android library (AGSL/RenderEffect pipeline on API 33+,
- * classic C++/NEON pipeline down to API 24).
+ * Android implementation of React Native LiquidGlassView, rendering the
+ * AndroidLiquidGlassView (com.qmdeve.liquidglass) AGSL glass shader on
+ * Android 13+ (RuntimeShader requires API 33; the JS wrapper falls back to
+ * BlurView below that).
  *
- * View hierarchy:
+ * Only the library's shader and effect parameters are used — NOT its widget
+ * classes. Those record the bound backdrop source with `target.draw()` on a
+ * hardware RecordingCanvas, which references the cached display lists of the
+ * source's children; with an ancestor as the source (the only general choice
+ * inside an RN hierarchy) that recording transitively references the glass
+ * view's own RenderNode, forming a cyclic render tree that stack-overflows
+ * the render thread in RenderNode::prepareTreeImpl (the library's own demo
+ * only ever binds a sibling container, which RN cannot guarantee).
  *
- *   this (RN-managed wrapper)
- *    └── glassView   (library view, draws the glass)
- *         └── contentView (hosts the React children + tint scrim background)
- *
- * The library's LiquidGlassView is final, so it is wrapped rather than
- * subclassed. React children are mounted into [contentView] INSIDE the glass
- * view, mirroring the iOS getContentView pattern, because the library
- * self-excludes from backdrop capture by skipping its own draw pass: children
- * mounted outside it would be captured into the backdrop and refracted back
- * as ghost images. [contentView] no-ops onLayout/onMeasure so a stray Android
- * layout pass can never displace children that RN's UIManager has positioned.
+ * Instead, the backdrop is captured the way this library's sibling QmBlurView
+ * (and ReactNativeBlurView here) already proved safe: a SOFTWARE draw of the
+ * nearest rnscreens Screen / ReactRootView into a reused downsampled bitmap —
+ * a software canvas re-executes draw() so the self-exclusion guard in [draw]
+ * works, and a flat bitmap holds no node references, so a cycle is impossible
+ * by construction. The bitmap is drawn into a standalone RenderNode carrying
+ * the library's RuntimeShader RenderEffect, so refraction/dispersion/blur/tint
+ * all still run on the GPU. React children are direct children of this view;
+ * the capture guard skips the whole subtree, so they are never refracted back
+ * into their own backdrop.
  */
 class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
 
-  /** Hosts the React children; the manager routes child mutations here. */
-  internal val contentView: FrameLayout = object : FrameLayout(context) {
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-      // Trust React Native to provide correct dimensions
-      setMeasuredDimension(
-        MeasureSpec.getSize(widthMeasureSpec),
-        MeasureSpec.getSize(heightMeasureSpec)
-      )
-    }
-
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-      // No-op: Layout is handled by React Native's UIManager.
-    }
-  }
-
-  private val glassView = LiquidGlassView(context)
-
+  private var glassType: String = "clear"
   private var glassTintColor: Int = Color.TRANSPARENT
   private var glassOpacity: Float = 1.0f
+  private var interactive: Boolean = true
   private var borderRadius = 0f
   private var borderTopLeftRadius = -1f
   private var borderTopRightRadius = -1f
   private var borderBottomLeftRadius = -1f
   private var borderBottomRightRadius = -1f
+
+  // Shader engine state; only touched on API 33+.
+  private var glassNode: RenderNode? = null
+  private var liquidShader: RuntimeShader? = null
+  private var captureBitmap: Bitmap? = null
+  private var captureCanvas: Canvas? = null
+  private var captureSource: ViewGroup? = null
+  private var isCapturing = false
+  private var effectDirty = true
   private var initRunnable: Runnable? = null
+  private val capturePaint = Paint(Paint.FILTER_BITMAP_FLAG)
+  private val nodeBounds = RectF()
+  private val sourceLocation = IntArray(2)
+  private val ownLocation = IntArray(2)
+
+  // Attach-scoped throttled backdrop refresh (~30 fps): live enough that
+  // content scrolling behind the glass tracks smoothly, without re-capturing
+  // at full display rate.
+  private val backdropTicker = object : Runnable {
+    override fun run() {
+      refreshBackdrop()
+      postDelayed(this, BACKDROP_REFRESH_MS)
+    }
+  }
 
   companion object {
     private const val TAG = "RNLiquidGlassView"
 
-    // The library's press-elasticity default; restored when isInteractive
-    // flips back to true.
-    private const val DEFAULT_ELASTICITY = 0.15f
+    private const val BACKDROP_REFRESH_MS = 33L
 
-    // A raw scrim composites literally, unlike UIGlassEffect's
-    // material-modulated tint, so the iOS formula (tintAlpha * glassOpacity)
-    // would render an opaque tint as a solid panel. Capped to match the
-    // documented JS fallback approximation (MAX_FALLBACK_TINT_ALPHA in
-    // src/colorUtils.ts).
-    private const val MAX_TINT_ALPHA = 0.35f
+    // Capture at half linear resolution: 4x fewer bytes and 4x less software
+    // raster work per refresh; the shader's blur consumes the softness.
+    private const val CAPTURE_DOWNSAMPLE = 2
+
+    // Shader parameter defaults matching the library widget's own defaults
+    // (LiquidGlassView.java): refractionHeight 20dp, refractionOffset -70dp,
+    // dispersion 0.5, plus Config.DEPTH_EFFECT 0.3 and the noFilter() preset
+    // (contrast 0, whitePoint 0, chromaMultiplier 1).
+    private const val REFRACTION_HEIGHT_DP = 20f
+    private const val REFRACTION_OFFSET_DP = 70f
+    private const val DISPERSION = 0.5f
+    private const val DEPTH_EFFECT = 0.3f
+
+    // The library leaves blur to the caller (widget default is ~0). Map the
+    // two iOS materials to a light and a frosty backdrop blur respectively.
+    private const val CLEAR_BLUR_RADIUS = 4f
+    private const val REGULAR_BLUR_RADIUS = 18f
+
+    // iOS-style press feedback for isInteractive (the library widget uses the
+    // same scale in its touch effect).
+    private const val PRESS_SCALE = 1.02f
+
+    private val isSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
     private fun logWarning(message: String) {
       Log.w(TAG, message)
@@ -82,47 +120,29 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   }
 
   init {
-    // Library defaults tuned for standalone use, wrong for RN: cornerRadius
-    // defaults to 999f (a pill) and must instead follow the RN border radius;
-    // one-shot backdrop capture freezes the glass the moment anything behind
-    // it scrolls or animates.
-    glassView.cornerRadius = 0f
-    glassView.enableDynamicBackground = true
-    // MUST stay false. The library's GPU paths (HardwareBackdropBlur and the
-    // AGSL GlassLensRenderer, both gated on this flag) record
-    // backdropSource.draw() into a RenderNode on a hardware canvas. With an
-    // ancestor as the source, that recording references the cached display
-    // lists of the intermediate views — which still reference this glass
-    // view's own RenderNode (the library's visibility trick only shields the
-    // direct-child case) — producing a cyclic RenderNode and an infinite
-    // RenderNode::prepareTreeImpl recursion that stack-overflows the render
-    // thread. The software capture path is guarded correctly (draw() returns
-    // early during capture) and is safe for ancestor sources on every API
-    // level.
-    glassView.useHardwareBlurWhenPossible = false
-    addView(glassView, LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
-    glassView.addView(contentView, LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
     clipChildren = true
     clipToOutline = true
   }
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
+    if (!isSupported) return
 
-    // The library captures the glass view's direct parent by default — here
-    // that is this wrapper, which contains nothing behind the glass. Re-root
-    // the capture at the nearest react-native-screens Screen (or the
-    // ReactRootView) so the glass refracts the content behind it, matching
-    // iOS semantics. Posted rather than run synchronously: on a re-attach
-    // during navigation the parent chain up to the Screen ancestor is not
-    // always settled yet (same reasoning as ReactNativeBlurView).
+    // Resolve the capture root once the parent chain has settled (on a
+    // re-attach during navigation it is not settled at attach time — same
+    // reasoning as ReactNativeBlurView). The wrapper's own parent is a safe
+    // last resort: software capture self-excludes via the draw() guard.
     val runnable = Runnable {
       initRunnable = null
-      glassView.backdropSource =
-        findNearestScreenAncestor() ?: findNearestReactRootView() ?: parent as? View
+      captureSource =
+        findNearestScreenAncestor() ?: findNearestReactRootView() ?: parent as? ViewGroup
+      refreshBackdrop()
     }
     initRunnable = runnable
     post(runnable)
+
+    removeCallbacks(backdropTicker)
+    postDelayed(backdropTicker, BACKDROP_REFRESH_MS)
   }
 
   override fun onDetachedFromWindow() {
@@ -133,9 +153,165 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   fun cleanup() {
     initRunnable?.let { removeCallbacks(it) }
     initRunnable = null
-    // Drop the capture root so a detached-but-retained view doesn't leak the
-    // previous Screen; re-resolved on the next attach.
-    glassView.backdropSource = null
+    removeCallbacks(backdropTicker)
+    captureSource = null
+    captureBitmap?.recycle()
+    captureBitmap = null
+    captureCanvas = null
+    if (isSupported) {
+      glassNode?.discardDisplayList()
+    }
+  }
+
+  override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+    super.onSizeChanged(w, h, oldw, oldh)
+    if (w > 0 && h > 0) {
+      effectDirty = true
+      refreshBackdrop()
+    }
+  }
+
+  /** Self-exclusion from backdrop capture; the software canvas re-executes
+   * draw(), so returning early skips this whole subtree (glass + children). */
+  override fun draw(canvas: Canvas) {
+    if (isCapturing) return
+    super.draw(canvas)
+  }
+
+  override fun dispatchDraw(canvas: Canvas) {
+    if (isSupported && canvas.isHardwareAccelerated) {
+      val node = glassNode
+      if (node != null && node.hasDisplayList()) {
+        canvas.drawRenderNode(node)
+      }
+    }
+    super.dispatchDraw(canvas)
+  }
+
+  private fun refreshBackdrop() {
+    if (!isSupported || width <= 0 || height <= 0 || !isAttachedToWindow) return
+    val source = captureSource ?: return
+    if (source.width <= 0 || source.height <= 0) return
+    refreshBackdrop33(source)
+  }
+
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  private fun refreshBackdrop33(source: ViewGroup) {
+    ensureEngine()
+    val node = glassNode ?: return
+
+    val bitmapWidth = (width / CAPTURE_DOWNSAMPLE).coerceAtLeast(1)
+    val bitmapHeight = (height / CAPTURE_DOWNSAMPLE).coerceAtLeast(1)
+    var bitmap = captureBitmap
+    if (bitmap == null || bitmap.width != bitmapWidth || bitmap.height != bitmapHeight) {
+      captureBitmap?.recycle()
+      bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
+      captureBitmap = bitmap
+      captureCanvas = Canvas(bitmap)
+    }
+    val canvas = captureCanvas ?: return
+
+    bitmap.eraseColor(Color.TRANSPARENT)
+    source.getLocationInWindow(sourceLocation)
+    getLocationInWindow(ownLocation)
+    val save = canvas.save()
+    canvas.scale(1f / CAPTURE_DOWNSAMPLE, 1f / CAPTURE_DOWNSAMPLE)
+    canvas.translate(
+      -(ownLocation[0] - sourceLocation[0]).toFloat(),
+      -(ownLocation[1] - sourceLocation[1]).toFloat()
+    )
+    isCapturing = true
+    try {
+      source.draw(canvas)
+    } catch (e: Exception) {
+      logWarning("Backdrop capture failed: ${e.message}")
+    } finally {
+      isCapturing = false
+      canvas.restoreToCount(save)
+    }
+
+    node.setPosition(0, 0, width, height)
+    val recording = node.beginRecording(width, height)
+    try {
+      nodeBounds.set(0f, 0f, width.toFloat(), height.toFloat())
+      recording.drawBitmap(bitmap, null, nodeBounds, capturePaint)
+    } finally {
+      node.endRecording()
+    }
+
+    if (effectDirty) {
+      applyRenderEffect(node)
+    }
+    invalidate()
+  }
+
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  private fun ensureEngine() {
+    if (glassNode != null) return
+    glassNode = RenderNode(TAG)
+    try {
+      liquidShader = RuntimeShader(loadShaderSource())
+    } catch (e: Exception) {
+      // A shader compile failure would otherwise crash on first uniform set;
+      // leave the engine dark (children still render) rather than crash.
+      logWarning("Failed to create liquid glass shader: ${e.message}")
+      liquidShader = null
+    }
+  }
+
+  private fun loadShaderSource(): String {
+    // The AGSL shader is vendored from AndroidLiquidGlassView (MIT, license
+    // header retained in the resource) rather than consumed from its AAR: the
+    // published artifact requires compileSdk 37+, and only the shader is
+    // usable inside RN anyway (see the class comment).
+    return resources.openRawResource(R.raw.rnblur_liquidglass_effect)
+      .bufferedReader()
+      .use { it.readText() }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  private fun applyRenderEffect(node: RenderNode) {
+    val shader = liquidShader ?: return
+    val w = width.toFloat()
+    val h = height.toFloat()
+    if (w <= 0f || h <= 0f) return
+
+    // The shader models a single uniform-radius rounded rect; clamp like the
+    // library widget does so the geometry stays valid on small views.
+    val radius = convertDpToPx(borderRadius).coerceIn(0f, h / 2f)
+
+    shader.setFloatUniform("size", floatArrayOf(w, h))
+    shader.setFloatUniform("offset", floatArrayOf(0f, 0f))
+    shader.setFloatUniform("cornerRadii", floatArrayOf(radius, radius, radius, radius))
+    shader.setFloatUniform("refractionHeight", convertDpToPx(REFRACTION_HEIGHT_DP))
+    shader.setFloatUniform("refractionAmount", -convertDpToPx(REFRACTION_OFFSET_DP))
+    shader.setFloatUniform("depthEffect", DEPTH_EFFECT)
+    shader.setFloatUniform("chromaticAberration", DISPERSION)
+    shader.setFloatUniform("contrast", 0f)
+    shader.setFloatUniform("whitePoint", 0f)
+    shader.setFloatUniform("chromaMultiplier", 1f)
+    // Shader-modulated tint, so the iOS formula (tint's own alpha scaled by
+    // glassOpacity) maps directly — no scrim, no alpha cap needed.
+    shader.setFloatUniform(
+      "tintColor",
+      floatArrayOf(
+        Color.red(glassTintColor) / 255f,
+        Color.green(glassTintColor) / 255f,
+        Color.blue(glassTintColor) / 255f
+      )
+    )
+    shader.setFloatUniform("tintAlpha", (Color.alpha(glassTintColor) / 255f) * glassOpacity)
+
+    val shaderEffect = RenderEffect.createRuntimeShaderEffect(shader, "content")
+    val blurRadius =
+      if (glassType.equals("regular", ignoreCase = true)) REGULAR_BLUR_RADIUS
+      else CLEAR_BLUR_RADIUS
+    val effect = RenderEffect.createChainEffect(
+      shaderEffect,
+      RenderEffect.createBlurEffect(blurRadius, blurRadius, Shader.TileMode.CLAMP)
+    )
+    node.setRenderEffect(effect)
+    effectDirty = false
   }
 
   private fun findNearestScreenAncestor(): ViewGroup? {
@@ -161,9 +337,8 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   }
 
   fun setGlassType(type: String) {
-    glassView.material =
-      if (type.equals("regular", ignoreCase = true)) GlassMaterial.REGULAR
-      else GlassMaterial.CLEAR
+    glassType = type
+    effectDirty = true
   }
 
   /**
@@ -184,38 +359,35 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
           Color.TRANSPARENT
         }
       }
-    updateTintScrim()
+    effectDirty = true
   }
 
   fun setGlassOpacity(opacity: Float) {
     glassOpacity = opacity.coerceIn(0.0f, 1.0f)
-    updateTintScrim()
+    effectDirty = true
   }
 
-  fun setIsInteractive(interactive: Boolean) {
-    // Closest analog of UIGlassEffect.isInteractive: the library's
-    // press-elasticity scale animation.
-    glassView.elasticity = if (interactive) DEFAULT_ELASTICITY else 0f
-  }
-
-  private fun updateTintScrim() {
-    // A zero-alpha tint means "no tint" (mirrors the iOS branch that nils the
-    // effect tint instead of resurrecting clear as opaque black, issue #113).
-    val tintAlpha = Color.alpha(glassTintColor)
-    if (tintAlpha == 0) {
-      contentView.setBackgroundColor(Color.TRANSPARENT)
-      return
+  fun setIsInteractive(isInteractive: Boolean) {
+    interactive = isInteractive
+    if (!isInteractive) {
+      animate().cancel()
+      scaleX = 1f
+      scaleY = 1f
     }
-    val scrimAlpha =
-      ((tintAlpha / 255f) * glassOpacity * MAX_TINT_ALPHA * 255f).toInt().coerceIn(0, 255)
-    contentView.setBackgroundColor(
-      Color.argb(
-        scrimAlpha,
-        Color.red(glassTintColor),
-        Color.green(glassTintColor),
-        Color.blue(glassTintColor)
-      )
-    )
+  }
+
+  override fun onTouchEvent(event: MotionEvent): Boolean {
+    if (!interactive) return super.onTouchEvent(event)
+    when (event.actionMasked) {
+      MotionEvent.ACTION_DOWN -> {
+        animate().scaleX(PRESS_SCALE).scaleY(PRESS_SCALE).setDuration(120).start()
+        return true
+      }
+      MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+        animate().scaleX(1f).scaleY(1f).setDuration(160).start()
+      }
+    }
+    return super.onTouchEvent(event) || interactive
   }
 
   fun setBorderRadius(radius: Float) {
@@ -251,17 +423,14 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   private fun updateCornerRadius() {
     // Unset per-corner radii use the sentinel -1f (see the field defaults), so
     // test >= 0: an explicit 0 must override the base radius to square that
-    // corner, only a negative sentinel falls back to baseRadius.
+    // corner, only a negative sentinel falls back to baseRadius. The shader's
+    // lens geometry only supports the uniform base radius; per-corner
+    // differences are honored by the outline clip.
     val baseRadius = convertDpToPx(borderRadius)
     val topLeft = if (borderTopLeftRadius >= 0) convertDpToPx(borderTopLeftRadius) else baseRadius
     val topRight = if (borderTopRightRadius >= 0) convertDpToPx(borderTopRightRadius) else baseRadius
     val bottomLeft = if (borderBottomLeftRadius >= 0) convertDpToPx(borderBottomLeftRadius) else baseRadius
     val bottomRight = if (borderBottomRightRadius >= 0) convertDpToPx(borderBottomRightRadius) else baseRadius
-
-    // The glass distortion field (bevel/refraction geometry) only supports a
-    // uniform radius; per-corner differences are honored by the outline clip
-    // below but the lens shape follows the base radius.
-    glassView.cornerRadius = baseRadius
 
     val isUniform = topLeft == topRight && topRight == bottomLeft && bottomLeft == bottomRight
 
@@ -298,25 +467,21 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
 
     clipToOutline = true
     invalidateOutline()
+    effectDirty = true
   }
 
   override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-    // Trust React Native to provide correct dimensions; the glass chrome
-    // always fills the wrapper exactly.
-    val width = MeasureSpec.getSize(widthMeasureSpec)
-    val height = MeasureSpec.getSize(heightMeasureSpec)
-    glassView.measure(
-      MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
-      MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
+    // Trust React Native to provide correct dimensions
+    setMeasuredDimension(
+      MeasureSpec.getSize(widthMeasureSpec),
+      MeasureSpec.getSize(heightMeasureSpec)
     )
-    setMeasuredDimension(width, height)
   }
 
+  /**
+   * Override onLayout to properly position children according to React Native's Yoga layout.
+   */
   override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-    // glassView (and, through FrameLayout, contentView) is internal chrome
-    // laid out full-bleed here; the React children inside contentView are
-    // positioned by React Native's UIManager and never touched (contentView
-    // no-ops its own onLayout).
-    glassView.layout(0, 0, right - left, bottom - top)
+    // No-op: Layout is handled by React Native's UIManager.
   }
 }

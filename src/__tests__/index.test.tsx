@@ -112,8 +112,18 @@ describe('wrapper rendering', () => {
     act(() => tree.unmount());
   });
 
-  it('renders LiquidGlassView natively on Android instead of the BlurView fallback', () => {
+  it('renders LiquidGlassView natively on Android 13+ instead of the BlurView fallback', () => {
     const replaced = jest.replaceProperty(Platform, 'OS', 'android');
+    // Platform.Version is a getter in RN, so swap the property descriptor
+    // rather than using jest.replaceProperty (which needs a data property).
+    const versionDescriptor = Object.getOwnPropertyDescriptor(
+      Platform,
+      'Version'
+    )!;
+    Object.defineProperty(Platform, 'Version', {
+      value: 34,
+      configurable: true,
+    });
     try {
       const tree = render(
         <LiquidGlassView glassTintColor="#007AFF" glassOpacity={0.8} />
@@ -125,6 +135,29 @@ describe('wrapper rendering', () => {
       act(() => tree.unmount());
     } finally {
       replaced.restore();
+      Object.defineProperty(Platform, 'Version', versionDescriptor);
+    }
+  });
+
+  it('renders LiquidGlassView as a BlurView fallback on Android below 13', () => {
+    const replaced = jest.replaceProperty(Platform, 'OS', 'android');
+    const versionDescriptor = Object.getOwnPropertyDescriptor(
+      Platform,
+      'Version'
+    )!;
+    Object.defineProperty(Platform, 'Version', {
+      value: 31,
+      configurable: true,
+    });
+    try {
+      const tree = render(
+        <LiquidGlassView glassTintColor="#007AFF" glassOpacity={0.8} />
+      );
+      expect(tree.root.findAllByType(BlurView)).toHaveLength(1);
+      act(() => tree.unmount());
+    } finally {
+      replaced.restore();
+      Object.defineProperty(Platform, 'Version', versionDescriptor);
     }
   });
 

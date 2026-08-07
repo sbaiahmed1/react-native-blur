@@ -1,6 +1,5 @@
 package com.sbaiahmed1.reactnativeblur
 
-import android.view.View
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.ThemedReactContext
@@ -28,25 +27,6 @@ class ReactNativeLiquidGlassViewManager : ViewGroupManager<ReactNativeLiquidGlas
 
   public override fun createViewInstance(context: ThemedReactContext): ReactNativeLiquidGlassView {
     return ReactNativeLiquidGlassView(context)
-  }
-
-  // React children live inside the wrapper's content container (mounted into
-  // the glass view so backdrop capture self-excludes them); route every child
-  // mutation there instead of the wrapper itself.
-  override fun addView(parent: ReactNativeLiquidGlassView, child: View, index: Int) {
-    parent.contentView.addView(child, index)
-  }
-
-  override fun getChildCount(parent: ReactNativeLiquidGlassView): Int {
-    return parent.contentView.childCount
-  }
-
-  override fun getChildAt(parent: ReactNativeLiquidGlassView, index: Int): View? {
-    return parent.contentView.getChildAt(index)
-  }
-
-  override fun removeViewAt(parent: ReactNativeLiquidGlassView, index: Int) {
-    parent.contentView.removeViewAt(index)
   }
 
   @ReactProp(name = "glassType")

@@ -10,10 +10,3 @@
 # activity decor view, and the app regresses to full-screen blur and
 # navigation flicker (issue #89). Keep the library's classes and fields intact.
 -keep class com.qmdeve.blurview.** { *; }
-
-# ReactNativeLiquidGlassView embeds the Liquid-Glass-Android library
-# (com.github.QWEA0.Liquid-Glass-Android), which binds its bundled JNI natives
-# by class name (NativeChromaticAberration, NativeChromaticDispersion) and does
-# not ship consumer rules of its own. Note the com.example.* package is the
-# upstream library's namespace, not a placeholder of ours.
--keep class com.example.liquidglass.** { *; }
