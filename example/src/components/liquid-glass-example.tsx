@@ -47,7 +47,8 @@ const LiquidGlassExample = ({
     <View style={styles.liquidGlassContainer}>
       <Text style={styles.sectionTitle}>Liquid Glass Effects</Text>
       <Text style={styles.liquidGlassSubtitle}>
-        ✨ Available on iOS 26+ • Fallback to blur on older versions
+        ✨ Available on iOS 26+ & Android 13+ • Fallback to blur on older
+        versions
       </Text>
 
       {/* Main Liquid Glass Demo */}

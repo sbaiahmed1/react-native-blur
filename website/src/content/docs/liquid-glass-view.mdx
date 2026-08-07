@@ -20,7 +20,7 @@ import { glassTypeValues } from '../props-data/enums';
 - **iOS below 26, Android below 13, and Web**: automatically falls back to `BlurView` with `blurType="regular"`, `blurAmount={70}`, and a tinted `overlayColor` computed from `glassTintColor`/`glassOpacity` (capped at 35% alpha) — a deliberately engineered approximation of the glass look, not a generic blur. On web this renders with CSS `backdrop-filter`; `glassType` and `isInteractive` are no-ops there.
 - When "Reduce Transparency" is enabled on iOS 26+, the glass effect is hidden and a solid `reducedTransparencyFallbackColor` view is shown instead.
 
-> **⚠️ Use it wisely on Android:** liquid glass is not a native Android concept — Android has no system glass API, so the effect is emulated by continuously capturing the content behind the view and re-rendering it through a GPU shader. Every mounted `LiquidGlassView` pays for its own backdrop capture buffer and per-frame capture work, so the cost grows with the number and size of glass surfaces. It can consume a lot of memory if overused — prefer a few well-placed glass surfaces (a header, a card, a floating bar) over dozens of small ones, and avoid mounting many glass views in long lists.
+> **⚠️ Use it wisely on Android:** liquid glass is not a native Android concept — Android has no system glass API, so the effect is emulated by continuously capturing the content behind the view and re-rendering it through a GPU shader. Every mounted `LiquidGlassView` pays for its own backdrop capture buffer and per-frame capture work, so the cost grows with the number and size of glass surfaces. It can consume a lot of memory if overused — prefer a few well-placed glass surfaces (a header, a card, a floating bar) over dozens of small ones, and avoid mounting many glass views in long lists. The shader also requires **Android 13 (API 33) or newer**; on older Android versions `LiquidGlassView` automatically falls back to `BlurView`, exactly like iOS below 26.
 
 > **Note:** non-uniform corner radii (e.g. only `borderTopLeftRadius`) clip correctly on Android, but the glass lens geometry (bevel/refraction) follows the uniform `borderRadius` value.
 
@@ -50,7 +50,7 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
   glassType="regular"
   glassTintColor="#007AFF"
   glassOpacity={0.9}
-  isInteractive={true} // iOS 26+ and Android
+  isInteractive={true} // iOS 26+ and Android 13+
   ignoreSafeArea={false}
   style={{ flex: 1, padding: 30 }}
 >
@@ -58,7 +58,7 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 </LiquidGlassView>
 ```
 
-<DemoVideo src="android-liquid-glass-demo.mp4" caption="Android: native liquid glass via Liquid-Glass-Android" />
+<DemoVideo src="android-liquid-glass-demo.mp4" caption="Android 13+: native liquid glass (AndroidLiquidGlassView shader)" />
 
 ## Glass types
 
