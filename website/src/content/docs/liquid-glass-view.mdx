@@ -1,6 +1,6 @@
 ---
 title: LiquidGlassView
-description: iOS 26+ UIGlassEffect liquid glass, with a tinted-blur fallback everywhere else.
+description: Native liquid glass on iOS 26+ (UIGlassEffect) and Android (Liquid-Glass-Android), with a tinted-blur fallback elsewhere.
 order: 4
 platforms: [ios, android]
 badge: iOS 26+
@@ -11,13 +11,16 @@ import DemoVideo from '../../components/DemoVideo.astro';
 import { liquidGlassViewProps } from '../props-data/liquid-glass-view';
 import { glassTypeValues } from '../props-data/enums';
 
-`LiquidGlassView` uses Apple's `UIGlassEffect` API (iOS 26+) for true liquid glass rendering, with customizable tint color, opacity, and touch interactivity.
+`LiquidGlassView` renders true liquid glass natively on both mobile platforms: Apple's `UIGlassEffect` API on iOS 26+, and the [Liquid-Glass-Android](https://github.com/QWEA0/Liquid-Glass-Android) library on Android, with customizable tint color, opacity, and touch interactivity.
 
-## Platform fallback behavior
+## Platform behavior
 
 - **iOS 26+**: native `UIGlassEffect`, hardware-accelerated, with optional touch interactivity via `isInteractive`.
-- **iOS below 26, Android, and Web**: automatically falls back to `BlurView` with `blurType="regular"`, `blurAmount={70}`, and a tinted `overlayColor` computed from `glassTintColor`/`glassOpacity` (capped at 35% alpha) — a deliberately engineered approximation of the glass look, not a generic blur. On web this renders with CSS `backdrop-filter`; `glassType` and `isInteractive` are no-ops there.
+- **Android**: native liquid glass rendered by the library's C++/NEON pipeline (blur, chromatic aberration, edge highlight, adaptive material tint) on all supported API levels (24+). The library's GPU/AGSL lens pipeline is intentionally disabled: it records the backdrop through `RenderNode`, which forms a cyclic render tree with React Native ancestor backdrop sources and crashes the render thread. The backdrop is re-captured continuously so content moving behind the glass stays live. `glassTintColor`/`glassOpacity` are approximated as a tint scrim between the glass and its children, capped at 35% alpha (a raw scrim composites literally, unlike `UIGlassEffect`'s material-modulated tint). `isInteractive` toggles the press-elasticity animation; `ignoreSafeArea` and `reducedTransparencyFallbackColor` are iOS-only no-ops.
+- **iOS below 26 and Web**: automatically falls back to `BlurView` with `blurType="regular"`, `blurAmount={70}`, and a tinted `overlayColor` computed from `glassTintColor`/`glassOpacity` (capped at 35% alpha) — a deliberately engineered approximation of the glass look, not a generic blur. On web this renders with CSS `backdrop-filter`; `glassType` and `isInteractive` are no-ops there.
 - When "Reduce Transparency" is enabled on iOS 26+, the glass effect is hidden and a solid `reducedTransparencyFallbackColor` view is shown instead.
+
+> **Note:** non-uniform corner radii (e.g. only `borderTopLeftRadius`) clip correctly on Android, but the glass lens geometry (bevel/refraction) follows the uniform `borderRadius` value.
 
 > **Note:** the component's actual runtime default for `ignoreSafeArea` is `true`. (An earlier version of the inline type documentation stated `false` — the table below reflects the real behavior.)
 
@@ -45,7 +48,7 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
   glassType="regular"
   glassTintColor="#007AFF"
   glassOpacity={0.9}
-  isInteractive={true} // iOS 26+ only
+  isInteractive={true} // iOS 26+ and Android
   ignoreSafeArea={false}
   style={{ flex: 1, padding: 30 }}
 >
@@ -53,7 +56,7 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 </LiquidGlassView>
 ```
 
-<DemoVideo src="android-liquid-glass-demo.mp4" caption="Android fallback: enhanced blur with tint overlay" />
+<DemoVideo src="android-liquid-glass-demo.mp4" caption="Android: native liquid glass via Liquid-Glass-Android" />
 
 ## Glass types
 

@@ -17,7 +17,7 @@ export interface LiquidGlassViewProps {
    *
    * @default 'clear'
    *
-   * @platform iOS 26+
+   * @platform iOS 26+, Android
    */
   glassType?: GlassType;
 
@@ -27,7 +27,7 @@ export interface LiquidGlassViewProps {
    *
    * @default 'clear'
    *
-   * @platform iOS 26+
+   * @platform iOS 26+, Android
    */
   glassTintColor?: string;
 
@@ -36,7 +36,7 @@ export interface LiquidGlassViewProps {
    *
    * @default 1.0
    *
-   * @platform iOS 26+
+   * @platform iOS 26+, Android
    */
   glassOpacity?: number;
 
@@ -51,11 +51,12 @@ export interface LiquidGlassViewProps {
   reducedTransparencyFallbackColor?: string;
 
   /**
-   * @description Whether the glass view should be interactive
+   * @description Whether the glass view should be interactive. On Android this
+   * toggles the press-elasticity animation of the glass
    *
    * @default true
    *
-   * @platform iOS
+   * @platform iOS, Android
    */
   isInteractive?: boolean;
 
@@ -84,15 +85,18 @@ export interface LiquidGlassViewProps {
 }
 
 /**
- * A Liquid Glass view component that provides iOS 26+ glass effects.
+ * A Liquid Glass view component that provides liquid glass effects.
  *
- * This component uses the new UIKit glass effect API available on iOS 26+.
- * On older iOS versions or when reduced transparency is enabled, it falls back
- * to a solid color background.
+ * On iOS 26+ this uses the UIKit UIGlassEffect API. On Android it renders
+ * native liquid glass via the Liquid-Glass-Android library (AGSL/RenderEffect
+ * pipeline on API 33+, classic C++ pipeline down to API 24). When reduced
+ * transparency is enabled on iOS it falls back to a solid color background.
  *
  * **Platform Support:**
  * - iOS 26+: Native glass effect with full functionality
- * - iOS < 26 or Android: Fallback to reducedTransparencyFallbackColor
+ * - Android: Native glass effect (tint rendered as a capped scrim; container
+ *   merging not supported)
+ * - iOS < 26: Fallback to a BlurView approximation
  *
  * This component automatically handles the proper positioning pattern where the glass
  * effect is positioned absolutely behind the content, ensuring interactive elements
@@ -113,11 +117,11 @@ export interface LiquidGlassViewProps {
  * </LiquidGlassView>
  * ```
  *
- * @platform ios
+ * @platform ios, android
  */
 /**
  * Ref to the underlying native liquid glass view. On the fallback path
- * (Android or iOS < 26, which render a BlurView) the ref is not attached.
+ * (iOS < 26, which renders a BlurView) the ref is not attached.
  */
 export type LiquidGlassViewRef = React.ComponentRef<
   typeof ReactNativeLiquidGlassView
@@ -147,12 +151,10 @@ const LiquidGlassViewComponent = forwardRef<
       [glassTintColor, glassOpacity]
     );
 
-    // On Android and iOS < 26 the native glass API is unavailable, so we fall
-    // back to a strong, lightly-tinted blur that approximates liquid glass.
-    if (
-      !isIos ||
-      (isIos && Number.parseInt(String(Platform.Version), 10) < 26)
-    ) {
+    // Android renders native glass (Liquid-Glass-Android). Only iOS < 26,
+    // where the native glass API is unavailable, falls back to a strong,
+    // lightly-tinted blur that approximates liquid glass.
+    if (isIos && Number.parseInt(String(Platform.Version), 10) < 26) {
       return (
         <BlurView
           // "regular" is a subtle (~14% white) overlay. The default "xlight" is

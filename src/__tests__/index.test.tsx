@@ -1,9 +1,10 @@
 import type { ReactElement } from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
-import { View, type ColorValue } from 'react-native';
+import { Platform, View, type ColorValue } from 'react-native';
 
 import * as PublicApi from '../index';
 import ReactNativeBlurView from '../ReactNativeBlurViewNativeComponent';
+import ReactNativeLiquidGlassView from '../ReactNativeLiquidGlassViewNativeComponent';
 import { BlurView } from '../BlurView';
 import { ProgressiveBlurView } from '../ProgressiveBlurView';
 import { LiquidGlassView, getFallbackOverlayColor } from '../LiquidGlassView';
@@ -109,6 +110,22 @@ describe('wrapper rendering', () => {
       0
     );
     act(() => tree.unmount());
+  });
+
+  it('renders LiquidGlassView natively on Android instead of the BlurView fallback', () => {
+    const replaced = jest.replaceProperty(Platform, 'OS', 'android');
+    try {
+      const tree = render(
+        <LiquidGlassView glassTintColor="#007AFF" glassOpacity={0.8} />
+      );
+      expect(tree.root.findAllByType(BlurView)).toHaveLength(0);
+      expect(tree.root.findAllByType(ReactNativeLiquidGlassView)).toHaveLength(
+        1
+      );
+      act(() => tree.unmount());
+    } finally {
+      replaced.restore();
+    }
   });
 
   it('renders every wrapper without throwing', () => {
