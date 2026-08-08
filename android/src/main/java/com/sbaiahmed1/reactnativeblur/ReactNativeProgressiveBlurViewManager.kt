@@ -1,8 +1,8 @@
 package com.sbaiahmed1.reactnativeblur
 
 import com.facebook.react.module.annotations.ReactModule
-import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
+import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.ViewManagerDelegate
 import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.ReactNativeProgressiveBlurViewManagerInterface
@@ -11,9 +11,14 @@ import com.facebook.react.viewmanagers.ReactNativeProgressiveBlurViewManagerDele
 /**
  * View manager for the ReactNativeProgressiveBlurView component.
  * Handles prop updates and view lifecycle for progressive blur effects on Android.
+ *
+ * A ViewGroupManager (not SimpleViewManager) so React children can mount
+ * INSIDE the native view on Android: the view draws them unmasked on top of
+ * the blur and excludes them from backdrop captures — children hoisted as
+ * siblings would be baked into the blurred backdrop as a ghost copy.
  */
 @ReactModule(name = ReactNativeProgressiveBlurViewManager.NAME)
-class ReactNativeProgressiveBlurViewManager : SimpleViewManager<ReactNativeProgressiveBlurView>(),
+class ReactNativeProgressiveBlurViewManager : ViewGroupManager<ReactNativeProgressiveBlurView>(),
   ReactNativeProgressiveBlurViewManagerInterface<ReactNativeProgressiveBlurView> {
   private val mDelegate: ViewManagerDelegate<ReactNativeProgressiveBlurView>
 
@@ -78,6 +83,14 @@ class ReactNativeProgressiveBlurViewManager : SimpleViewManager<ReactNativeProgr
     super.onDropViewInstance(view)
     // Call cleanup to reset state and prevent white screen artifacts
     view.cleanup()
+  }
+
+  /**
+   * Indicates that React Native's Yoga layout should handle child positioning.
+   * Returns false to let React Native manage the layout of children.
+   */
+  override fun needsCustomLayoutForChildren(): Boolean {
+    return false
   }
 
   companion object {

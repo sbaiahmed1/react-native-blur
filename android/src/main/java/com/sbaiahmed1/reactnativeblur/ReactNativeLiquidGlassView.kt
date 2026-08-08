@@ -1,12 +1,12 @@
 package com.sbaiahmed1.reactnativeblur
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.RenderEffect
 import android.graphics.RenderNode
@@ -68,16 +68,14 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   // Resolved uniform corner radius in px for the shader's lens geometry (the
   // per-corner-aware outline clip is handled separately in updateCornerRadius).
   private var shaderRadiusPx = 0f
-  private var captureBitmap: Bitmap? = null
-  private var captureCanvas: Canvas? = null
   private var captureSource: ViewGroup? = null
-  private var isCapturing = false
   private var effectDirty = true
   private var initRunnable: Runnable? = null
   // Guards the visibility callbacks Android fires from the View super
   // constructor, before this class's properties are initialized.
   private var constructed = false
   private val capturePaint = Paint(Paint.FILTER_BITMAP_FLAG)
+  private val captureSrcRect = Rect()
   private val nodeBounds = RectF()
   private val sourceLocation = IntArray(2)
   private val ownLocation = IntArray(2)
@@ -142,8 +140,10 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     // last resort: software capture self-excludes via the draw() guard.
     val runnable = Runnable {
       initRunnable = null
-      captureSource =
+      val source =
         findNearestScreenAncestor() ?: findNearestReactRootView() ?: parent as? ViewGroup
+      captureSource = source
+      source?.let { SharedBackdropCapture.register(it) }
       refreshBackdrop()
     }
     initRunnable = runnable
@@ -183,10 +183,8 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     initRunnable?.let { removeCallbacks(it) }
     initRunnable = null
     removeCallbacks(backdropTicker)
+    captureSource?.let { SharedBackdropCapture.unregister(it) }
     captureSource = null
-    captureBitmap?.recycle()
-    captureBitmap = null
-    captureCanvas = null
     if (isSupported) {
       glassNode?.discardDisplayList()
     }
@@ -201,9 +199,11 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   }
 
   /** Self-exclusion from backdrop capture; the software canvas re-executes
-   * draw(), so returning early skips this whole subtree (glass + children). */
+   * draw(), so returning early skips this whole subtree (glass + children).
+   * The flag is global so that EVERY glass view is excluded from the shared
+   * capture, not just the one that triggered it. */
   override fun draw(canvas: Canvas) {
-    if (isCapturing) return
+    if (SharedBackdropCapture.captureInProgress) return
     super.draw(canvas)
   }
 
@@ -233,41 +233,27 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     if (shaderFailed) return
     val node = glassNode ?: return
 
-    val bitmapWidth = (width / CAPTURE_DOWNSAMPLE).coerceAtLeast(1)
-    val bitmapHeight = (height / CAPTURE_DOWNSAMPLE).coerceAtLeast(1)
-    var bitmap = captureBitmap
-    if (bitmap == null || bitmap.width != bitmapWidth || bitmap.height != bitmapHeight) {
-      captureBitmap?.recycle()
-      bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
-      captureBitmap = bitmap
-      captureCanvas = Canvas(bitmap)
-    }
-    val canvas = captureCanvas ?: return
-
-    bitmap.eraseColor(Color.TRANSPARENT)
+    // One shared, downsampled capture of the source per refresh interval,
+    // shared by every glass view on the screen; this view only blits its own
+    // sub-rect out of it.
+    val bitmap = SharedBackdropCapture.acquire(source, CAPTURE_DOWNSAMPLE, BACKDROP_REFRESH_MS)
+      ?: return
     source.getLocationInWindow(sourceLocation)
     getLocationInWindow(ownLocation)
-    val save = canvas.save()
-    canvas.scale(1f / CAPTURE_DOWNSAMPLE, 1f / CAPTURE_DOWNSAMPLE)
-    canvas.translate(
-      -(ownLocation[0] - sourceLocation[0]).toFloat(),
-      -(ownLocation[1] - sourceLocation[1]).toFloat()
+    val left = (ownLocation[0] - sourceLocation[0]) / CAPTURE_DOWNSAMPLE
+    val top = (ownLocation[1] - sourceLocation[1]) / CAPTURE_DOWNSAMPLE
+    captureSrcRect.set(
+      left,
+      top,
+      left + (width / CAPTURE_DOWNSAMPLE).coerceAtLeast(1),
+      top + (height / CAPTURE_DOWNSAMPLE).coerceAtLeast(1)
     )
-    isCapturing = true
-    try {
-      source.draw(canvas)
-    } catch (e: Exception) {
-      logWarning("Backdrop capture failed", e)
-    } finally {
-      isCapturing = false
-      canvas.restoreToCount(save)
-    }
 
     node.setPosition(0, 0, width, height)
     val recording = node.beginRecording(width, height)
     try {
       nodeBounds.set(0f, 0f, width.toFloat(), height.toFloat())
-      recording.drawBitmap(bitmap, null, nodeBounds, capturePaint)
+      recording.drawBitmap(bitmap, captureSrcRect, nodeBounds, capturePaint)
     } finally {
       node.endRecording()
     }

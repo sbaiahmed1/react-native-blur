@@ -418,6 +418,15 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   }
 
   override fun dispatchDraw(canvas: Canvas) {
+    // A software canvas here means another blur surface is capturing the
+    // screen (all captures in this library rasterize through software
+    // canvases) — most importantly this view's OWN internal BlurView
+    // capturing its backdrop. Contributing the blur layer and the React
+    // children to that capture bakes them into the blurred backdrop, drawing
+    // children twice (sharp on top of their own blurred ghost). Skip
+    // entirely: the backdrop must only contain what is BEHIND this view.
+    if (!canvas.isHardwareAccelerated) return
+
     val maskedChild = blurView
     if (width <= 0 || height <= 0 || maskedChild == null) {
       super.dispatchDraw(canvas)

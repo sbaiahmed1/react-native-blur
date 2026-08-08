@@ -1,5 +1,5 @@
 import React, { Children, forwardRef, memo, useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
 import ReactNativeProgressiveBlurView, {
   type BlurType,
@@ -158,6 +158,29 @@ const ProgressiveBlurViewComponent = forwardRef<
           style={[style, overlay]}
           {...props}
         />
+      );
+    }
+
+    // On Android the children must live INSIDE the native view: the blur
+    // captures the screen content behind it, and children hoisted as siblings
+    // get baked into that captured backdrop as a blurred ghost copy under
+    // their sharp selves. The native view draws direct children unmasked on
+    // top of the effect and excludes its whole subtree from captures.
+    if (Platform.OS === 'android') {
+      return (
+        <ReactNativeProgressiveBlurView
+          ref={ref}
+          blurType={blurType}
+          blurAmount={blurAmount}
+          blurRounds={blurRounds}
+          direction={direction}
+          startOffset={startOffset}
+          reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+          style={[styles.container, style, overlay]}
+          {...props}
+        >
+          {children}
+        </ReactNativeProgressiveBlurView>
       );
     }
 
