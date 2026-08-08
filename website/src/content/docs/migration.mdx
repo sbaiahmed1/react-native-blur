@@ -4,6 +4,18 @@ description: Upgrading from v3.x, and migrating from @react-native-community/blu
 order: 9
 ---
 
+## Breaking changes in v6.0.0
+
+### ProgressiveBlurView `startOffset` is now cross-platform consistent
+
+`startOffset` now means the same thing on every platform: for the edge directions it grows the **fully-blurred plateau from the blurred edge** (the fade spans the rest of the view); for the center direction it insets the fade start from the edges (clamped to 0.3), shortening the blur body.
+
+Previously, **iOS** interpreted the edge directions inversely — `startOffset` grew the fully-*clear* region from the clear edge — so the same value produced opposite fade geometry per platform (e.g. a `startOffset={0.6}` bottom paywall blur hid content on Android/Web but left it readable on iOS). **Web's** center direction also grew the blurred band instead of shrinking it.
+
+**What to do:** if you tuned `startOffset` on iOS, or used `Platform.select` to paper over the difference, collapse it to one value and re-check the fade. As a rule of thumb, an old iOS value `x` corresponds roughly to a new value of `1 - x` minus the intended fade span. `startOffset={0}` (the default) is unchanged on all platforms.
+
+Android's fade curve was also retuned in this release (eased instead of linear) so the default renders a visible blur body — see [issue #119](https://github.com/sbaiahmed1/react-native-blur/issues/119).
+
 ## Breaking changes in v5.0.0
 
 ### New Architecture is now required

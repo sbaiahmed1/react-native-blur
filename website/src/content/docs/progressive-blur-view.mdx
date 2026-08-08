@@ -16,7 +16,7 @@ import { progressiveBlurDirectionValues } from '../props-data/enums';
 - **Android**: extends QmBlurView's `BlurView` with custom gradient masking.
 - **Web**: stacks several CSS `backdrop-filter` layers with gradient masks, halving the radius per layer — a genuine blur-radius ramp (from `blurAmount` px down to sharp), not a single blur fading in opacity.
 
-Progressive blur `startOffset` behaves slightly differently between platforms — test each when tuning a design. On web, `blurAmount` is the maximum radius in px (matching native), and browsers without `backdrop-filter` fall back to the directional tint gradient alone.
+On web, `blurAmount` is the maximum radius in px (matching native), and browsers without `backdrop-filter` fall back to the directional tint gradient alone. Since 6.0, `startOffset` means the same thing on every platform — see [Platform differences](#platform-differences) for how the fade is constructed per backend.
 
 ## Basic usage
 
@@ -65,7 +65,7 @@ import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
     blurType="light"
     blurAmount={20}
     direction="blurredBottomClearTop"
-    startOffset={0.2}
+    startOffset={0.5} // bottom half fully blurred, fade over the top half
     style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 200 }}
   >
     <Text>🔒 Unlock to read more</Text>
@@ -73,6 +73,24 @@ import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
   </ProgressiveBlurView>
 </View>
 ```
+
+## Platform differences
+
+The three backends aim for the same look but get there differently:
+
+- **Blur ramp.** iOS and Web ramp the blur *radius* from `blurAmount` down to 0 across the gradient. Android renders one fixed-radius blur and ramps its *opacity* with a perceptually tuned eased mask that approximates the same look. The iOS and Android fade curves are shaped in opposite directions (ease-in on the radius, ease-out on the opacity) so that content legibility fades comparably across platforms.
+- **`startOffset`** means the same thing on every platform: for the edge directions it grows a fully-blurred plateau from the blurred edge — `0.4` means the nearest 40% of the view is uniformly blurred and the fade spans the remaining 60%. For the center direction it insets the fade start from the edges (clamped to 0.3), shortening the blur body — `0` gives the longest body.
+
+<div class="glass-panel-subtle my-6 rounded-xl border border-amber-400/30 p-4 text-sm text-white/80">
+  <strong class="text-amber-300">Changed in 6.0:</strong> before 6.0, iOS interpreted <code>startOffset</code> inversely for the edge directions — it grew the fully-<em>clear</em> region from the clear edge — and Web's center direction grew the blurred band instead of shrinking it. If you tuned <code>startOffset</code> per platform (e.g. via <code>Platform.select</code>), collapse it to a single value and re-check the iOS fade geometry.
+</div>
+
+## Android backend notes
+
+On Android, the blur works by capturing the surrounding view tree — scoped to the nearest `react-native-screens` Screen, falling back to the React root — into a downsampled bitmap and blurring it. Two practical consequences:
+
+- **Performance is capture-bound.** The per-frame software capture dominates the cost; the blur passes are cheap and run off the UI thread. Lowering `blurRounds` sacrifices quality without meaningfully improving frame times — if the blur is too expensive, reduce how often the content behind it changes rather than tuning `blurRounds`.
+- **Content drawn on top of the blur is captured too.** iOS samples only what is *behind* the effect view, but the Android capture includes anything rendered above the blur inside the capture root — including this component's own children, which render as siblings on top of the native blur. A crisp title over a blurred bar gains a blurred copy underneath it, visible as a halo when the tint is light. If the halo shows in a design, move that content outside the capture root (e.g. a portal above the navigator).
 
 ## Direction values
 

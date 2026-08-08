@@ -142,9 +142,13 @@ const maskForLayer = (
   const n = PROGRESSIVE_LAYER_COUNT;
 
   if (direction === 'blurredCenterClearTopAndBottom') {
-    // Band edges as distances from the 50% center line.
-    const q = (j: number) =>
-      startOffset * 50 + ((1 - startOffset) * 50 * j) / n;
+    // Same geometry as the native backends: a clear inset of `startOffset` at
+    // each edge, a 20% fade band, and a solid plateau around the center line
+    // (clamped to 0.3, where the plateau collapses to the center). Band edges
+    // as distances from the 50% center line: the plateau reaches
+    // (30 - inset*100)% out, the fade band spans the next 20%.
+    const inset = Math.min(startOffset, 0.3);
+    const q = (j: number) => 30 - inset * 100 + (20 * j) / n;
     const inner = q(n - layer);
     const outer = q(n - layer + 1);
     return (
@@ -203,10 +207,12 @@ export function getProgressiveTintGradient(
   const s = clamp(startOffset, 0, 1);
 
   if (direction === 'blurredCenterClearTopAndBottom') {
-    const inner = s * 50;
+    // Follows the blur body: clear over the edge insets, full tint over the
+    // center plateau (same geometry as the center mask above).
+    const inset = Math.min(s, 0.3) * 100;
     return (
-      `linear-gradient(to bottom, transparent 0%, ${tint} ${pct(50 - inner)}, ` +
-      `${tint} ${pct(50 + inner)}, transparent 100%)`
+      `linear-gradient(to bottom, transparent ${pct(inset)}, ${tint} ${pct(inset + 20)}, ` +
+      `${tint} ${pct(80 - inset)}, transparent ${pct(100 - inset)})`
     );
   }
 

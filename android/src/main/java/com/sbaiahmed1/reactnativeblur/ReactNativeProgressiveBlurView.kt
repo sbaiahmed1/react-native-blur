@@ -4,28 +4,46 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
+import android.graphics.Outline
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Shader
+import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.view.View.MeasureSpec
 import com.qmdeve.blurview.widget.BlurView
+import kotlin.math.roundToInt
 
 /**
  * Android implementation of React Native ProgressiveBlurView component.
- * Uses a combination of normal blur (BlurView) + linear gradient mask to create
- * a progressive blur effect that transitions from blurred to clear.
+ * Uses a combination of normal blur (BlurView) + eased gradient alpha mask to
+ * create a progressive blur effect that transitions from blurred to clear.
  *
- * This approach is more reliable than using the library's ProgressiveBlurView,
- * which has limited control over gradient direction and appearance.
+ * QmBlurView ships its own ProgressiveBlurView, but it is the same technique
+ * (uniform blur + DST_IN gradient) with a hardcoded 2-stop linear full-height
+ * ramp — the exact "no visible blur" failure mode of issue #119 — and offers
+ * no startOffset/plateau control, no center direction, and no curve tuning,
+ * so it is not a viable replacement for this class.
  */
 class ReactNativeProgressiveBlurView : FrameLayout {
   private var blurView: BlurView? = null
+  // RN border radii (dp; -1f sentinels for unset per-corner values). With
+  // children mounted inside the native view on Android, the view itself must
+  // clip to the style's border radius — the JS container that used to do it
+  // (overflow: hidden) no longer wraps this view.
+  private var borderRadius = 0f
+  private var borderTopLeftRadius = -1f
+  private var borderTopRightRadius = -1f
+  private var borderBottomLeftRadius = -1f
+  private var borderBottomRightRadius = -1f
   private val gradientPaint = Paint(Paint.ANTI_ALIAS_FLAG)
   // Hoisted out of dispatchDraw so the mask xfermode is not reallocated on
   // every frame. gradientPaint is only ever used for the DST_IN mask, so the
@@ -57,6 +75,26 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     private const val DEFAULT_BLUR_ROUNDS = 5
     private const val DEFAULT_DOWNSAMPLE_FACTOR = 8.0f
     private const val DEBUG = false
+
+    // The DST_IN mask cross-fades one fixed-radius blur in *opacity*, while iOS
+    // and web ramp the blur *radius*. A linear alpha ramp therefore reads as a
+    // weak ghosting cross-fade — at the perceptual midpoint the blur layer is
+    // only 50% opaque, whereas a half-radius blur on iOS still looks clearly
+    // blurred (issue #119: "ProgressiveBlurView renders no visible blur").
+    //
+    // The curve below is a hand-tuned compromise between two failure modes:
+    //  - too shallow (linear): the default full-height ramp never looks solid
+    //    and the blur reads as "nothing" under a tint (the original #119 bug);
+    //  - too steep (ease-out cubic): opacity saturates so close to the clear
+    //    edge that the plateau boundary startOffset moves becomes invisible —
+    //    every offset renders the same near-uniform frost.
+    // These stops rise above linear early (blur body shows by mid-ramp) but
+    // keep a genuine clear window near the clear edge and only saturate at
+    // ~3/4 of the ramp, so growing the plateau visibly changes the output.
+    private val RAMP_POSITIONS = floatArrayOf(0f, 0.15f, 0.3f, 0.45f, 0.6f, 0.75f, 1f)
+    private val RAMP_COLORS = floatArrayOf(0f, 0.08f, 0.3f, 0.52f, 0.75f, 0.9f, 1f)
+      .map { alpha -> Color.argb((alpha * 255f).roundToInt(), 255, 255, 255) }
+      .toIntArray()
 
     // Cross-platform blur amount constants
     private const val MIN_BLUR_AMOUNT = 0f
@@ -343,35 +381,56 @@ class ReactNativeProgressiveBlurView : FrameLayout {
             Shader.TileMode.CLAMP
           )
         }
-        else -> {
+        // startOffset 1 grows the plateau over the whole view: the ramp
+        // collapses to zero length and the gradient's two points coincide,
+        // which Skia treats as an empty shader — the DST_IN mask erases the
+        // blur entirely instead of keeping it fully opaque. Use an all-opaque
+        // mask for that case.
+        else -> if (currentStartOffset >= 1f) {
+          LinearGradient(
+            0f,
+            0f,
+            0f,
+            height.toFloat(),
+            intArrayOf(Color.WHITE, Color.WHITE),
+            floatArrayOf(0f, 1f),
+            Shader.TileMode.CLAMP
+          )
+        } else {
+          // point0 is always the clear edge (alpha 0), point1 the point where
+          // the mask reaches full opacity. startOffset moves point1 toward the
+          // clear edge, growing a fully-blurred plateau from the blurred edge
+          // (Shader.TileMode.CLAMP keeps everything past point1 opaque) — the
+          // same semantics as the iOS and Web backends (unified in 6.0, see
+          // the docs' Platform differences).
           val (x0, y0, x1, y1) = when (currentDirection) {
             "bottomToTop" -> {
               // Blur at bottom, clear at top
-              // point0 (TRANSPARENT/clear) at top, point1 (WHITE/blur) at bottom adjusted by offset
               val offsetPixels = height * currentStartOffset
               floatArrayOf(0f, 0f, 0f, height - offsetPixels)
             }
             "topToBottom" -> {
               // Blur at top, clear at bottom (default)
-              // point0 (TRANSPARENT/clear) at bottom, point1 (WHITE/blur) at top adjusted by offset
               val offsetPixels = height * currentStartOffset
               floatArrayOf(0f, height.toFloat(), 0f, offsetPixels)
             }
             "leftToRight" -> {
-              val offsetPixels = width * currentStartOffset
-              floatArrayOf(offsetPixels, 0f, width.toFloat(), 0f)
-            }
-            "rightToLeft" -> {
+              // Blur at left, clear at right
               val offsetPixels = width * currentStartOffset
               floatArrayOf(width.toFloat(), 0f, offsetPixels, 0f)
+            }
+            "rightToLeft" -> {
+              // Blur at right, clear at left
+              val offsetPixels = width * currentStartOffset
+              floatArrayOf(0f, 0f, width - offsetPixels, 0f)
             }
             else -> floatArrayOf(0f, 0f, 0f, height.toFloat())
           }
 
           LinearGradient(
             x0, y0, x1, y1,
-            intArrayOf(Color.TRANSPARENT, Color.WHITE),
-            floatArrayOf(0f, 1f),
+            RAMP_COLORS,
+            RAMP_POSITIONS,
             Shader.TileMode.CLAMP
           )
         }
@@ -387,24 +446,120 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     }
   }
 
+  fun setBorderRadius(radius: Float) {
+    borderRadius = radius
+    updateCornerRadius()
+  }
+
+  fun setBorderTopLeftRadius(radius: Float) {
+    borderTopLeftRadius = radius
+    updateCornerRadius()
+  }
+
+  fun setBorderTopRightRadius(radius: Float) {
+    borderTopRightRadius = radius
+    updateCornerRadius()
+  }
+
+  fun setBorderBottomLeftRadius(radius: Float) {
+    borderBottomLeftRadius = radius
+    updateCornerRadius()
+  }
+
+  fun setBorderBottomRightRadius(radius: Float) {
+    borderBottomRightRadius = radius
+    updateCornerRadius()
+  }
+
+  private fun convertDpToPx(dp: Float): Float {
+    val displayMetrics = context.resources.displayMetrics
+    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, displayMetrics)
+  }
+
+  private fun updateCornerRadius() {
+    // Unset per-corner radii use the sentinel -1f (see the field defaults), so
+    // test >= 0: an explicit 0 must override the base radius to square that
+    // corner, only a negative sentinel falls back to baseRadius.
+    val baseRadius = convertDpToPx(borderRadius)
+    val topLeft = if (borderTopLeftRadius >= 0) convertDpToPx(borderTopLeftRadius) else baseRadius
+    val topRight = if (borderTopRightRadius >= 0) convertDpToPx(borderTopRightRadius) else baseRadius
+    val bottomLeft = if (borderBottomLeftRadius >= 0) convertDpToPx(borderBottomLeftRadius) else baseRadius
+    val bottomRight = if (borderBottomRightRadius >= 0) convertDpToPx(borderBottomRightRadius) else baseRadius
+
+    val isUniform = topLeft == topRight && topRight == bottomLeft && bottomLeft == bottomRight
+
+    outlineProvider = if (isUniform) {
+      object : ViewOutlineProvider() {
+        override fun getOutline(view: View, outline: Outline?) {
+          outline?.setRoundRect(0, 0, view.width, view.height, topLeft)
+        }
+      }
+    } else {
+      object : ViewOutlineProvider() {
+        override fun getOutline(view: View, outline: Outline?) {
+          val path = Path()
+          val radii = floatArrayOf(
+            topLeft,
+            topLeft,
+            topRight,
+            topRight,
+            bottomRight,
+            bottomRight,
+            bottomLeft,
+            bottomLeft
+          )
+          path.addRoundRect(0f, 0f, view.width.toFloat(), view.height.toFloat(), radii, Path.Direction.CW)
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            outline?.setPath(path)
+          } else {
+            @Suppress("DEPRECATION")
+            outline?.setConvexPath(path)
+          }
+        }
+      }
+    }
+
+    clipToOutline = true
+    invalidateOutline()
+  }
+
   override fun dispatchDraw(canvas: Canvas) {
-    if (width <= 0 || height <= 0) {
+    // A software canvas here means another blur surface is capturing the
+    // screen (all captures in this library rasterize through software
+    // canvases) — most importantly this view's OWN internal BlurView
+    // capturing its backdrop. Contributing the blur layer and the React
+    // children to that capture bakes them into the blurred backdrop, drawing
+    // children twice (sharp on top of their own blurred ghost). Skip
+    // entirely: the backdrop must only contain what is BEHIND this view.
+    if (!canvas.isHardwareAccelerated) return
+
+    val maskedChild = blurView
+    if (width <= 0 || height <= 0 || maskedChild == null) {
       super.dispatchDraw(canvas)
       return
     }
 
-    // Use a layer to apply the gradient mask
+    // Mask only the internal BlurView. Drawing ALL children into the layer
+    // would fade any React children toward the clear edge along with the blur
+    // (iOS renders children unmasked on top of the effect view). The JS
+    // wrapper hoists children out of the native view, but direct native usage
+    // can still put them here.
     val saveCount = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
-
-    // Draw the blur view
-    super.dispatchDraw(canvas)
+    drawChild(canvas, maskedChild, drawingTime)
 
     // Apply gradient mask using DST_IN to make the blur gradually transparent.
     // The xfermode is already set on the paint (see setupView), so this draw
     // allocates nothing per frame.
     canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), gradientPaint)
-
     canvas.restoreToCount(saveCount)
+
+    // Draw the remaining children unmasked, preserving order.
+    for (i in 0 until childCount) {
+      val child = getChildAt(i)
+      if (child !== maskedChild && child.visibility == View.VISIBLE) {
+        drawChild(canvas, child, drawingTime)
+      }
+    }
   }
 
   /**

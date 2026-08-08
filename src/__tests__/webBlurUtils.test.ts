@@ -99,10 +99,10 @@ describe('getProgressiveLayers', () => {
       20
     );
     expect(layers[4]?.maskImage).toBe(
-      'linear-gradient(to bottom, transparent 40%, black 50%, black 50%, transparent 60%)'
+      'linear-gradient(to bottom, transparent 16%, black 20%, black 80%, transparent 84%)'
     );
     expect(layers[0]?.maskImage).toBe(
-      'linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%)'
+      'linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%)'
     );
   });
 
@@ -153,7 +153,7 @@ describe('getProgressiveTintGradient', () => {
         'rgba(255,255,255,0.2)'
       )
     ).toBe(
-      'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.2) 40%, rgba(255,255,255,0.2) 60%, transparent 100%)'
+      'linear-gradient(to bottom, transparent 20%, rgba(255,255,255,0.2) 40%, rgba(255,255,255,0.2) 60%, transparent 80%)'
     );
   });
 });

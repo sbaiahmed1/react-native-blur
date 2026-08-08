@@ -58,6 +58,13 @@ On react-native-web, `BlurView` renders a `backdrop-filter: blur() saturate(180%
 - `blurRounds`, `reducedTransparencyFallbackColor`, and `ignoreSafeArea` are native-only no-ops.
 - A forwarded `ref` resolves to the root `View` (a DOM element) instead of a native view.
 
+## Android behavior
+
+QmBlurView works by capturing the surrounding view tree — scoped to the nearest `react-native-screens` Screen, falling back to the React root — into a downsampled bitmap and blurring it. Two things follow:
+
+- **Performance is capture-bound.** The per-frame software capture dominates the cost; the blur passes are cheap and run off the UI thread. Lowering `blurRounds` sacrifices quality without meaningfully improving frame times.
+- **Content drawn on top of the blur is captured too.** iOS samples only what is *behind* the effect view, but the Android capture includes anything rendered above the blur inside the capture root, which shows up as a blurred halo under the crisp original. If the halo shows in a design, move that content outside the capture root (e.g. a portal above the navigator).
+
 ## Props
 
 <PropsTable rows={blurViewProps} />

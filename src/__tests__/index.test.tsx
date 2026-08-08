@@ -1,9 +1,10 @@
 import type { ReactElement } from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
-import { View, type ColorValue } from 'react-native';
+import { Platform, View, type ColorValue } from 'react-native';
 
 import * as PublicApi from '../index';
 import ReactNativeBlurView from '../ReactNativeBlurViewNativeComponent';
+import ReactNativeLiquidGlassView from '../ReactNativeLiquidGlassViewNativeComponent';
 import { BlurView } from '../BlurView';
 import { ProgressiveBlurView } from '../ProgressiveBlurView';
 import { LiquidGlassView, getFallbackOverlayColor } from '../LiquidGlassView';
@@ -109,6 +110,56 @@ describe('wrapper rendering', () => {
       0
     );
     act(() => tree.unmount());
+  });
+
+  it('renders LiquidGlassView natively on Android 13+ instead of the BlurView fallback', () => {
+    const replaced = jest.replaceProperty(Platform, 'OS', 'android');
+    // Platform.Version is a getter in RN, so swap the property descriptor
+    // rather than using jest.replaceProperty (which needs a data property).
+    const versionDescriptor = Object.getOwnPropertyDescriptor(
+      Platform,
+      'Version'
+    )!;
+    // API 33 exactly: the Android 13 boundary the gate must accept.
+    Object.defineProperty(Platform, 'Version', {
+      value: 33,
+      configurable: true,
+    });
+    try {
+      const tree = render(
+        <LiquidGlassView glassTintColor="#007AFF" glassOpacity={0.8} />
+      );
+      expect(tree.root.findAllByType(BlurView)).toHaveLength(0);
+      expect(tree.root.findAllByType(ReactNativeLiquidGlassView)).toHaveLength(
+        1
+      );
+      act(() => tree.unmount());
+    } finally {
+      replaced.restore();
+      Object.defineProperty(Platform, 'Version', versionDescriptor);
+    }
+  });
+
+  it('renders LiquidGlassView as a BlurView fallback on Android below 13', () => {
+    const replaced = jest.replaceProperty(Platform, 'OS', 'android');
+    const versionDescriptor = Object.getOwnPropertyDescriptor(
+      Platform,
+      'Version'
+    )!;
+    Object.defineProperty(Platform, 'Version', {
+      value: 31,
+      configurable: true,
+    });
+    try {
+      const tree = render(
+        <LiquidGlassView glassTintColor="#007AFF" glassOpacity={0.8} />
+      );
+      expect(tree.root.findAllByType(BlurView)).toHaveLength(1);
+      act(() => tree.unmount());
+    } finally {
+      replaced.restore();
+      Object.defineProperty(Platform, 'Version', versionDescriptor);
+    }
   });
 
   it('renders every wrapper without throwing', () => {

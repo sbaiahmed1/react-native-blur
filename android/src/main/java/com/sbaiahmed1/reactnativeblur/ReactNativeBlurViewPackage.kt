@@ -12,6 +12,7 @@ class ReactNativeBlurViewPackage : ReactPackage {
     viewManagers.add(ReactNativeBlurViewManager())
     viewManagers.add(ReactNativeProgressiveBlurViewManager())
     viewManagers.add(ReactNativeBlurSwitchManager())
+    viewManagers.add(ReactNativeLiquidGlassViewManager())
     return viewManagers
   }
 

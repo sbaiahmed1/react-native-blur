@@ -17,26 +17,28 @@ export interface LiquidGlassViewProps {
    *
    * @default 'clear'
    *
-   * @platform iOS 26+
+   * @platform iOS 26+, Android 13+
    */
   glassType?: GlassType;
 
   /**
    * @description The tint color of the glass effect. Accepts hex color strings
-   * like '#FFFFFF' or color names
+   * like '#FFFFFF' or color names. On platforms without native glass it also
+   * drives the tint of the BlurView/web fallback overlay
    *
    * @default 'clear'
    *
-   * @platform iOS 26+
+   * @platform iOS 26+, Android 13+ (fallback tint everywhere)
    */
   glassTintColor?: string;
 
   /**
-   * @description The opacity of the glass effect (0-1)
+   * @description The opacity of the glass effect (0-1). On platforms without
+   * native glass it also scales the BlurView/web fallback overlay tint
    *
    * @default 1.0
    *
-   * @platform iOS 26+
+   * @platform iOS 26+, Android 13+ (fallback tint everywhere)
    */
   glassOpacity?: number;
 
@@ -51,11 +53,13 @@ export interface LiquidGlassViewProps {
   reducedTransparencyFallbackColor?: string;
 
   /**
-   * @description Whether the glass view should be interactive
+   * @description Whether the glass view should be interactive. On Android this
+   * toggles an iOS-style press-scale animation. No effect on the fallback
+   * paths (iOS < 26, Android < 13, web)
    *
    * @default true
    *
-   * @platform iOS
+   * @platform iOS 26+, Android 13+
    */
   isInteractive?: boolean;
 
@@ -84,15 +88,18 @@ export interface LiquidGlassViewProps {
 }
 
 /**
- * A Liquid Glass view component that provides iOS 26+ glass effects.
+ * A Liquid Glass view component that provides liquid glass effects.
  *
- * This component uses the new UIKit glass effect API available on iOS 26+.
- * On older iOS versions or when reduced transparency is enabled, it falls back
- * to a solid color background.
+ * On iOS 26+ this uses the UIKit UIGlassEffect API. On Android 13+ it renders
+ * native liquid glass with the AndroidLiquidGlassView AGSL shader
+ * (refraction, dispersion, blur and shader-modulated tint on the GPU). When
+ * reduced transparency is enabled on iOS it falls back to a solid color
+ * background.
  *
  * **Platform Support:**
  * - iOS 26+: Native glass effect with full functionality
- * - iOS < 26 or Android: Fallback to reducedTransparencyFallbackColor
+ * - Android 13+: Native glass effect (container merging not supported)
+ * - iOS < 26 and Android < 13: Fallback to a BlurView approximation
  *
  * This component automatically handles the proper positioning pattern where the glass
  * effect is positioned absolutely behind the content, ensuring interactive elements
@@ -113,11 +120,12 @@ export interface LiquidGlassViewProps {
  * </LiquidGlassView>
  * ```
  *
- * @platform ios
+ * @platform ios, android
  */
 /**
  * Ref to the underlying native liquid glass view. On the fallback path
- * (Android or iOS < 26, which render a BlurView) the ref is not attached.
+ * (iOS < 26 or Android < 13, which render a BlurView) the ref is not
+ * attached.
  */
 export type LiquidGlassViewRef = React.ComponentRef<
   typeof ReactNativeLiquidGlassView
@@ -147,12 +155,15 @@ const LiquidGlassViewComponent = forwardRef<
       [glassTintColor, glassOpacity]
     );
 
-    // On Android and iOS < 26 the native glass API is unavailable, so we fall
-    // back to a strong, lightly-tinted blur that approximates liquid glass.
-    if (
-      !isIos ||
-      (isIos && Number.parseInt(String(Platform.Version), 10) < 26)
-    ) {
+    // Native glass needs iOS 26+ (UIGlassEffect) or Android 13+ (the AGSL
+    // RuntimeShader the AndroidLiquidGlassView effect is built on). Older
+    // platforms fall back to a strong, lightly-tinted blur that approximates
+    // liquid glass.
+    const platformVersion = Number.parseInt(String(Platform.Version), 10);
+    const supportsNativeGlass = isIos
+      ? platformVersion >= 26
+      : platformVersion >= 33;
+    if (!supportsNativeGlass) {
       return (
         <BlurView
           // "regular" is a subtle (~14% white) overlay. The default "xlight" is

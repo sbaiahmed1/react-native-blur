@@ -78,6 +78,10 @@ dependencies {
   implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation 'com.github.qmdeve:qmblurview:v1.3.0'
+  // Liquid glass has no dependency: the AndroidLiquidGlassView AGSL shader is
+  // vendored into src/main/res/raw (MIT, header retained) because the
+  // published AAR requires compileSdk 37+ and only its shader is usable
+  // inside an RN hierarchy (see ReactNativeLiquidGlassView).
 }
 
 react {

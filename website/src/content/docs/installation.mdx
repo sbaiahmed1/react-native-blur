@@ -17,7 +17,7 @@ order: 1
 
 > This library ships Fabric components only and does not support the legacy (Paper) architecture. Use React Native 0.80+ with the New Architecture enabled.
 
-`LiquidGlassView` and `LiquidGlassContainer` need Xcode 26.0+ and iOS 26+ for the full glass effect — on older iOS versions and on Android, they automatically fall back to an enhanced blur approximation.
+`LiquidGlassView` needs Xcode 26.0+ and iOS 26+ for the full glass effect on iOS, and Android 13+ (API 33, where AGSL `RuntimeShader` is available) on Android. On older iOS and Android versions it automatically falls back to an enhanced blur approximation. `LiquidGlassContainer`'s merge effect is iOS 26+ only.
 
 ## Install the package
 
@@ -48,9 +48,9 @@ Check `android/build.gradle` if you hit a build error related to AGP:
 classpath "com.android.tools.build:gradle:8.9.1" // or higher
 ```
 
-The library depends on [QmBlurView](https://github.com/QmDeve/QmBlurView) (`com.github.qmdeve:qmblurview:v1.3.0`, resolved from JitPack), pulled in automatically — no manual Gradle dependency setup needed.
+The library depends on [QmBlurView](https://github.com/QmDeve/QmBlurView) (`com.github.qmdeve:qmblurview:v1.3.0`, resolved from JitPack) for blur, pulled in automatically — no manual Gradle dependency setup needed. Liquid glass adds no dependency: the [AndroidLiquidGlassView](https://github.com/QmDeve/AndroidLiquidGlassView) AGSL shader is bundled (MIT, attributed in the resource).
 
-Under the hood, Android blur is produced by capturing the view into a downsampled bitmap and applying a native blur pass. Downsampling (and the configurable `blurRounds`) keeps it fast across all supported API levels (24+).
+Under the hood, Android blur is produced by capturing the view into a downsampled bitmap and applying a native blur pass. Downsampling (and the configurable `blurRounds`) keeps it fast across all supported API levels (24+). Liquid glass (Android 13+) captures the backdrop the same safe way and feeds it to the AndroidLiquidGlassView AGSL shader, which runs refraction, dispersion, blur and tint on the GPU — the library's own widgets bind backdrops through live `RenderNode` references, which form render-tree cycles inside a React Native hierarchy, so only its shader is used.
 
 ## Web setup
 

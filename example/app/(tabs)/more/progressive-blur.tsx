@@ -85,7 +85,8 @@ export default function ProgressiveBlurScreen() {
 
         <Text style={styles.sectionTitle}>Start Offset Examples</Text>
         <Text style={styles.description}>
-          Start offset controls where the blur decay begins (0.0 - 1.0)
+          Start offset grows the fully-blurred plateau from the blurred edge
+          (0.0 - 1.0)
         </Text>
 
         {[0, 0.2, 0.4, 0.6].map((offset) => (
@@ -100,8 +101,8 @@ export default function ProgressiveBlurScreen() {
               <Text style={styles.offsetText}>Start Offset: {offset}</Text>
               <Text style={styles.offsetSubtext}>
                 {offset === 0
-                  ? 'Blur across entire view'
-                  : `Clear until ${offset * 100}%, then blur`}
+                  ? 'Fade across the entire view'
+                  : `Fully blurred until ${offset * 100}%, then fade`}
               </Text>
             </ProgressiveBlurView>
           </View>

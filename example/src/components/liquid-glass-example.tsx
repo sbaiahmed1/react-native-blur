@@ -47,7 +47,8 @@ const LiquidGlassExample = ({
     <View style={styles.liquidGlassContainer}>
       <Text style={styles.sectionTitle}>Liquid Glass Effects</Text>
       <Text style={styles.liquidGlassSubtitle}>
-        ✨ Available on iOS 26+ • Fallback to blur on older versions
+        ✨ Available on iOS 26+ & Android 13+ • Fallback to blur on older
+        versions
       </Text>
 
       {/* Main Liquid Glass Demo */}
@@ -328,10 +329,12 @@ const LiquidGlassExample = ({
           glassOpacity={0.5}
           style={styles.versionInfo}
         >
-          <Text style={styles.versionInfoTitle}>📱 iOS 26+ Required</Text>
+          <Text style={styles.versionInfoTitle}>
+            📱 iOS 26+ / Android 13+ Required
+          </Text>
           <Text style={styles.versionInfoText}>
-            Liquid glass effects are only available on iOS 26 and later. On
-            older versions, the component automatically falls back to regular
+            Liquid glass effects are only available on iOS 26+ and Android 13+.
+            On older versions, the component automatically falls back to regular
             blur effects.
           </Text>
         </LiquidGlassView>
