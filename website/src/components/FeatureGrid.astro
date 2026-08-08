@@ -8,12 +8,12 @@ const features = [
   {
     title: 'Liquid glass, for real',
     description:
-      "The only React Native blur library with iOS 26+ UIGlassEffect and UIGlassContainerEffect support, with a well-engineered tinted-blur fallback everywhere else.",
+      "The only React Native blur library with iOS 26+ UIGlassEffect / UIGlassContainerEffect support AND native AGSL shader glass on Android 13+, with a well-engineered tinted-blur fallback everywhere else.",
   },
   {
     title: 'Real Android blur',
     description:
-      'Hardware-accelerated blur via QmBlurView on Android — RenderEffectBlur on API 31+, RenderScriptBlur below that, not a translucent overlay hack.',
+      'Real backdrop blur via QmBlurView on Android — downsampled native capture with JNI blur passes on all API levels (24+), not a translucent overlay hack.',
   },
   {
     title: 'New Architecture ready',

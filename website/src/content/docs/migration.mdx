@@ -6,6 +6,10 @@ order: 9
 
 ## Breaking changes in v6.0.0
 
+### New: native liquid glass on Android 13+
+
+Not a breaking change, but the headline of 6.0: `LiquidGlassView` now renders real liquid glass on Android 13+ (AGSL `RuntimeShader` — refraction, dispersion, blur and shader-modulated tint) instead of the tinted-blur approximation. No code changes needed — the same props apply; Android below 13 (and iOS below 26) keep the automatic `BlurView` fallback. If a screen mounts many glass views, read the [memory guidance](/react-native-blur/docs/liquid-glass-view) first.
+
 ### ProgressiveBlurView `startOffset` is now cross-platform consistent
 
 `startOffset` now means the same thing on every platform: for the edge directions it grows the **fully-blurred plateau from the blurred edge** (the fade spans the rest of the view); for the center direction it insets the fade start from the edges (clamped to 0.3), shortening the blur body.
