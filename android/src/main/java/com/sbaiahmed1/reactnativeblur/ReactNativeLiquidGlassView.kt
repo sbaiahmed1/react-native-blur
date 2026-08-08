@@ -6,8 +6,6 @@ import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.Rect
-import android.graphics.RectF
 import android.graphics.RenderEffect
 import android.graphics.RenderNode
 import android.graphics.RuntimeShader
@@ -19,6 +17,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.toColorInt
@@ -70,13 +69,28 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   private var shaderRadiusPx = 0f
   private var captureSource: ViewGroup? = null
   private var effectDirty = true
+  private var appliedGeneration = -1L
+  private var appliedOffsetX = Int.MIN_VALUE
+  private var appliedOffsetY = Int.MIN_VALUE
   private var initRunnable: Runnable? = null
+  private var registeredTreeObserver: ViewTreeObserver? = null
+
+  // Scrolling never re-draws this view — ancestors translate their
+  // RenderNodes without invalidating children — so dispatchDraw alone cannot
+  // track the moving backdrop. The window pre-draw pass DOES run on every
+  // frame the window renders (scroll included); re-recording there keeps the
+  // backdrop glued to the content at full frame rate. updateGlassNode is a
+  // cheap no-op when neither the offset, the capture, nor the effect changed.
+  private val scrollTrackingListener = ViewTreeObserver.OnPreDrawListener {
+    if (isSupported) {
+      updateGlassNode()
+    }
+    true
+  }
   // Guards the visibility callbacks Android fires from the View super
   // constructor, before this class's properties are initialized.
   private var constructed = false
   private val capturePaint = Paint(Paint.FILTER_BITMAP_FLAG)
-  private val captureSrcRect = Rect()
-  private val nodeBounds = RectF()
   private val sourceLocation = IntArray(2)
   private val ownLocation = IntArray(2)
 
@@ -95,9 +109,19 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
 
     private const val BACKDROP_REFRESH_MS = 33L
 
-    // Capture at half linear resolution: 4x fewer bytes and 4x less software
-    // raster work per refresh; the shader's blur consumes the softness.
-    private const val CAPTURE_DOWNSAMPLE = 2
+    // The full-screen software rasterization is the expensive step, so it
+    // runs an order slower than the ticker; each tick only re-blits this
+    // view's sub-rect from the shared bitmap. Both the capture and the
+    // sub-rect are in window coordinates, so glass that scrolls WITH its
+    // content stays pixel-correct against a stale capture (glass and
+    // backdrop move together) — only glass fixed OVER scrolling content
+    // sees the backdrop update at this cadence.
+    private const val SHARED_CAPTURE_MAX_AGE_MS = 100L
+
+    // Capture at third linear resolution: ~9x fewer bytes and ~9x less
+    // software raster work than full-res; the shader's blur consumes the
+    // softness.
+    private const val CAPTURE_DOWNSAMPLE = 3
 
     // Shader parameters, softened from the library widget's own defaults
     // (refractionHeight 20dp, refractionOffset -70dp, dispersion 0.5): the
@@ -150,6 +174,9 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     initRunnable = runnable
     post(runnable)
 
+    registeredTreeObserver = viewTreeObserver.also {
+      it.addOnPreDrawListener(scrollTrackingListener)
+    }
     restartTickerIfVisible()
   }
 
@@ -186,6 +213,11 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     removeCallbacks(backdropTicker)
     captureSource?.let { SharedBackdropCapture.unregister(it) }
     captureSource = null
+    registeredTreeObserver?.let {
+      if (it.isAlive) it.removeOnPreDrawListener(scrollTrackingListener)
+    }
+    registeredTreeObserver = null
+    appliedGeneration = -1L
     if (isSupported) {
       glassNode?.discardDisplayList()
     }
@@ -199,23 +231,87 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     }
   }
 
-  /** Self-exclusion from backdrop capture; the software canvas re-executes
-   * draw(), so returning early skips this whole subtree (glass + children).
-   * The flag is global so that EVERY glass view is excluded from the shared
-   * capture, not just the one that triggered it. */
+  /** Self-exclusion from backdrop capture. The flag is global so that EVERY
+   * glass view is excluded from the shared capture, not just the one that
+   * triggered it. */
   override fun draw(canvas: Canvas) {
     if (SharedBackdropCapture.captureInProgress) return
     super.draw(canvas)
   }
 
   override fun dispatchDraw(canvas: Canvas) {
-    if (isSupported && canvas.isHardwareAccelerated) {
-      val node = glassNode
-      if (node != null && node.hasDisplayList()) {
-        canvas.drawRenderNode(node)
-      }
+    // The draw() guard above is NOT sufficient for capture exclusion: a
+    // ViewGroup with nothing to paint itself (no background) is skipped by
+    // the software render path (PFLAG_SKIP_DRAW), which calls dispatchDraw
+    // directly and would bake the React children into their own backdrop —
+    // the shader would then refract the children along with the background.
+    if (SharedBackdropCapture.captureInProgress) return
+    if (isSupported && canvas.isHardwareAccelerated && updateGlassNode()) {
+      glassNode?.let { canvas.drawRenderNode(it) }
     }
     super.dispatchDraw(canvas)
+  }
+
+  /**
+   * Re-records the glass node against the current shared capture and this
+   * view's CURRENT window position. Runs inside the draw pass so the backdrop
+   * tracks scrolling at full frame rate with sub-pixel positioning — the
+   * ticker only refreshes captures. Returns true when the node is drawable.
+   */
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  private fun updateGlassNode(): Boolean {
+    if (shaderFailed || width <= 0 || height <= 0) return false
+    val node = glassNode ?: return false
+    val source = captureSource ?: return false
+    val bitmap = SharedBackdropCapture.peek(source) ?: return false
+
+    source.getLocationInWindow(sourceLocation)
+    getLocationInWindow(ownLocation)
+    val offsetX = ownLocation[0] - sourceLocation[0]
+    val offsetY = ownLocation[1] - sourceLocation[1]
+
+    // While this view is moving across the source (scrolling), a stale
+    // capture shows OTHER scrolling content at its old window position
+    // swimming through the glass. Refresh the shared capture at frame
+    // cadence during motion — still one rasterization per interval across
+    // all glass views — and fall back to the relaxed idle cadence
+    // (SHARED_CAPTURE_MAX_AGE_MS, driven by the ticker) once still.
+    if (offsetX != appliedOffsetX || offsetY != appliedOffsetY) {
+      SharedBackdropCapture.acquire(source, CAPTURE_DOWNSAMPLE, BACKDROP_REFRESH_MS)
+    }
+
+    val generation = SharedBackdropCapture.generationOf(source)
+    if (
+      generation == appliedGeneration &&
+      offsetX == appliedOffsetX &&
+      offsetY == appliedOffsetY &&
+      !effectDirty &&
+      node.hasDisplayList()
+    ) {
+      return true
+    }
+    appliedGeneration = generation
+    appliedOffsetX = offsetX
+    appliedOffsetY = offsetY
+
+    node.setPosition(0, 0, width, height)
+    val downsample = CAPTURE_DOWNSAMPLE.toFloat()
+    val recording = node.beginRecording(width, height)
+    try {
+      // Scale bitmap pixels up to window pixels and position with FLOAT
+      // offsets: integer sub-rects quantize the backdrop to
+      // CAPTURE_DOWNSAMPLE-pixel steps, which reads as the glass "shaking"
+      // against smoothly-scrolling content.
+      recording.scale(downsample, downsample)
+      recording.drawBitmap(bitmap, -offsetX / downsample, -offsetY / downsample, capturePaint)
+    } finally {
+      node.endRecording()
+    }
+
+    if (effectDirty) {
+      applyRenderEffect(node)
+    }
+    return true
   }
 
   private fun refreshBackdrop() {
@@ -232,37 +328,19 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     // the backdrop on top of the content; leave it without a display list so
     // dispatchDraw skips it entirely.
     if (shaderFailed) return
-    val node = glassNode ?: return
 
-    // One shared, downsampled capture of the source per refresh interval,
-    // shared by every glass view on the screen; this view only blits its own
-    // sub-rect out of it.
-    val bitmap = SharedBackdropCapture.acquire(source, CAPTURE_DOWNSAMPLE, BACKDROP_REFRESH_MS)
+    // One shared, downsampled capture of the source, re-rasterized at most
+    // every SHARED_CAPTURE_MAX_AGE_MS across every glass view on the screen.
+    // The node itself is re-recorded inside the draw pass (updateGlassNode),
+    // so the ticker only has to trigger a draw when the capture or the
+    // effect actually changed — a fully idle screen therefore stops
+    // invalidating (and stops forcing the window to re-render 30x/s), while
+    // scrolling gets per-frame backdrop tracking from dispatchDraw.
+    SharedBackdropCapture.acquire(source, CAPTURE_DOWNSAMPLE, SHARED_CAPTURE_MAX_AGE_MS)
       ?: return
-    source.getLocationInWindow(sourceLocation)
-    getLocationInWindow(ownLocation)
-    val left = (ownLocation[0] - sourceLocation[0]) / CAPTURE_DOWNSAMPLE
-    val top = (ownLocation[1] - sourceLocation[1]) / CAPTURE_DOWNSAMPLE
-    captureSrcRect.set(
-      left,
-      top,
-      left + (width / CAPTURE_DOWNSAMPLE).coerceAtLeast(1),
-      top + (height / CAPTURE_DOWNSAMPLE).coerceAtLeast(1)
-    )
-
-    node.setPosition(0, 0, width, height)
-    val recording = node.beginRecording(width, height)
-    try {
-      nodeBounds.set(0f, 0f, width.toFloat(), height.toFloat())
-      recording.drawBitmap(bitmap, captureSrcRect, nodeBounds, capturePaint)
-    } finally {
-      node.endRecording()
+    if (SharedBackdropCapture.generationOf(source) != appliedGeneration || effectDirty) {
+      invalidate()
     }
-
-    if (effectDirty) {
-      applyRenderEffect(node)
-    }
-    invalidate()
   }
 
   @RequiresApi(Build.VERSION_CODES.TIRAMISU)

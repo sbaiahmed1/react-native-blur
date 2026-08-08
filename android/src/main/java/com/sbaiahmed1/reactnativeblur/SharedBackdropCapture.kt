@@ -24,6 +24,9 @@ internal object SharedBackdropCapture {
     var canvas: Canvas? = null
     var lastCaptureUptimeMs = 0L
     var refCount = 0
+    // Bumped on every successful capture so consumers can cheaply detect
+    // whether the shared bitmap changed since they last consumed it.
+    var generation = 0L
   }
 
   private val entries = HashMap<View, Entry>()
@@ -97,7 +100,16 @@ internal object SharedBackdropCapture {
     // serving the broken frame for the whole interval.
     if (captured) {
       entry.lastCaptureUptimeMs = now
+      entry.generation++
     }
     return bitmap
   }
+
+  /** Generation of the last successful capture for [source]; consumers use it
+   * to skip re-recording when neither the bitmap nor their sub-rect moved. */
+  fun generationOf(source: View): Long = entries[source]?.generation ?: 0L
+
+  /** The current shared bitmap for [source] WITHOUT capturing — safe to call
+   * from inside a draw pass, where rasterizing the source is not. */
+  fun peek(source: View): Bitmap? = entries[source]?.bitmap
 }
