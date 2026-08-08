@@ -381,7 +381,22 @@ class ReactNativeProgressiveBlurView : FrameLayout {
             Shader.TileMode.CLAMP
           )
         }
-        else -> {
+        // startOffset 1 grows the plateau over the whole view: the ramp
+        // collapses to zero length and the gradient's two points coincide,
+        // which Skia treats as an empty shader — the DST_IN mask erases the
+        // blur entirely instead of keeping it fully opaque. Use an all-opaque
+        // mask for that case.
+        else -> if (currentStartOffset >= 1f) {
+          LinearGradient(
+            0f,
+            0f,
+            0f,
+            height.toFloat(),
+            intArrayOf(Color.WHITE, Color.WHITE),
+            floatArrayOf(0f, 1f),
+            Shader.TileMode.CLAMP
+          )
+        } else {
           // point0 is always the clear edge (alpha 0), point1 the point where
           // the mask reaches full opacity. startOffset moves point1 toward the
           // clear edge, growing a fully-blurred plateau from the blurred edge
