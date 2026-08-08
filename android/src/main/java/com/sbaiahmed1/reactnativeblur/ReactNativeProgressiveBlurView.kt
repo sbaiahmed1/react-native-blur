@@ -4,14 +4,19 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
+import android.graphics.Outline
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Shader
+import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.view.View.MeasureSpec
 import com.qmdeve.blurview.widget.BlurView
@@ -30,6 +35,15 @@ import kotlin.math.roundToInt
  */
 class ReactNativeProgressiveBlurView : FrameLayout {
   private var blurView: BlurView? = null
+  // RN border radii (dp; -1f sentinels for unset per-corner values). With
+  // children mounted inside the native view on Android, the view itself must
+  // clip to the style's border radius — the JS container that used to do it
+  // (overflow: hidden) no longer wraps this view.
+  private var borderRadius = 0f
+  private var borderTopLeftRadius = -1f
+  private var borderTopRightRadius = -1f
+  private var borderBottomLeftRadius = -1f
+  private var borderBottomRightRadius = -1f
   private val gradientPaint = Paint(Paint.ANTI_ALIAS_FLAG)
   // Hoisted out of dispatchDraw so the mask xfermode is not reallocated on
   // every frame. gradientPaint is only ever used for the DST_IN mask, so the
@@ -415,6 +429,83 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     } catch (e: Exception) {
       logError("Failed to update gradient: ${e.message}", e)
     }
+  }
+
+  fun setBorderRadius(radius: Float) {
+    borderRadius = radius
+    updateCornerRadius()
+  }
+
+  fun setBorderTopLeftRadius(radius: Float) {
+    borderTopLeftRadius = radius
+    updateCornerRadius()
+  }
+
+  fun setBorderTopRightRadius(radius: Float) {
+    borderTopRightRadius = radius
+    updateCornerRadius()
+  }
+
+  fun setBorderBottomLeftRadius(radius: Float) {
+    borderBottomLeftRadius = radius
+    updateCornerRadius()
+  }
+
+  fun setBorderBottomRightRadius(radius: Float) {
+    borderBottomRightRadius = radius
+    updateCornerRadius()
+  }
+
+  private fun convertDpToPx(dp: Float): Float {
+    val displayMetrics = context.resources.displayMetrics
+    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, displayMetrics)
+  }
+
+  private fun updateCornerRadius() {
+    // Unset per-corner radii use the sentinel -1f (see the field defaults), so
+    // test >= 0: an explicit 0 must override the base radius to square that
+    // corner, only a negative sentinel falls back to baseRadius.
+    val baseRadius = convertDpToPx(borderRadius)
+    val topLeft = if (borderTopLeftRadius >= 0) convertDpToPx(borderTopLeftRadius) else baseRadius
+    val topRight = if (borderTopRightRadius >= 0) convertDpToPx(borderTopRightRadius) else baseRadius
+    val bottomLeft = if (borderBottomLeftRadius >= 0) convertDpToPx(borderBottomLeftRadius) else baseRadius
+    val bottomRight = if (borderBottomRightRadius >= 0) convertDpToPx(borderBottomRightRadius) else baseRadius
+
+    val isUniform = topLeft == topRight && topRight == bottomLeft && bottomLeft == bottomRight
+
+    outlineProvider = if (isUniform) {
+      object : ViewOutlineProvider() {
+        override fun getOutline(view: View, outline: Outline?) {
+          outline?.setRoundRect(0, 0, view.width, view.height, topLeft)
+        }
+      }
+    } else {
+      object : ViewOutlineProvider() {
+        override fun getOutline(view: View, outline: Outline?) {
+          val path = Path()
+          val radii = floatArrayOf(
+            topLeft,
+            topLeft,
+            topRight,
+            topRight,
+            bottomRight,
+            bottomRight,
+            bottomLeft,
+            bottomLeft
+          )
+          path.addRoundRect(0f, 0f, view.width.toFloat(), view.height.toFloat(), radii, Path.Direction.CW)
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            outline?.setPath(path)
+          } else {
+            @Suppress("DEPRECATION")
+            outline?.setConvexPath(path)
+          }
+        }
+      }
+    }
+
+    clipToOutline = true
+    invalidateOutline()
   }
 
   override fun dispatchDraw(canvas: Canvas) {

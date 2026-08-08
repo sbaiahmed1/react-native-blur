@@ -75,6 +75,35 @@ class ReactNativeProgressiveBlurViewManager : ViewGroupManager<ReactNativeProgre
     // no-op
   }
 
+  // Border radii come from the style (BaseViewManager setters, not the codegen
+  // spec). With children mounted inside the native view on Android, the view
+  // must clip itself — the JS container that used to apply overflow: hidden
+  // no longer wraps it.
+  @ReactProp(name = "borderRadius")
+  override fun setBorderRadius(view: ReactNativeProgressiveBlurView?, borderRadius: Float) {
+    view?.setBorderRadius(borderRadius)
+  }
+
+  @ReactProp(name = "borderTopLeftRadius")
+  override fun setBorderTopLeftRadius(view: ReactNativeProgressiveBlurView?, borderTopLeftRadius: Float) {
+    view?.setBorderTopLeftRadius(borderTopLeftRadius)
+  }
+
+  @ReactProp(name = "borderTopRightRadius")
+  override fun setBorderTopRightRadius(view: ReactNativeProgressiveBlurView?, borderTopRightRadius: Float) {
+    view?.setBorderTopRightRadius(borderTopRightRadius)
+  }
+
+  @ReactProp(name = "borderBottomLeftRadius")
+  override fun setBorderBottomLeftRadius(view: ReactNativeProgressiveBlurView?, borderBottomLeftRadius: Float) {
+    view?.setBorderBottomLeftRadius(borderBottomLeftRadius)
+  }
+
+  @ReactProp(name = "borderBottomRightRadius")
+  override fun setBorderBottomRightRadius(view: ReactNativeProgressiveBlurView?, borderBottomRightRadius: Float) {
+    view?.setBorderBottomRightRadius(borderBottomRightRadius)
+  }
+
   /**
    * Called when view is detached from view hierarchy and allows for cleanup.
    * This prevents the white screen issue during navigation transitions on Android.
