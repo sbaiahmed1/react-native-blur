@@ -82,16 +82,22 @@ internal object SharedBackdropCapture {
     val save = canvas.save()
     canvas.scale(1f / downsample, 1f / downsample)
     captureInProgress = true
+    var captured = true
     try {
       source.draw(canvas)
     } catch (_: Exception) {
-      // A view that throws mid-draw leaves a partial backdrop for one tick;
-      // the next acquire re-captures.
+      // A view that throws mid-draw leaves a partial backdrop for one tick.
+      captured = false
     } finally {
       captureInProgress = false
       canvas.restoreToCount(save)
     }
-    entry.lastCaptureUptimeMs = now
+    // Only a successful draw counts as fresh — a partial capture keeps the
+    // stale timestamp so the very next acquire re-rasterizes instead of
+    // serving the broken frame for the whole interval.
+    if (captured) {
+      entry.lastCaptureUptimeMs = now
+    }
     return bitmap
   }
 }
