@@ -99,13 +99,14 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     // raster work per refresh; the shader's blur consumes the softness.
     private const val CAPTURE_DOWNSAMPLE = 2
 
-    // Shader parameter defaults matching the library widget's own defaults
-    // (LiquidGlassView.java): refractionHeight 20dp, refractionOffset -70dp,
-    // dispersion 0.5, plus Config.DEPTH_EFFECT 0.3 and the noFilter() preset
-    // (contrast 0, whitePoint 0, chromaMultiplier 1).
-    private const val REFRACTION_HEIGHT_DP = 20f
-    private const val REFRACTION_OFFSET_DP = 70f
-    private const val DISPERSION = 0.5f
+    // Shader parameters, softened from the library widget's own defaults
+    // (refractionHeight 20dp, refractionOffset -70dp, dispersion 0.5): the
+    // full-strength edge bend reads too aggressive over typical RN content.
+    // DEPTH_EFFECT matches Config.DEPTH_EFFECT; contrast/whitePoint/chroma
+    // keep the widget's noFilter() preset (0, 0, 1).
+    private const val REFRACTION_HEIGHT_DP = 16f
+    private const val REFRACTION_OFFSET_DP = 40f
+    private const val DISPERSION = 0.35f
     private const val DEPTH_EFFECT = 0.3f
 
     // The library leaves blur to the caller (widget default is ~0). Map the
