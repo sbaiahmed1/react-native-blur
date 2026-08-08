@@ -175,3 +175,6 @@ temp/
 .specify
 opencode.json
 CLAUDE.md
+
+# Argent screen recordings (session artifacts, never committed)
+.argent/recordings/
