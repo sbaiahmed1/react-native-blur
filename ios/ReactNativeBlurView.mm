@@ -20,7 +20,6 @@ using namespace facebook::react;
 
 @implementation ReactNativeBlurView {
   AdvancedBlurView *_advancedBlurView;
-  Props::Shared _props;
 }
 
 + (UIColor *)colorFromString:(NSString *)colorString {
@@ -207,9 +206,6 @@ using namespace facebook::react;
   if (oldViewProps.ignoreSafeArea != newViewProps.ignoreSafeArea) {
     [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringSafeArea:newViewProps.ignoreSafeArea];
   }
-
-  // Store the new props
-  _props = props;
 
   [super updateProps:props oldProps:oldProps];
 }
