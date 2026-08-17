@@ -20,7 +20,6 @@ using namespace facebook::react;
 
 @implementation ReactNativeLiquidGlassView {
   LiquidGlassContainerView *_liquidGlassView;
-  Props::Shared _props;
   LayoutMetrics _layoutMetrics;
 }
 
@@ -242,9 +241,6 @@ using namespace facebook::react;
 
   // Apply all of the above in one effect rebuild.
   [_liquidGlassView endBatchUpdate];
-
-  // Store the new props
-  _props = props;
 
   [super updateProps:props oldProps:oldProps];
 }

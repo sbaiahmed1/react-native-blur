@@ -20,7 +20,6 @@ using namespace facebook::react;
 
 @implementation ReactNativeProgressiveBlurView {
   ProgressiveBlurView *_progressiveBlurView;
-  Props::Shared _props;
 }
 
 + (UIColor *)colorFromString:(NSString *)colorString {
@@ -207,7 +206,6 @@ using namespace facebook::react;
     [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withReducedTransparencyFallbackColor:fallbackColor];
   }
 
-  _props = props;
   [super updateProps:props oldProps:oldProps];
 }
 

@@ -20,7 +20,6 @@ using namespace facebook::react;
 
 @implementation ReactNativeVibrancyView {
   VibrancyEffectView *_vibrancyView;
-  Props::Shared _props;
 }
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
@@ -63,7 +62,6 @@ using namespace facebook::react;
       [ReactNativeVibrancyViewHelper updateVibrancyView:_vibrancyView withBlurAmount:newViewProps.blurAmount];
   }
 
-  _props = props;
   [super updateProps:props oldProps:oldProps];
 }
 

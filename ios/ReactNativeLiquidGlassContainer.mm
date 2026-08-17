@@ -20,7 +20,6 @@ using namespace facebook::react;
 
 @implementation ReactNativeLiquidGlassContainer {
   LiquidGlassContainer *_containerView;
-  Props::Shared _props;
   LayoutMetrics _layoutMetrics;
 }
 
@@ -56,9 +55,6 @@ using namespace facebook::react;
   if (oldViewProps.spacing != newViewProps.spacing) {
     [ReactNativeLiquidGlassContainerHelper updateLiquidGlassContainer:_containerView withSpacing:newViewProps.spacing];
   }
-
-  // Store the new props
-  _props = props;
 
   [super updateProps:props oldProps:oldProps];
 }
