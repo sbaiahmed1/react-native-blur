@@ -1,11 +1,11 @@
 import React, { Children, forwardRef, memo, useMemo } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
+import type { ViewStyle, StyleProp, ColorValue, ViewProps } from 'react-native';
 import ReactNativeBlurView, {
   type BlurType,
 } from './ReactNativeBlurViewNativeComponent';
 
-export interface BlurViewProps {
+export interface BlurViewProps extends ViewProps {
   /**
    * @description The type of blur effect to apply
    *
