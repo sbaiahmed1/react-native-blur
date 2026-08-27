@@ -20,7 +20,6 @@ import android.view.ViewOutlineProvider
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
-import androidx.core.graphics.toColorInt
 
 /**
  * Android implementation of React Native LiquidGlassView, rendering the
@@ -453,7 +452,7 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
         Color.TRANSPARENT
       } else {
         try {
-          color.toColorInt()
+          parseReactColor(color)
         } catch (e: Exception) {
           logWarning("Invalid color format for glass tint: $color", e)
           Color.TRANSPARENT

@@ -14,7 +14,6 @@ import android.view.ViewOutlineProvider
 import android.view.ViewTreeObserver
 import com.qmdeve.blurview.widget.BlurViewGroup
 import com.qmdeve.blurview.base.BaseBlurViewGroup
-import androidx.core.graphics.toColorInt
 
 import android.view.View.MeasureSpec
 
@@ -280,7 +279,7 @@ class ReactNativeBlurView : BlurViewGroup {
   fun setGlassTintColor(color: String?) {
     color?.let {
       try {
-        glassTintColor = it.toColorInt()
+        glassTintColor = parseReactColor(it)
         logDebug("setGlassTintColor: $color -> $glassTintColor")
         updateGlassEffect()
       } catch (e: Exception) {

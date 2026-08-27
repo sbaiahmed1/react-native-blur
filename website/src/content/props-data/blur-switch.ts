@@ -33,7 +33,7 @@ export const blurSwitchProps: PropRow[] = [
     name: 'trackColor',
     type: '{ false?: ColorValue; true?: ColorValue }',
     default: "{ false: '#E5E5EA', true: '#34C759' }",
-    description: 'Track colors. On Android only `true` is used — QmBlurView auto-calculates the off-state shade from it.',
+    description: 'Track colors. On Android only `true` is used — QmBlurView auto-calculates the off-state shade from it. Android string colors accept #RGB, #RGBA, #RRGGBB, and #RRGGBBAA.',
   },
   {
     name: 'disabled',
