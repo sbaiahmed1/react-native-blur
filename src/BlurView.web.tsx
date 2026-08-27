@@ -1,7 +1,7 @@
 import React, { forwardRef, memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { BlurViewProps } from './BlurView';
-import { getBlurLayerStyle } from './webBlurUtils';
+import { getBlurLayerStyle, useBackdropFilterSupport } from './webBlurUtils';
 
 export type { BlurViewProps } from './BlurView';
 
@@ -37,13 +37,15 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
     },
     ref
   ) => {
+    const hasBackdropFilter = useBackdropFilterSupport();
+
     const blurLayerStyle = useMemo(
       () => [
         StyleSheet.absoluteFill,
         styles.layer,
-        getBlurLayerStyle(blurType, blurAmount),
+        getBlurLayerStyle(blurType, blurAmount, hasBackdropFilter),
       ],
-      [blurType, blurAmount]
+      [blurType, blurAmount, hasBackdropFilter]
     );
     const overlayLayerStyle = useMemo(
       () => [

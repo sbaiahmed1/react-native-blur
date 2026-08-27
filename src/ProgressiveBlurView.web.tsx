@@ -1,11 +1,11 @@
-import React, { forwardRef, memo, useEffect, useMemo, useState } from 'react';
+import React, { forwardRef, memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { ProgressiveBlurViewProps } from './ProgressiveBlurView';
 import {
   BLUR_TYPE_TO_BACKGROUND,
   getProgressiveLayers,
   getProgressiveTintGradient,
-  supportsBackdropFilter,
+  useBackdropFilterSupport,
 } from './webBlurUtils';
 import type { WebBlurStyle } from './webBlurUtils';
 
@@ -51,13 +51,7 @@ const ProgressiveBlurViewComponent = forwardRef<
     },
     ref
   ) => {
-    // The ramp layers mount only after the first client render: server-side /
-    // static rendering reports no backdrop-filter support, so painting them
-    // during the initial render would change the child count mid-hydration.
-    const [canUseBackdropFilter, setCanUseBackdropFilter] = useState(false);
-    useEffect(() => {
-      setCanUseBackdropFilter(supportsBackdropFilter());
-    }, []);
+    const canUseBackdropFilter = useBackdropFilterSupport();
 
     const blurLayerStyles = useMemo(() => {
       if (!canUseBackdropFilter) return [];
