@@ -13,6 +13,7 @@ import { progressiveBlurDirectionValues } from '../props-data/enums';
 `ProgressiveBlurView` renders a variable/gradient blur that transitions smoothly instead of applying a uniform blur intensity. It works on **iOS, Android, and Web**, though the underlying implementations differ:
 
 - **iOS**: private Core Animation filters for true variable blur.
+- **iOS accessibility**: Reduce Transparency switches to `reducedTransparencyFallbackColor` immediately, including changes while mounted. Turning it off restores the configured blur without changing the children.
 - **Android**: extends QmBlurView's `BlurView` with custom gradient masking.
 - **Web**: stacks several CSS `backdrop-filter` layers with gradient masks, halving the radius per layer — a genuine blur-radius ramp (from `blurAmount` px down to sharp), not a single blur fading in opacity.
 

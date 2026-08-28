@@ -6,6 +6,7 @@ import UIKit
 @objc public class ProgressiveBlurView: UIView {
 
   private var variableBlurView: VariableBlurView?
+  private var reduceTransparencyObserver: NSObjectProtocol?
 
   @objc public var blurAmount: Double = 20.0 {
     didSet {
@@ -40,11 +41,13 @@ import UIKit
   public override init(frame: CGRect) {
     super.init(frame: frame)
     setupView()
+    registerAccessibilityObserver()
   }
 
   required init?(coder: NSCoder) {
     super.init(coder: coder)
     setupView()
+    registerAccessibilityObserver()
   }
 
   private func setupView() {
@@ -76,13 +79,7 @@ import UIKit
     overrideUserInterfaceStyle = interfaceStyle
     variableBlur.overrideUserInterfaceStyle = interfaceStyle
 
-    if UIAccessibility.isReduceTransparencyEnabled {
-      variableBlur.isHidden = true
-      backgroundColor = reducedTransparencyFallbackColor
-    } else {
-      variableBlur.isHidden = false
-      backgroundColor = .clear
-    }
+    updateAccessibilityFallback()
   }
 
   private func updateBlur() {
@@ -105,6 +102,21 @@ import UIKit
     overrideUserInterfaceStyle = interfaceStyle
     variableBlurView.overrideUserInterfaceStyle = interfaceStyle
 
+    updateAccessibilityFallback()
+  }
+
+  private func registerAccessibilityObserver() {
+    reduceTransparencyObserver = NotificationCenter.default.addObserver(
+      forName: UIAccessibility.reduceTransparencyStatusDidChangeNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      self?.updateAccessibilityFallback()
+    }
+  }
+
+  private func updateAccessibilityFallback() {
+    guard let variableBlurView else { return }
     if UIAccessibility.isReduceTransparencyEnabled {
       variableBlurView.isHidden = true
       backgroundColor = reducedTransparencyFallbackColor
@@ -122,6 +134,9 @@ import UIKit
   }
 
   deinit {
+    if let reduceTransparencyObserver {
+      NotificationCenter.default.removeObserver(reduceTransparencyObserver)
+    }
     variableBlurView?.removeFromSuperview()
     variableBlurView = nil
   }
