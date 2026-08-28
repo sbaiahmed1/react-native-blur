@@ -20,12 +20,12 @@ const { command = 'npm install @sbaiahmed1/react-native-blur' } = Astro.props;
 <script>
   document.querySelectorAll<HTMLButtonElement>('button[data-copy-command]').forEach((button) => {
     const original = button.textContent;
-    let resetTimeout: ReturnType<typeof setTimeout>;
+    let resetTimeout: ReturnType<typeof setTimeout> | undefined;
     button.addEventListener('click', async () => {
       const text = button.dataset.copyCommand ?? '';
       try {
         await navigator.clipboard.writeText(text);
-        clearTimeout(resetTimeout);
+        if (resetTimeout !== undefined) clearTimeout(resetTimeout);
         button.textContent = 'Copied!';
         resetTimeout = setTimeout(() => {
           button.textContent = original;
