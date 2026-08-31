@@ -8,7 +8,7 @@ platforms: [ios, android, web]
 import PropsTable from '../../components/PropsTable.astro';
 import { blurViewProps } from '../props-data/blur-view';
 
-`BlurView` is the standard, cross-platform blur component. On iOS it uses `UIVisualEffectView` through a SwiftUI implementation; on Android it uses [QmBlurView](https://github.com/QmDeve/QmBlurView) for hardware-accelerated blur, with a lightweight overlay fallback on limited devices; on Web it uses CSS `backdrop-filter`.
+`BlurView` is the standard, cross-platform blur component. On iOS it uses UIKit's `UIVisualEffectView`; on Android it uses [QmBlurView](https://github.com/QmDeve/QmBlurView) for native blur, with a lightweight overlay fallback on limited devices; on Web it uses CSS `backdrop-filter`.
 
 ## Basic usage
 
@@ -62,7 +62,7 @@ On react-native-web, `BlurView` renders a `backdrop-filter: blur() saturate(180%
 
 QmBlurView works by capturing the surrounding view tree — scoped to the nearest `react-native-screens` Screen, falling back to the React root — into a downsampled bitmap and blurring it. Two things follow:
 
-- **Performance is capture-bound.** The per-frame software capture dominates the cost; the blur passes are cheap and run off the UI thread. Lowering `blurRounds` sacrifices quality without meaningfully improving frame times.
+- **Capture and blur both cost work.** Captures use a downsampled bitmap, and each `blurRounds` iteration adds a native blur pass. Lowering it trades quality for less blur work; measure on target devices to determine whether capture or blur is the bottleneck.
 - **Content drawn on top of the blur is captured too.** iOS samples only what is *behind* the effect view, but the Android capture includes anything rendered above the blur inside the capture root, which shows up as a blurred halo under the crisp original. If the halo shows in a design, move that content outside the capture root (e.g. a portal above the navigator).
 
 ## Props
