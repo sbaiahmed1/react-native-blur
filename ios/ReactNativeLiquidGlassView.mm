@@ -1,5 +1,5 @@
 #import "ReactNativeLiquidGlassView.h"
-#import "Helpers/ColorHelpers.h"
+#import <react/RCTConversions.h>
 
 #import <react/renderer/components/ReactNativeBlurViewSpec/ComponentDescriptors.h>
 #import <react/renderer/components/ReactNativeBlurViewSpec/EventEmitters.h>
@@ -24,10 +24,6 @@ using namespace facebook::react;
   LayoutMetrics _layoutMetrics;
 }
 
-+ (UIColor *)colorFromString:(NSString *)colorString {
-  return RNBlurColorFromString(colorString);
-}
-
 + (ComponentDescriptorProvider)componentDescriptorProvider
 {
   return concreteComponentDescriptorProvider<ReactNativeLiquidGlassViewComponentDescriptor>();
@@ -47,8 +43,7 @@ using namespace facebook::react;
     [_liquidGlassView beginBatchUpdate];
 
     // Set initial glassTintColor from default props
-    NSString *defaultGlassTintColorString = [[NSString alloc] initWithUTF8String:lgProps.glassTintColor.c_str()];
-    UIColor *defaultGlassTintColor = [ReactNativeLiquidGlassView colorFromString:defaultGlassTintColorString];
+    UIColor *defaultGlassTintColor = RCTUIColorFromSharedColor(lgProps.glassTintColor) ?: [UIColor clearColor];
     [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassTintColor:defaultGlassTintColor];
 
     // Set initial glassOpacity from default props
@@ -67,11 +62,8 @@ using namespace facebook::react;
     [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIgnoringSafeArea:lgProps.ignoreSafeArea];
 
     // Set initial reducedTransparencyFallbackColor from default props
-    if (!lgProps.reducedTransparencyFallbackColor.empty()) {
-      NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:lgProps.reducedTransparencyFallbackColor.c_str()];
-      UIColor *fallbackColor = [ReactNativeLiquidGlassView colorFromString:fallbackColorString];
-      [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:fallbackColor];
-    }
+    UIColor *fallbackColor = RCTUIColorFromSharedColor(lgProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
+    [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:fallbackColor];
 
     [_liquidGlassView endBatchUpdate];
 
@@ -88,12 +80,9 @@ using namespace facebook::react;
   // Coalesce the individual prop setters below into a single effect rebuild.
   [_liquidGlassView beginBatchUpdate];
 
-  // Update glassTintColor if it has changed. Apply even for an empty string:
-  // colorFromString maps "" to clear, and the view treats a zero-alpha tint as
-  // "no tint", so clearing a previously-set tint actually takes effect.
+  // Apply null as clear so removing a previously-set tint takes effect.
   if (oldViewProps.glassTintColor != newViewProps.glassTintColor) {
-    NSString *glassTintColorString = [[NSString alloc] initWithUTF8String:newViewProps.glassTintColor.c_str()];
-    UIColor *newGlassTintColor = [ReactNativeLiquidGlassView colorFromString:glassTintColorString];
+    UIColor *newGlassTintColor = RCTUIColorFromSharedColor(newViewProps.glassTintColor) ?: [UIColor clearColor];
     [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassTintColor:newGlassTintColor];
   }
 
@@ -125,8 +114,7 @@ using namespace facebook::react;
   // empty so clearing the prop resets to the parsed default rather than
   // stranding the previous colour.
   if (oldViewProps.reducedTransparencyFallbackColor != newViewProps.reducedTransparencyFallbackColor) {
-    NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:newViewProps.reducedTransparencyFallbackColor.c_str()];
-    UIColor *fallbackColor = [ReactNativeLiquidGlassView colorFromString:fallbackColorString];
+    UIColor *fallbackColor = RCTUIColorFromSharedColor(newViewProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
     [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:fallbackColor];
   }
 
@@ -152,19 +140,15 @@ using namespace facebook::react;
   NSString *defaultGlassTypeString = [[NSString alloc] initWithUTF8String:toString(lgProps.glassType).c_str()];
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassType:defaultGlassTypeString];
 
-  NSString *defaultGlassTintColorString = [[NSString alloc] initWithUTF8String:lgProps.glassTintColor.c_str()];
-  UIColor *defaultGlassTintColor = [ReactNativeLiquidGlassView colorFromString:defaultGlassTintColorString];
+  UIColor *defaultGlassTintColor = RCTUIColorFromSharedColor(lgProps.glassTintColor) ?: [UIColor clearColor];
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassTintColor:defaultGlassTintColor];
 
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassOpacity:lgProps.glassOpacity];
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIsInteractive:lgProps.isInteractive];
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIgnoringSafeArea:lgProps.ignoreSafeArea];
 
-  // Reset the fallback colour too — the container defaults to white when the
-  // default prop string is empty.
-  UIColor *defaultFallbackColor = lgProps.reducedTransparencyFallbackColor.empty()
-    ? [UIColor whiteColor]
-    : [ReactNativeLiquidGlassView colorFromString:[[NSString alloc] initWithUTF8String:lgProps.reducedTransparencyFallbackColor.c_str()]];
+  // Reset the fallback colour too; the component default is white.
+  UIColor *defaultFallbackColor = RCTUIColorFromSharedColor(lgProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:defaultFallbackColor];
 }
 

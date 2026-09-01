@@ -1,5 +1,5 @@
 #import "ReactNativeBlurView.h"
-#import "Helpers/ColorHelpers.h"
+#import <react/RCTConversions.h>
 
 #import <react/renderer/components/ReactNativeBlurViewSpec/ComponentDescriptors.h>
 #import <react/renderer/components/ReactNativeBlurViewSpec/EventEmitters.h>
@@ -22,12 +22,6 @@ using namespace facebook::react;
 @implementation ReactNativeBlurView {
   AdvancedBlurView *_advancedBlurView;
 }
-
-+ (UIColor *)colorFromString:(NSString *)colorString {
-  return RNBlurColorFromString(colorString);
-}
-
-
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
 {
@@ -54,11 +48,8 @@ using namespace facebook::react;
     }
 
     // Set initial reducedTransparencyFallbackColor from default props
-    if (!bvProps.reducedTransparencyFallbackColor.empty()) {
-      NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:bvProps.reducedTransparencyFallbackColor.c_str()];
-      UIColor *fallbackColor = [ReactNativeBlurView colorFromString:fallbackColorString];
-      [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withReducedTransparencyFallbackColor:fallbackColor];
-    }
+    UIColor *fallbackColor = RCTUIColorFromSharedColor(bvProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
+    [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withReducedTransparencyFallbackColor:fallbackColor];
 
     // Set initial ignoreSafeArea from default props
     [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringSafeArea:bvProps.ignoreSafeArea];
@@ -88,8 +79,7 @@ using namespace facebook::react;
   // empty so clearing the prop resets rather than stranding the old colour
   // (this conditional-skip was the recycling-staleness vector for this view).
   if (oldViewProps.reducedTransparencyFallbackColor != newViewProps.reducedTransparencyFallbackColor) {
-    NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:newViewProps.reducedTransparencyFallbackColor.c_str()];
-    UIColor *fallbackColor = [ReactNativeBlurView colorFromString:fallbackColorString];
+    UIColor *fallbackColor = RCTUIColorFromSharedColor(newViewProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
     [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withReducedTransparencyFallbackColor:fallbackColor];
   }
 
@@ -118,8 +108,7 @@ using namespace facebook::react;
   NSString *blurTypeString = [[NSString alloc] initWithUTF8String:toString(bvProps.blurType).c_str()];
   [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withBlurType:blurTypeString];
 
-  NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:bvProps.reducedTransparencyFallbackColor.c_str()];
-  UIColor *fallbackColor = [ReactNativeBlurView colorFromString:fallbackColorString];
+  UIColor *fallbackColor = RCTUIColorFromSharedColor(bvProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
   [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withReducedTransparencyFallbackColor:fallbackColor];
 
   [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringSafeArea:bvProps.ignoreSafeArea];

@@ -1,5 +1,5 @@
 #import "ReactNativeProgressiveBlurView.h"
-#import "Helpers/ColorHelpers.h"
+#import <react/RCTConversions.h>
 
 #import <react/renderer/components/ReactNativeBlurViewSpec/ComponentDescriptors.h>
 #import <react/renderer/components/ReactNativeBlurViewSpec/EventEmitters.h>
@@ -21,10 +21,6 @@ using namespace facebook::react;
 
 @implementation ReactNativeProgressiveBlurView {
   ProgressiveBlurView *_progressiveBlurView;
-}
-
-+ (UIColor *)colorFromString:(NSString *)colorString {
-  return RNBlurColorFromString(colorString);
 }
 
 + (ComponentDescriptorProvider)componentDescriptorProvider
@@ -60,11 +56,8 @@ using namespace facebook::react;
 
     [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withStartOffset:pbvProps.startOffset];
 
-    if (!pbvProps.reducedTransparencyFallbackColor.empty()) {
-      NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:pbvProps.reducedTransparencyFallbackColor.c_str()];
-      UIColor *fallbackColor = [ReactNativeProgressiveBlurView colorFromString:fallbackColorString];
-      [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withReducedTransparencyFallbackColor:fallbackColor];
-    }
+    UIColor *fallbackColor = RCTUIColorFromSharedColor(pbvProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
+    [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withReducedTransparencyFallbackColor:fallbackColor];
 
     [self addSubview:_progressiveBlurView];
   }
@@ -97,8 +90,7 @@ using namespace facebook::react;
   // Apply even when empty so clearing the prop resets rather than stranding the
   // old colour (the conditional-skip was this view's recycling-staleness vector).
   if (oldViewProps.reducedTransparencyFallbackColor != newViewProps.reducedTransparencyFallbackColor) {
-    NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:newViewProps.reducedTransparencyFallbackColor.c_str()];
-    UIColor *fallbackColor = [ReactNativeProgressiveBlurView colorFromString:fallbackColorString];
+    UIColor *fallbackColor = RCTUIColorFromSharedColor(newViewProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
     [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withReducedTransparencyFallbackColor:fallbackColor];
   }
 
@@ -126,8 +118,7 @@ using namespace facebook::react;
 
   [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withStartOffset:pbvProps.startOffset];
 
-  NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:pbvProps.reducedTransparencyFallbackColor.c_str()];
-  UIColor *fallbackColor = [ReactNativeProgressiveBlurView colorFromString:fallbackColorString];
+  UIColor *fallbackColor = RCTUIColorFromSharedColor(pbvProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
   [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withReducedTransparencyFallbackColor:fallbackColor];
 }
 

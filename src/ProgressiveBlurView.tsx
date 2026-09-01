@@ -62,7 +62,7 @@ export interface ProgressiveBlurViewProps {
    *
    * @platform iOS
    */
-  reducedTransparencyFallbackColor?: string;
+  reducedTransparencyFallbackColor?: ColorValue;
 
   /**
    * @description The overlay color to apply on top of the blur effect

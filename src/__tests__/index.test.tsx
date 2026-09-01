@@ -56,6 +56,11 @@ describe('getFallbackOverlayColor', () => {
     expect(getFallbackOverlayColor('red', 1)).toBe('red');
     expect(getFallbackOverlayColor('rgb(255,0,0)', 1)).toBe('rgb(255,0,0)');
   });
+
+  it('passes platform colours through unchanged', () => {
+    const color = 42 as unknown as ColorValue;
+    expect(getFallbackOverlayColor(color, 0.5)).toBe(color);
+  });
 });
 
 describe('toColorString', () => {

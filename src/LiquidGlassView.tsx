@@ -1,6 +1,6 @@
 import React, { forwardRef, memo, useMemo } from 'react';
 import { Platform } from 'react-native';
-import type { ViewStyle, StyleProp } from 'react-native';
+import type { ColorValue, ViewStyle, StyleProp } from 'react-native';
 import ReactNativeLiquidGlassView, {
   type GlassType,
 } from './ReactNativeLiquidGlassViewNativeComponent';
@@ -30,7 +30,7 @@ export interface LiquidGlassViewProps {
    *
    * @platform iOS 26+, Android 13+ (fallback tint everywhere)
    */
-  glassTintColor?: string;
+  glassTintColor?: ColorValue;
 
   /**
    * @description The opacity of the glass effect (0-1). On platforms without
@@ -50,7 +50,7 @@ export interface LiquidGlassViewProps {
    *
    * @platform iOS
    */
-  reducedTransparencyFallbackColor?: string;
+  reducedTransparencyFallbackColor?: ColorValue;
 
   /**
    * @description Whether the glass view should be interactive. On Android this
@@ -138,7 +138,7 @@ const LiquidGlassViewComponent = forwardRef<
   (
     {
       glassType = 'clear',
-      glassTintColor = 'clear',
+      glassTintColor = 'transparent',
       glassOpacity = 1.0,
       reducedTransparencyFallbackColor = '#FFFFFF',
       isInteractive = true,
