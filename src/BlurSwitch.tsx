@@ -1,7 +1,15 @@
-import React, { memo, useCallback } from 'react';
+import React, {
+  memo,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Platform, StyleSheet, Switch } from 'react-native';
 import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
-import ReactNativeBlurSwitch from './ReactNativeBlurSwitchNativeComponent';
+import ReactNativeBlurSwitch, {
+  Commands,
+} from './ReactNativeBlurSwitchNativeComponent';
 
 type NativeBlurSwitchProps = React.ComponentProps<typeof ReactNativeBlurSwitch>;
 
@@ -115,14 +123,25 @@ const BlurSwitchComponent: React.FC<BlurSwitchProps> = ({
   style,
   ...props
 }) => {
+  const nativeRef =
+    useRef<React.ComponentRef<typeof ReactNativeBlurSwitch>>(null);
+  // A new object records every native event, including repeated rejected toggles.
+  const [native, setNative] = useState<{ value: boolean } | null>(null);
   const handleNativeValueChange = useCallback<
     NonNullable<NativeBlurSwitchProps['onValueChange']>
   >(
     (event) => {
       onValueChange?.(event.nativeEvent.value);
+      setNative({ value: event.nativeEvent.value });
     },
     [onValueChange]
   );
+
+  useLayoutEffect(() => {
+    if (native != null && native.value !== value && nativeRef.current != null) {
+      Commands.setNativeValue(nativeRef.current, value);
+    }
+  }, [native, value]);
 
   if (Platform.OS === 'ios') {
     return (
@@ -140,6 +159,7 @@ const BlurSwitchComponent: React.FC<BlurSwitchProps> = ({
 
   return (
     <ReactNativeBlurSwitch
+      ref={nativeRef}
       style={[styles.switch, style]}
       value={value}
       onValueChange={handleNativeValueChange}

@@ -4,6 +4,11 @@ description: Upgrading from v3.x, and migrating from @react-native-community/blu
 order: 9
 ---
 
+## Controlled Android switches
+
+`BlurSwitch` now restores the supplied `value` when a native toggle is not accepted by the parent, matching React Native's built-in `Switch` on iOS and web. Android apps that previously relied on toggles changing the UI without updating `value` must now store the value and update it in `onValueChange`. Omitting `value` keeps the switch off.
+
+
 ## Breaking changes in v6.0.0
 
 ### New: native liquid glass on Android 13+

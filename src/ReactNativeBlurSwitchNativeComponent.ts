@@ -1,5 +1,6 @@
-import { codegenNativeComponent } from 'react-native';
-import type { CodegenTypes, ViewProps } from 'react-native';
+import { codegenNativeComponent, codegenNativeCommands } from 'react-native';
+import type { CodegenTypes, HostComponent, ViewProps } from 'react-native';
+import type React from 'react';
 
 export interface ValueChangeEvent {
   value: boolean;
@@ -15,6 +16,17 @@ interface NativeProps extends ViewProps {
   disabled?: CodegenTypes.WithDefault<boolean, false>;
   onValueChange?: CodegenTypes.DirectEventHandler<Readonly<ValueChangeEvent>>;
 }
+
+interface NativeCommands {
+  setNativeValue: (
+    viewRef: React.ElementRef<HostComponent<NativeProps>>,
+    value: boolean
+  ) => void;
+}
+
+export const Commands = codegenNativeCommands<NativeCommands>({
+  supportedCommands: ['setNativeValue'],
+});
 
 export default codegenNativeComponent<NativeProps>('ReactNativeBlurSwitch', {
   excludedPlatforms: ['iOS'],

@@ -45,6 +45,10 @@ class ReactNativeBlurSwitchManager : SimpleViewManager<ReactNativeBlurSwitch>(),
     view?.setValue(value)
   }
 
+  override fun setNativeValue(view: ReactNativeBlurSwitch?, value: Boolean) {
+    view?.setValue(value)
+  }
+
   @ReactProp(name = "blurAmount")
   override fun setBlurAmount(view: ReactNativeBlurSwitch?, blurAmount: Double) {
     view?.setBlurAmount(blurAmount.toFloat())
