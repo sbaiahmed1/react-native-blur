@@ -1,5 +1,5 @@
 import { codegenNativeComponent } from 'react-native';
-import type { CodegenTypes, ViewProps } from 'react-native';
+import type { CodegenTypes, ColorValue, ViewProps } from 'react-native';
 
 export type BlurType =
   | 'xlight'
@@ -38,10 +38,7 @@ export interface NativeProps extends ViewProps {
     'blurredTopClearBottom'
   >;
   startOffset?: CodegenTypes.WithDefault<CodegenTypes.Double, 0.0>;
-  reducedTransparencyFallbackColor?: CodegenTypes.WithDefault<
-    string,
-    '#FFFFFF'
-  >;
+  reducedTransparencyFallbackColor?: ColorValue;
 }
 
 export default codegenNativeComponent<NativeProps>(
