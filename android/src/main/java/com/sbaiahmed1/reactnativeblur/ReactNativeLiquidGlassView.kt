@@ -20,7 +20,6 @@ import android.view.ViewOutlineProvider
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
-import androidx.core.graphics.toColorInt
 
 /**
  * Android implementation of React Native LiquidGlassView, rendering the
@@ -443,22 +442,10 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
 
   /**
    * Set the glass tint color.
-   * @param color Hex string (e.g. "#FF0000"), or "clear"/"transparent"/null for no tint
+   * @param color React Native color int, or null for no tint
    */
-  fun setGlassTintColor(color: String?) {
-    glassTintColor =
-      if (color == null || color.equals("clear", ignoreCase = true) ||
-        color.equals("transparent", ignoreCase = true)
-      ) {
-        Color.TRANSPARENT
-      } else {
-        try {
-          color.toColorInt()
-        } catch (e: Exception) {
-          logWarning("Invalid color format for glass tint: $color", e)
-          Color.TRANSPARENT
-        }
-      }
+  fun setGlassTintColor(color: Int?) {
+    glassTintColor = color ?: Color.TRANSPARENT
     effectDirty = true
   }
 

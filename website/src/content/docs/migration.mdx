@@ -4,6 +4,11 @@ description: Upgrading from v3.x, and migrating from @react-native-community/blu
 order: 9
 ---
 
+## Android hex color consistency
+
+Glass tint and switch colors now use React Native's `#RGB`, `#RGBA`, `#RRGGBB`, and `#RRGGBBAA` formats. Previously Android treated eight-digit strings as `#AARRGGBB` and rejected shorthand. If you used Android-specific ARGB strings as a workaround, move the alpha byte to the end (for example, `#80FF0000` becomes `#FF000080` for half-transparent red). Six-digit colors are unchanged.
+
+
 ## Breaking changes in v6.0.0
 
 ### New: native liquid glass on Android 13+

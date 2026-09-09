@@ -10,10 +10,10 @@ export const liquidGlassViewProps: PropRow[] = [
   },
   {
     name: 'glassTintColor',
-    type: 'string',
-    default: "'clear'",
+    type: 'ColorValue',
+    default: "'transparent'",
     platform: 'iOS 26+, Android 13+',
-    description: 'The tint color for the glass effect. Accepts hex colors or color names. Modulated by the glass shader on both platforms; on fallback paths it tints the BlurView/web overlay.',
+    description: 'The tint color for the glass effect. Accepts #RGB, #RGBA, #RRGGBB, #RRGGBBAA, or color names. Modulated by the glass shader on both platforms; on fallback paths it tints the BlurView/web overlay.',
   },
   {
     name: 'glassOpacity',
