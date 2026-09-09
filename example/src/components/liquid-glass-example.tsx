@@ -2,7 +2,7 @@ import {
   LiquidGlassView,
   LiquidGlassContainer,
 } from '@sbaiahmed1/react-native-blur';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Image,
   StyleSheet,
   Animated,
+  useAnimatedValue,
 } from 'react-native';
 import { glassColors } from '@/constants/blur';
 
@@ -24,9 +25,11 @@ const LiquidGlassExample = ({
     'clear' | 'regular'
   >('clear');
   const [glassTintColor, setGlassTintColor] = useState('#007AFF');
+  const buttonBackgroundColor =
+    glassTintColor === 'clear' ? 'transparent' : glassTintColor + '40';
   const [glassOpacity, setGlassOpacity] = useState(0.8);
   const [containerSpacing, setContainerSpacing] = useState(20);
-  const translateX = useRef(new Animated.Value(0)).current;
+  const translateX = useAnimatedValue(0);
 
   const animateCirclesCloser = () => {
     Animated.sequence([
@@ -58,7 +61,7 @@ const LiquidGlassExample = ({
           glassTintColor={glassTintColor}
           glassOpacity={glassOpacity}
           style={[styles.liquidGlassCard, { borderRadius: 20 }]}
-          reducedTransparencyFallbackColor="rgba(255, 255, 255, 0.9)"
+          reducedTransparencyFallbackColor="#FFFFFFE6"
         >
           <Text style={styles.liquidGlassTitle}>🌊 Liquid Glass</Text>
           <Text style={styles.liquidGlassInfo}>Type: {selectedGlassType}</Text>
@@ -71,7 +74,7 @@ const LiquidGlassExample = ({
           <TouchableOpacity
             style={[
               styles.glassButton,
-              { backgroundColor: glassTintColor + '40' },
+              { backgroundColor: buttonBackgroundColor },
             ]}
             onPress={cycleBackground}
           >

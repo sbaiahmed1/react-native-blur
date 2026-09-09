@@ -1,6 +1,6 @@
 import React, { forwardRef, memo, useMemo } from 'react';
 import { Platform } from 'react-native';
-import type { ColorValue, ViewStyle, StyleProp } from 'react-native';
+import type { ColorValue, ViewStyle, StyleProp, ViewProps } from 'react-native';
 import ReactNativeLiquidGlassView, {
   type GlassType,
 } from './ReactNativeLiquidGlassViewNativeComponent';
@@ -11,7 +11,7 @@ import { FALLBACK_BLUR_AMOUNT, getFallbackOverlayColor } from './colorUtils';
 // platform-neutral colorUtils module (shared with the web implementation).
 export { getFallbackOverlayColor };
 
-export interface LiquidGlassViewProps {
+export interface LiquidGlassViewProps extends ViewProps {
   /**
    * @description The type of glass effect to apply
    *
@@ -174,6 +174,7 @@ const LiquidGlassViewComponent = forwardRef<
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
           ignoreSafeArea={ignoreSafeArea}
           style={style}
+          {...props}
         >
           {children}
         </BlurView>

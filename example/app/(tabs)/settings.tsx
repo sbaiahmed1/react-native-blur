@@ -1,6 +1,7 @@
 import { Text, StyleSheet, ImageBackground, ScrollView } from 'react-native';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 import { DEMO_IMAGES } from '@/constants/blur';
+import { version } from '../../../package.json';
 
 export default function SettingsScreen() {
   return (
@@ -17,7 +18,7 @@ export default function SettingsScreen() {
           <Text style={styles.sectionText}>
             React Native Blur with QmBlurView integration
           </Text>
-          <Text style={styles.sectionText}>Version: 1.0.0</Text>
+          <Text style={styles.sectionText}>Library version: {version}</Text>
         </BlurView>
 
         <BlurView blurType="regular" blurAmount={60} style={styles.section}>
@@ -35,7 +36,7 @@ export default function SettingsScreen() {
             Powered by QmBlurView - A high-performance Android blur library
           </Text>
           <Text style={styles.sectionText}>
-            Minimum SDK: Android 5.0 (API 21)
+            Library minimum SDK: Android 7.0 (API 24)
           </Text>
         </BlurView>
       </ScrollView>

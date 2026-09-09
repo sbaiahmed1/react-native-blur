@@ -1,11 +1,11 @@
 import React, { memo, useCallback } from 'react';
 import { Platform, StyleSheet, Switch } from 'react-native';
-import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
+import type { ViewStyle, StyleProp, ColorValue, ViewProps } from 'react-native';
 import ReactNativeBlurSwitch from './ReactNativeBlurSwitchNativeComponent';
 
 type NativeBlurSwitchProps = React.ComponentProps<typeof ReactNativeBlurSwitch>;
 
-export interface BlurSwitchProps {
+export interface BlurSwitchProps extends ViewProps {
   /**
    * @description The current value of the switch
    *
