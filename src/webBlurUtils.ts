@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from 'react';
 import type { ViewStyle } from 'react-native';
 import type { BlurType } from './ReactNativeBlurViewNativeComponent';
 import type { ProgressiveBlurDirection } from './ReactNativeProgressiveBlurViewNativeComponent';
@@ -84,7 +85,7 @@ let backdropFilterSupport: boolean | undefined;
  * Feature-detects CSS backdrop-filter. Safe to call during server-side /
  * static rendering (Expo `web.output: "static"` renders in Node, where the
  * CSS API is absent) — it simply reports false there, leaving the tint-only
- * fallback styles. Memoized after the first call.
+ * fallback styles. Memoized once the CSS API is available.
  */
 export function supportsBackdropFilter(): boolean {
   if (backdropFilterSupport === undefined) {
@@ -93,12 +94,25 @@ export function supportsBackdropFilter(): boolean {
         CSS?: { supports?: (property: string, value: string) => boolean };
       }
     ).CSS;
+    if (typeof css?.supports !== 'function') return false;
     backdropFilterSupport =
-      typeof css?.supports === 'function' &&
-      (css.supports('backdrop-filter', 'blur(1px)') ||
-        css.supports('-webkit-backdrop-filter', 'blur(1px)'));
+      css.supports('backdrop-filter', 'blur(1px)') ||
+      css.supports('-webkit-backdrop-filter', 'blur(1px)');
   }
   return backdropFilterSupport;
+}
+
+// Browser support does not change during a mounted component's lifetime.
+const subscribeToBackdropSupport = () => () => {};
+const serverBackdropSupport = () => false;
+
+/** Keep server/hydration markup identical without delaying client-only mounts. */
+export function useBackdropFilterSupport(): boolean {
+  return useSyncExternalStore(
+    subscribeToBackdropSupport,
+    supportsBackdropFilter,
+    serverBackdropSupport
+  );
 }
 
 /**
@@ -109,13 +123,14 @@ export function supportsBackdropFilter(): boolean {
  */
 export function getBlurLayerStyle(
   blurType: BlurType,
-  blurAmount: number
+  blurAmount: number,
+  hasBackdropFilter = supportsBackdropFilter()
 ): WebBlurStyle {
   const style: WebBlurStyle = {
     backgroundColor:
       BLUR_TYPE_TO_BACKGROUND[blurType] ?? BLUR_TYPE_TO_BACKGROUND.regular,
   };
-  if (supportsBackdropFilter()) {
+  if (hasBackdropFilter) {
     const radius = cssNumber(clamp(blurAmount, 0, 100) * WEB_BLUR_RADIUS_SCALE);
     const filter = `blur(${radius}px) saturate(180%)`;
     style.backdropFilter = filter;
