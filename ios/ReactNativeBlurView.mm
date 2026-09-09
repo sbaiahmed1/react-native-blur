@@ -242,7 +242,8 @@ using namespace facebook::react;
 
 - (void)mountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
 {
-  [_advancedBlurView addSubview:childComponentView];
+  // Index zero belongs to the internal effect view, below all React children.
+  [_advancedBlurView insertSubview:childComponentView atIndex:index + 1];
 }
 
 - (void)unmountChildComponentView:(UIView<RCTComponentViewProtocol> *)childComponentView index:(NSInteger)index
