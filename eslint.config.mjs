@@ -36,6 +36,10 @@ export default defineConfig([
     ignores: [
       'node_modules/',
       'lib/',
+      'example/dist/',
+      'example/android/',
+      'example/ios/',
+      'example/.expo/',
       'website/'
     ],
   },

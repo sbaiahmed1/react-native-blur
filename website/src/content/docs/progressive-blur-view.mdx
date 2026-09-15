@@ -13,7 +13,7 @@ import { progressiveBlurDirectionValues } from '../props-data/enums';
 `ProgressiveBlurView` renders a variable/gradient blur that transitions smoothly instead of applying a uniform blur intensity. It works on **iOS, Android, and Web**, though the underlying implementations differ:
 
 - **iOS**: private Core Animation filters for true variable blur.
-- **Android**: extends QmBlurView's `BlurView` with custom gradient masking.
+- **Android**: wraps QmBlurView's `BlurView` with custom gradient masking.
 - **Web**: stacks several CSS `backdrop-filter` layers with gradient masks, halving the radius per layer — a genuine blur-radius ramp (from `blurAmount` px down to sharp), not a single blur fading in opacity.
 
 On web, `blurAmount` is the maximum radius in px (matching native), and browsers without `backdrop-filter` fall back to the directional tint gradient alone. Since 6.0, `startOffset` means the same thing on every platform — see [Platform differences](#platform-differences) for how the fade is constructed per backend.
@@ -89,8 +89,8 @@ The three backends aim for the same look but get there differently:
 
 On Android, the blur works by capturing the surrounding view tree — scoped to the nearest `react-native-screens` Screen, falling back to the React root — into a downsampled bitmap and blurring it. Two practical consequences:
 
-- **Performance is capture-bound.** The per-frame software capture dominates the cost; the blur passes are cheap and run off the UI thread. Lowering `blurRounds` sacrifices quality without meaningfully improving frame times — if the blur is too expensive, reduce how often the content behind it changes rather than tuning `blurRounds`.
-- **Content drawn on top of the blur is captured too.** iOS samples only what is *behind* the effect view, but the Android capture includes anything rendered above the blur inside the capture root — including this component's own children, which render as siblings on top of the native blur. A crisp title over a blurred bar gains a blurred copy underneath it, visible as a halo when the tint is light. If the halo shows in a design, move that content outside the capture root (e.g. a portal above the navigator).
+- **Capture and blur both cost work.** Captures use a downsampled bitmap, and each `blurRounds` iteration adds a native blur pass. Lowering it trades quality for less blur work; measure on target devices to determine whether capture or blur is the bottleneck.
+- **Other foreground content can be captured too.** Android captures the surrounding view tree rather than only pixels behind the effect. This component's children live inside the native view and are excluded with its subtree; they render sharp above the masked blur. Other foreground siblings inside the capture root can still produce a blurred halo. If necessary, move those siblings outside the capture root (e.g. a portal above the navigator).
 
 ## Direction values
 
