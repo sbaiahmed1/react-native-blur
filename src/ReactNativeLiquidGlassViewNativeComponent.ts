@@ -7,10 +7,7 @@ export interface NativeProps extends ViewProps {
   glassType?: CodegenTypes.WithDefault<GlassType, 'clear'>;
   glassTintColor?: ColorValue;
   glassOpacity?: CodegenTypes.WithDefault<CodegenTypes.Double, 1.0>;
-  reducedTransparencyFallbackColor?: CodegenTypes.WithDefault<
-    string,
-    '#FFFFFF'
-  >;
+  reducedTransparencyFallbackColor?: ColorValue;
   isInteractive?: CodegenTypes.WithDefault<boolean, true>;
   ignoreSafeArea?: CodegenTypes.WithDefault<boolean, true>;
 }
