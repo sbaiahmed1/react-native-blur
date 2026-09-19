@@ -10,7 +10,6 @@ import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.uimanager.events.RCTEventEmitter
 import com.facebook.react.viewmanagers.ReactNativeBlurSwitchManagerInterface
 import com.facebook.react.viewmanagers.ReactNativeBlurSwitchManagerDelegate
-import androidx.core.graphics.toColorInt
 
 @ReactModule(name = ReactNativeBlurSwitchManager.NAME)
 class ReactNativeBlurSwitchManager : SimpleViewManager<ReactNativeBlurSwitch>(),
@@ -55,37 +54,19 @@ class ReactNativeBlurSwitchManager : SimpleViewManager<ReactNativeBlurSwitch>(),
     view?.setRounds(blurRounds)
   }
 
-  @ReactProp(name = "thumbColor")
-  override fun setThumbColor(view: ReactNativeBlurSwitch?, color: String?) {
-    color?.let {
-      try {
-        view?.setThumbColor(it.toColorInt())
-      } catch (e: Exception) {
-        android.util.Log.w("ReactNativeBlurSwitchManager", "Invalid thumbColor: $color", e)
-      }
-    }
+  @ReactProp(name = "thumbColor", customType = "Color")
+  override fun setThumbColor(view: ReactNativeBlurSwitch?, color: Int?) {
+    color?.let { view?.setThumbColor(it) }
   }
 
-  @ReactProp(name = "trackColorOff")
-  override fun setTrackColorOff(view: ReactNativeBlurSwitch?, color: String?) {
-    color?.let {
-      try {
-        view?.setTrackColorOff(it.toColorInt())
-      } catch (e: Exception) {
-        android.util.Log.w("ReactNativeBlurSwitchManager", "Invalid trackColorOff: $color", e)
-      }
-    }
+  @ReactProp(name = "trackColorOff", customType = "Color")
+  override fun setTrackColorOff(view: ReactNativeBlurSwitch?, color: Int?) {
+    color?.let { view?.setTrackColorOff(it) }
   }
 
-  @ReactProp(name = "trackColorOn")
-  override fun setTrackColorOn(view: ReactNativeBlurSwitch?, color: String?) {
-    color?.let {
-      try {
-        view?.setTrackColorOn(it.toColorInt())
-      } catch (e: Exception) {
-        android.util.Log.w("ReactNativeBlurSwitchManager", "Invalid trackColorOn: $color", e)
-      }
-    }
+  @ReactProp(name = "trackColorOn", customType = "Color")
+  override fun setTrackColorOn(view: ReactNativeBlurSwitch?, color: Int?) {
+    color?.let { view?.setTrackColorOn(it) }
   }
 
   @ReactProp(name = "disabled")

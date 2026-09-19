@@ -34,8 +34,8 @@ class ReactNativeLiquidGlassViewManager : ViewGroupManager<ReactNativeLiquidGlas
     view?.setGlassType(glassType ?: "clear")
   }
 
-  @ReactProp(name = "glassTintColor")
-  override fun setGlassTintColor(view: ReactNativeLiquidGlassView?, glassTintColor: String?) {
+  @ReactProp(name = "glassTintColor", customType = "Color")
+  override fun setGlassTintColor(view: ReactNativeLiquidGlassView?, glassTintColor: Int?) {
     view?.setGlassTintColor(glassTintColor)
   }
 
