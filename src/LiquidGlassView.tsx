@@ -1,6 +1,6 @@
 import React, { forwardRef, memo, useMemo } from 'react';
 import { Platform } from 'react-native';
-import type { ColorValue, ViewProps, ViewStyle, StyleProp } from 'react-native';
+import type { ColorValue, ViewStyle, StyleProp, ViewProps } from 'react-native';
 import ReactNativeLiquidGlassView, {
   type GlassType,
 } from './ReactNativeLiquidGlassViewNativeComponent';
@@ -50,7 +50,7 @@ export interface LiquidGlassViewProps extends ViewProps {
    *
    * @platform iOS
    */
-  reducedTransparencyFallbackColor?: ColorValue;
+  reducedTransparencyFallbackColor?: string;
 
   /**
    * @description Whether the glass view should be interactive. On Android this

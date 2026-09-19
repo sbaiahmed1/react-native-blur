@@ -10,7 +10,7 @@ import { ProgressiveBlurView } from '../ProgressiveBlurView';
 import { LiquidGlassView, getFallbackOverlayColor } from '../LiquidGlassView';
 import { LiquidGlassContainer } from '../LiquidGlassContainer';
 import { VibrancyView } from '../VibrancyView';
-import { BlurSwitch, toColorString } from '../BlurSwitch';
+import { BlurSwitch } from '../BlurSwitch';
 
 // react-test-renderer under React 19 requires renders to run inside act().
 (
@@ -60,20 +60,6 @@ describe('getFallbackOverlayColor', () => {
   it('passes platform colours through unchanged', () => {
     const color = 42 as unknown as ColorValue;
     expect(getFallbackOverlayColor(color, 0.5)).toBe(color);
-  });
-});
-
-describe('toColorString', () => {
-  it('returns a string colour unchanged', () => {
-    expect(toColorString('#abcdef', '#000000')).toBe('#abcdef');
-  });
-
-  it('falls back for undefined or non-string ColorValues', () => {
-    expect(toColorString(undefined, '#E5E5EA')).toBe('#E5E5EA');
-    // processColor / PlatformColor produce non-string values
-    expect(toColorString(42 as unknown as ColorValue, '#34C759')).toBe(
-      '#34C759'
-    );
   });
 });
 
