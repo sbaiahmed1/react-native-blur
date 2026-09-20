@@ -67,10 +67,10 @@ class ReactNativeProgressiveBlurViewManager : ViewGroupManager<ReactNativeProgre
     view?.setStartOffset(startOffset.toFloat())
   }
 
-  @ReactProp(name = "reducedTransparencyFallbackColor")
+  @ReactProp(name = "reducedTransparencyFallbackColor", customType = "Color")
   override fun setReducedTransparencyFallbackColor(
     view: ReactNativeProgressiveBlurView?,
-    reducedTransparencyFallbackColor: String?
+    reducedTransparencyFallbackColor: Int?
   ) {
     // no-op
   }

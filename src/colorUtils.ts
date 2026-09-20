@@ -1,3 +1,5 @@
+import type { ColorValue } from 'react-native';
+
 /** Blur strength used for the non-iOS-26 glass fallback. */
 export const FALLBACK_BLUR_AMOUNT = 70;
 
@@ -12,13 +14,14 @@ export const MAX_FALLBACK_TINT_ALPHA = 0.35;
  * Builds the overlay colour for the fallback blur. Returns undefined (no tint)
  * for a clear/transparent/missing tint, and scales a hex tint down to a subtle,
  * capped alpha so the fallback approximates glass rather than a solid fill.
- * Non-hex colours (named colours, rgb/rgba) are passed through unchanged.
+ * Non-hex and platform colours are passed through unchanged.
  */
 export function getFallbackOverlayColor(
-  tint: string | undefined,
+  tint: ColorValue | undefined,
   opacity: number
-): string | undefined {
+): ColorValue | undefined {
   if (!tint) return undefined;
+  if (typeof tint !== 'string') return tint;
   const normalized = tint.trim().toLowerCase();
   if (
     normalized === '' ||

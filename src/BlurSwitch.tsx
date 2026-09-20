@@ -6,22 +6,14 @@ import React, {
   useState,
 } from 'react';
 import { Platform, StyleSheet, Switch } from 'react-native';
-import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
+import type { ViewStyle, StyleProp, ColorValue, ViewProps } from 'react-native';
 import ReactNativeBlurSwitch, {
   Commands,
 } from './ReactNativeBlurSwitchNativeComponent';
 
 type NativeBlurSwitchProps = React.ComponentProps<typeof ReactNativeBlurSwitch>;
 
-export const toColorString = (
-  color: ColorValue | undefined,
-  fallback: string
-): string => {
-  if (typeof color === 'string') return color;
-  return fallback;
-};
-
-export interface BlurSwitchProps {
+export interface BlurSwitchProps extends ViewProps {
   /**
    * @description The current value of the switch
    *
@@ -165,9 +157,9 @@ const BlurSwitchComponent: React.FC<BlurSwitchProps> = ({
       onValueChange={handleNativeValueChange}
       blurAmount={blurAmount}
       blurRounds={blurRounds}
-      thumbColor={toColorString(thumbColor, '#FFFFFF')}
-      trackColorOff={toColorString(trackColor?.false, '#E5E5EA')}
-      trackColorOn={toColorString(trackColor?.true, '#34C759')}
+      thumbColor={thumbColor}
+      trackColorOff={trackColor?.false}
+      trackColorOn={trackColor?.true}
       disabled={disabled}
       {...props}
     />

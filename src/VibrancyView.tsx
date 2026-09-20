@@ -1,12 +1,12 @@
 import React, { forwardRef, memo } from 'react';
 import { Platform, StyleSheet } from 'react-native';
-import type { ViewStyle, StyleProp } from 'react-native';
+import type { ViewStyle, StyleProp, ViewProps } from 'react-native';
 import ReactNativeVibrancyView, {
   type BlurType,
 } from './ReactNativeVibrancyViewNativeComponent';
 import BlurView from './BlurView';
 
-export interface VibrancyViewProps {
+export interface VibrancyViewProps extends ViewProps {
   /**
    * @description The type of blur effect to apply
    *

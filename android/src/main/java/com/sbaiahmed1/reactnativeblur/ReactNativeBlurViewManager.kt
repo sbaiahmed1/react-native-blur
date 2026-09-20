@@ -69,8 +69,8 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
     view?.setBorderBottomRightRadius(borderBottomRightRadius)
   }
 
-  @ReactProp(name = "reducedTransparencyFallbackColor")
-  override fun setReducedTransparencyFallbackColor(view: ReactNativeBlurView?, reducedTransparencyFallbackColor: String?) {
+  @ReactProp(name = "reducedTransparencyFallbackColor", customType = "Color")
+  override fun setReducedTransparencyFallbackColor(view: ReactNativeBlurView?, reducedTransparencyFallbackColor: Int?) {
     // no-op
   }
 
