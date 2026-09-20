@@ -170,6 +170,12 @@ import UIKit
     // Check if we can use the new API (iOS 26+)
     if #available(iOS 26.0, *) {
       #if compiler(>=6.2)
+      // Remove the solid fallback and its uniform clipping when the user's
+      // Reduce Transparency setting is turned off again.
+      backgroundColor = .clear
+      glassEffectView?.layer.cornerRadius = 0
+      glassEffectView?.layer.masksToBounds = false
+
       let style: UIGlassEffect.Style = glassType == "regular" ? .regular : .clear
 
       // Always create a new effect to ensure proper rendering
