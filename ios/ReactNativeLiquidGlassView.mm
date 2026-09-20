@@ -1,4 +1,5 @@
 #import "ReactNativeLiquidGlassView.h"
+#import <react/RCTConversions.h>
 
 #import <react/renderer/components/ReactNativeBlurViewSpec/ComponentDescriptors.h>
 #import <react/renderer/components/ReactNativeBlurViewSpec/EventEmitters.h>
@@ -23,120 +24,6 @@ using namespace facebook::react;
   LayoutMetrics _layoutMetrics;
 }
 
-+ (UIColor *)colorFromString:(NSString *)colorString {
-  // Input validation
-  if (!colorString || [colorString isEqualToString:@""] || colorString.length == 0) {
-    return [UIColor clearColor]; // Default color
-  }
-
-  // Prevent excessively long strings that could cause performance issues
-  if (colorString.length > 50) {
-    NSLog(@"[ReactNativeLiquidGlassView] Warning: Color string too long, using default clear color");
-    return [UIColor clearColor];
-  }
-
-  // Handle common color names
-  NSDictionary *colorMap = @{
-    @"black": [UIColor blackColor],
-    @"blue": [UIColor blueColor],
-    @"brown": [UIColor brownColor],
-    @"clear": [UIColor clearColor],
-    @"cyan": [UIColor cyanColor],
-    @"magenta": [UIColor magentaColor],
-    @"gray": [UIColor grayColor],
-    @"green": [UIColor greenColor],
-    @"orange": [UIColor orangeColor],
-    @"purple": [UIColor purpleColor],
-    @"red": [UIColor redColor],
-    @"transparent": [UIColor clearColor],
-    @"white": [UIColor whiteColor],
-    @"yellow": [UIColor yellowColor],
-  };
-
-  UIColor *namedColor = colorMap[colorString.lowercaseString];
-  if (namedColor) {
-    return namedColor;
-  }
-
-  // Handle hex colors (e.g., "#FF0000", "FF0000", "#FF00FF00", "FF00FF00")
-  NSString *hexString = colorString;
-  if ([hexString hasPrefix:@"#"]) {
-    if (hexString.length < 2) {
-      NSLog(@"[ReactNativeLiquidGlassView] Warning: Invalid hex color format '%@', using default clear color", colorString);
-      return [UIColor clearColor];
-    }
-    hexString = [hexString substringFromIndex:1];
-  }
-
-  // Validate hex string contains only valid hex characters
-  NSCharacterSet *hexCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"0123456789ABCDEFabcdef"];
-  NSCharacterSet *invalidCharacters = [hexCharacterSet invertedSet];
-  if ([hexString rangeOfCharacterFromSet:invalidCharacters].location != NSNotFound) {
-    NSLog(@"[ReactNativeLiquidGlassView] Warning: Invalid hex color format '%@', contains non-hex characters", colorString);
-    return [UIColor clearColor];
-  }
-
-  // Handle 6-character hex (RGB)
-  if (hexString.length == 6) {
-    unsigned int hexValue;
-    NSScanner *scanner = [NSScanner scannerWithString:hexString];
-    if ([scanner scanHexInt:&hexValue] && [scanner isAtEnd]) {
-      return [UIColor colorWithRed:((hexValue & 0xFF0000) >> 16) / 255.0
-                             green:((hexValue & 0x00FF00) >> 8) / 255.0
-                              blue:(hexValue & 0x0000FF) / 255.0
-                             alpha:1.0];
-    }
-  }
-  // Handle 8-character hex (RGBA)
-  else if (hexString.length == 8) {
-    unsigned long long hexValue;
-    NSScanner *scanner = [NSScanner scannerWithString:hexString];
-    if ([scanner scanHexLongLong:&hexValue] && [scanner isAtEnd]) {
-      return [UIColor colorWithRed:((hexValue & 0xFF000000) >> 24) / 255.0
-                             green:((hexValue & 0x00FF0000) >> 16) / 255.0
-                              blue:((hexValue & 0x0000FF00) >> 8) / 255.0
-                             alpha:(hexValue & 0x000000FF) / 255.0];
-    }
-  }
-  // Handle 4-character hex (RGBA shorthand)
-  else if (hexString.length == 4) {
-    unsigned int hexValue;
-    NSScanner *scanner = [NSScanner scannerWithString:hexString];
-    if ([scanner scanHexInt:&hexValue] && [scanner isAtEnd]) {
-      // Expand 4-digit hex to 8-digit (e.g., "FFF0" -> "FFFFFF00")
-      unsigned int r = (hexValue & 0xF000) >> 12;
-      unsigned int g = (hexValue & 0x0F00) >> 8;
-      unsigned int b = (hexValue & 0x00F0) >> 4;
-      unsigned int a = (hexValue & 0x000F);
-
-      return [UIColor colorWithRed:(r | (r << 4)) / 255.0 green:(g | (g << 4)) / 255.0 blue:(b | (b << 4)) / 255.0 alpha:(a | (a << 4)) / 255.0];
-    }
-  }
-  // Handle 3-character hex (RGB shorthand)
-  else if (hexString.length == 3) {
-    unsigned int hexValue;
-    NSScanner *scanner = [NSScanner scannerWithString:hexString];
-    if ([scanner scanHexInt:&hexValue] && [scanner isAtEnd]) {
-      // Expand 3-digit hex to 6-digit (e.g., "F0A" -> "FF00AA")
-      unsigned int r = (hexValue & 0xF00) >> 8;
-      unsigned int g = (hexValue & 0x0F0) >> 4;
-      unsigned int b = (hexValue & 0x00F);
-
-      return [UIColor colorWithRed:(r | (r << 4)) / 255.0
-                             green:(g | (g << 4)) / 255.0
-                              blue:(b | (b << 4)) / 255.0
-                             alpha:1.0];
-    }
-  }
-  else {
-    NSLog(@"[ReactNativeLiquidGlassView] Warning: Unsupported hex color length (%lu) for '%@', expected 3, 4, 6, or 8 characters",
-          (unsigned long)hexString.length, colorString);
-  }
-
-  NSLog(@"[ReactNativeLiquidGlassView] Warning: Could not parse color '%@', using default clear color", colorString);
-  return [UIColor clearColor]; // Fallback to clear
-}
-
 + (ComponentDescriptorProvider)componentDescriptorProvider
 {
   return concreteComponentDescriptorProvider<ReactNativeLiquidGlassViewComponentDescriptor>();
@@ -156,8 +43,7 @@ using namespace facebook::react;
     [_liquidGlassView beginBatchUpdate];
 
     // Set initial glassTintColor from default props
-    NSString *defaultGlassTintColorString = [[NSString alloc] initWithUTF8String:lgProps.glassTintColor.c_str()];
-    UIColor *defaultGlassTintColor = [ReactNativeLiquidGlassView colorFromString:defaultGlassTintColorString];
+    UIColor *defaultGlassTintColor = RCTUIColorFromSharedColor(lgProps.glassTintColor) ?: [UIColor clearColor];
     [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassTintColor:defaultGlassTintColor];
 
     // Set initial glassOpacity from default props
@@ -176,11 +62,8 @@ using namespace facebook::react;
     [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIgnoringSafeArea:lgProps.ignoreSafeArea];
 
     // Set initial reducedTransparencyFallbackColor from default props
-    if (!lgProps.reducedTransparencyFallbackColor.empty()) {
-      NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:lgProps.reducedTransparencyFallbackColor.c_str()];
-      UIColor *fallbackColor = [ReactNativeLiquidGlassView colorFromString:fallbackColorString];
-      [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:fallbackColor];
-    }
+    UIColor *fallbackColor = RCTUIColorFromSharedColor(lgProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
+    [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:fallbackColor];
 
     [_liquidGlassView endBatchUpdate];
 
@@ -197,12 +80,9 @@ using namespace facebook::react;
   // Coalesce the individual prop setters below into a single effect rebuild.
   [_liquidGlassView beginBatchUpdate];
 
-  // Update glassTintColor if it has changed. Apply even for an empty string:
-  // colorFromString maps "" to clear, and the view treats a zero-alpha tint as
-  // "no tint", so clearing a previously-set tint actually takes effect.
+  // Apply null as clear so removing a previously-set tint takes effect.
   if (oldViewProps.glassTintColor != newViewProps.glassTintColor) {
-    NSString *glassTintColorString = [[NSString alloc] initWithUTF8String:newViewProps.glassTintColor.c_str()];
-    UIColor *newGlassTintColor = [ReactNativeLiquidGlassView colorFromString:glassTintColorString];
+    UIColor *newGlassTintColor = RCTUIColorFromSharedColor(newViewProps.glassTintColor) ?: [UIColor clearColor];
     [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassTintColor:newGlassTintColor];
   }
 
@@ -234,8 +114,7 @@ using namespace facebook::react;
   // empty so clearing the prop resets to the parsed default rather than
   // stranding the previous colour.
   if (oldViewProps.reducedTransparencyFallbackColor != newViewProps.reducedTransparencyFallbackColor) {
-    NSString *fallbackColorString = [[NSString alloc] initWithUTF8String:newViewProps.reducedTransparencyFallbackColor.c_str()];
-    UIColor *fallbackColor = [ReactNativeLiquidGlassView colorFromString:fallbackColorString];
+    UIColor *fallbackColor = RCTUIColorFromSharedColor(newViewProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
     [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:fallbackColor];
   }
 
@@ -261,19 +140,15 @@ using namespace facebook::react;
   NSString *defaultGlassTypeString = [[NSString alloc] initWithUTF8String:toString(lgProps.glassType).c_str()];
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassType:defaultGlassTypeString];
 
-  NSString *defaultGlassTintColorString = [[NSString alloc] initWithUTF8String:lgProps.glassTintColor.c_str()];
-  UIColor *defaultGlassTintColor = [ReactNativeLiquidGlassView colorFromString:defaultGlassTintColorString];
+  UIColor *defaultGlassTintColor = RCTUIColorFromSharedColor(lgProps.glassTintColor) ?: [UIColor clearColor];
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassTintColor:defaultGlassTintColor];
 
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassOpacity:lgProps.glassOpacity];
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIsInteractive:lgProps.isInteractive];
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIgnoringSafeArea:lgProps.ignoreSafeArea];
 
-  // Reset the fallback colour too — the container defaults to white when the
-  // default prop string is empty.
-  UIColor *defaultFallbackColor = lgProps.reducedTransparencyFallbackColor.empty()
-    ? [UIColor whiteColor]
-    : [ReactNativeLiquidGlassView colorFromString:[[NSString alloc] initWithUTF8String:lgProps.reducedTransparencyFallbackColor.c_str()]];
+  // Reset the fallback colour too; the component default is white.
+  UIColor *defaultFallbackColor = RCTUIColorFromSharedColor(lgProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
   [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:defaultFallbackColor];
 }
 

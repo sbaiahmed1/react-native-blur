@@ -20,7 +20,6 @@ import android.view.ViewOutlineProvider
 import android.view.ViewTreeObserver
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
-import androidx.core.graphics.toColorInt
 
 /**
  * Android implementation of React Native LiquidGlassView, rendering the
@@ -82,7 +81,7 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   // backdrop glued to the content at full frame rate. updateGlassNode is a
   // cheap no-op when neither the offset, the capture, nor the effect changed.
   private val scrollTrackingListener = ViewTreeObserver.OnPreDrawListener {
-    if (isSupported) {
+    if (canRefreshBackdrop) {
       updateGlassNode()
     }
     true
@@ -100,7 +99,7 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   private val backdropTicker = object : Runnable {
     override fun run() {
       refreshBackdrop()
-      postDelayed(this, BACKDROP_REFRESH_MS)
+      if (canRefreshBackdrop) postDelayed(this, BACKDROP_REFRESH_MS)
     }
   }
 
@@ -184,10 +183,13 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   // only runs while the view can actually be seen: it stops when the view or
   // its window is hidden (backgrounded app, covered screen, GONE subtree) and
   // restarts when visibility returns.
+  private val canRefreshBackdrop: Boolean
+    get() = isSupported && isAttachedToWindow && isShown && windowVisibility == VISIBLE
+
   private fun restartTickerIfVisible() {
     if (!constructed) return
     removeCallbacks(backdropTicker)
-    if (isSupported && isAttachedToWindow && isShown && windowVisibility == VISIBLE) {
+    if (canRefreshBackdrop) {
       postDelayed(backdropTicker, BACKDROP_REFRESH_MS)
     }
   }
@@ -263,7 +265,6 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     if (shaderFailed || width <= 0 || height <= 0) return false
     val node = glassNode ?: return false
     val source = captureSource ?: return false
-    val bitmap = SharedBackdropCapture.peek(source) ?: return false
 
     source.getLocationInWindow(sourceLocation)
     getLocationInWindow(ownLocation)
@@ -280,6 +281,8 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
       SharedBackdropCapture.acquire(source, CAPTURE_DOWNSAMPLE, BACKDROP_REFRESH_MS)
     }
 
+    // acquire can recycle and replace the bitmap when the capture root resizes.
+    val bitmap = SharedBackdropCapture.peek(source) ?: return false
     val generation = SharedBackdropCapture.generationOf(source)
     if (
       generation == appliedGeneration &&
@@ -315,7 +318,7 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
   }
 
   private fun refreshBackdrop() {
-    if (!isSupported || width <= 0 || height <= 0 || !isAttachedToWindow) return
+    if (!canRefreshBackdrop || width <= 0 || height <= 0) return
     val source = captureSource ?: return
     if (source.width <= 0 || source.height <= 0) return
     refreshBackdrop33(source)
@@ -443,22 +446,10 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
 
   /**
    * Set the glass tint color.
-   * @param color Hex string (e.g. "#FF0000"), or "clear"/"transparent"/null for no tint
+   * @param color React Native color int, or null for no tint
    */
-  fun setGlassTintColor(color: String?) {
-    glassTintColor =
-      if (color == null || color.equals("clear", ignoreCase = true) ||
-        color.equals("transparent", ignoreCase = true)
-      ) {
-        Color.TRANSPARENT
-      } else {
-        try {
-          color.toColorInt()
-        } catch (e: Exception) {
-          logWarning("Invalid color format for glass tint: $color", e)
-          Color.TRANSPARENT
-        }
-      }
+  fun setGlassTintColor(color: Int?) {
+    glassTintColor = color ?: Color.TRANSPARENT
     effectDirty = true
   }
 

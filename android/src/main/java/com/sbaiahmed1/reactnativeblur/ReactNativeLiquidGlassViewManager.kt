@@ -34,8 +34,8 @@ class ReactNativeLiquidGlassViewManager : ViewGroupManager<ReactNativeLiquidGlas
     view?.setGlassType(glassType ?: "clear")
   }
 
-  @ReactProp(name = "glassTintColor")
-  override fun setGlassTintColor(view: ReactNativeLiquidGlassView?, glassTintColor: String?) {
+  @ReactProp(name = "glassTintColor", customType = "Color")
+  override fun setGlassTintColor(view: ReactNativeLiquidGlassView?, glassTintColor: Int?) {
     view?.setGlassTintColor(glassTintColor)
   }
 
@@ -49,8 +49,8 @@ class ReactNativeLiquidGlassViewManager : ViewGroupManager<ReactNativeLiquidGlas
     view?.setIsInteractive(isInteractive)
   }
 
-  @ReactProp(name = "reducedTransparencyFallbackColor")
-  override fun setReducedTransparencyFallbackColor(view: ReactNativeLiquidGlassView?, reducedTransparencyFallbackColor: String?) {
+  @ReactProp(name = "reducedTransparencyFallbackColor", customType = "Color")
+  override fun setReducedTransparencyFallbackColor(view: ReactNativeLiquidGlassView?, reducedTransparencyFallbackColor: Int?) {
     // no-op
   }
 

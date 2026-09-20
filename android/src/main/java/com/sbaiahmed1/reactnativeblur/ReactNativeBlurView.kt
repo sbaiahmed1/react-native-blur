@@ -14,7 +14,6 @@ import android.view.ViewOutlineProvider
 import android.view.ViewTreeObserver
 import com.qmdeve.blurview.widget.BlurViewGroup
 import com.qmdeve.blurview.base.BaseBlurViewGroup
-import androidx.core.graphics.toColorInt
 
 import android.view.View.MeasureSpec
 
@@ -275,24 +274,12 @@ class ReactNativeBlurView : BlurViewGroup {
 
   /**
    * Set the glass tint color for liquid glass effect.
-   * @param color The color string in hex format (e.g., "#FF0000") or null to clear
+   * @param color React Native color int, or null to clear
    */
-  fun setGlassTintColor(color: String?) {
-    color?.let {
-      try {
-        glassTintColor = it.toColorInt()
-        logDebug("setGlassTintColor: $color -> $glassTintColor")
-        updateGlassEffect()
-      } catch (e: Exception) {
-        logWarning("Invalid color format for glass tint: $color")
-        glassTintColor = Color.TRANSPARENT
-        updateGlassEffect()
-      }
-    } ?: run {
-      glassTintColor = Color.TRANSPARENT
-      logDebug("Cleared glass tint color")
-      updateGlassEffect()
-    }
+  fun setGlassTintColor(color: Int?) {
+    glassTintColor = color ?: Color.TRANSPARENT
+    logDebug("setGlassTintColor: $glassTintColor")
+    updateGlassEffect()
   }
 
   fun setGlassOpacity(opacity: Float) {
@@ -396,18 +383,19 @@ class ReactNativeBlurView : BlurViewGroup {
       val bottomLeft = if (borderBottomLeftRadius >= 0) convertDpToPx(borderBottomLeftRadius) else baseRadius
       val bottomRight = if (borderBottomRightRadius >= 0) convertDpToPx(borderBottomRightRadius) else baseRadius
 
+      // QmBlurView's uniform setter resets all four individual radii.
+      super.setCornerRadius(baseRadius)
       super.setTopLeftCornerRadius(topLeft)
       super.setTopRightCornerRadius(topRight)
       super.setBottomLeftCornerRadius(bottomLeft)
       super.setBottomRightCornerRadius(bottomRight)
-      super.setCornerRadius(baseRadius)
 
       val isUniform = topLeft == topRight && topRight == bottomLeft && bottomLeft == bottomRight
 
       if (isUniform) {
         outlineProvider = object : ViewOutlineProvider() {
           override fun getOutline(view: View, outline: Outline?) {
-            outline?.setRoundRect(0, 0, view.width, view.height, baseRadius)
+            outline?.setRoundRect(0, 0, view.width, view.height, topLeft)
           }
         }
       } else {

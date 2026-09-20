@@ -1,12 +1,12 @@
 import React, { Children, forwardRef, memo, useMemo } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
-import type { ViewStyle, StyleProp, ColorValue } from 'react-native';
+import type { ViewStyle, StyleProp, ColorValue, ViewProps } from 'react-native';
 import ReactNativeProgressiveBlurView, {
   type BlurType,
   type ProgressiveBlurDirection,
 } from './ReactNativeProgressiveBlurViewNativeComponent';
 
-export interface ProgressiveBlurViewProps {
+export interface ProgressiveBlurViewProps extends ViewProps {
   /**
    * @description The type of blur effect to apply
    *
@@ -62,7 +62,7 @@ export interface ProgressiveBlurViewProps {
    *
    * @platform iOS
    */
-  reducedTransparencyFallbackColor?: string;
+  reducedTransparencyFallbackColor?: ColorValue;
 
   /**
    * @description The overlay color to apply on top of the blur effect
