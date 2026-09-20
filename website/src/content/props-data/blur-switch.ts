@@ -1,7 +1,7 @@
 import type { PropRow } from './types';
 
 export const blurSwitchProps: PropRow[] = [
-  { name: 'value', type: 'boolean', default: 'false', description: 'The current value of the switch.' },
+  { name: 'value', type: 'boolean', default: 'false', description: 'The controlled value of the switch. Update it from onValueChange to accept a toggle; otherwise the supplied value is restored.' },
   {
     name: 'onValueChange',
     type: '(value: boolean) => void',
