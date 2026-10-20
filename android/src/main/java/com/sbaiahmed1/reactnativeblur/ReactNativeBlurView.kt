@@ -44,6 +44,12 @@ class ReactNativeBlurView : BlurViewGroup {
   private var currentBlurType: String = "xlight"
   private var isBlurInitialized: Boolean = false
   private var initRunnable: Runnable? = null
+  // Guarded wrapper around QmBlurView's pre-draw listener, registered on the
+  // swapped capture root (see swapBlurRootToScreenAncestor). Tracked so
+  // cleanup() can unregister it: QmBlurView only knows the original listener.
+  private var capturePreDrawListener: ViewTreeObserver.OnPreDrawListener? = null
+  private var captureRoot: View? = null
+  private var captureSettleFramesLeft = 0
 
   companion object {
     private const val TAG = "ReactNativeBlurView"
@@ -61,6 +67,13 @@ class ReactNativeBlurView : BlurViewGroup {
     // reducing both the software capture cost and the blur cost.
     private const val DEFAULT_DOWNSAMPLE_FACTOR = 8.0f
     private const val DEBUG = false
+    // Pre-draws to keep skipping the backdrop capture after the last legacy
+    // view animation in the capture root is gone. The frame that clears an
+    // animation leaves the view's RenderNode alpha at its last animated value
+    // and relies on the NEXT hardware draw to reset it to 1; a software
+    // capture running first in that frame consumes the reset (see
+    // swapBlurRootToScreenAncestor). One frame is enough, the second is margin.
+    private const val ANIMATION_SETTLE_FRAMES = 2
 
     private const val MIN_BLUR_AMOUNT = 0f
     private const val MAX_BLUR_AMOUNT = 100f
@@ -160,6 +173,34 @@ class ReactNativeBlurView : BlurViewGroup {
         decorViewField.set(baseBlurViewGroup, newRoot)
 
         newRoot.viewTreeObserver.addOnPreDrawListener(preDrawListener)
+        // QmBlurView's listener rasterizes the capture root into a software
+        // canvas on every pre-draw. That software pass runs before the frame's
+        // hardware draw, with a stale drawing time, and evaluates any legacy
+        // view Animation in the subtree (react-native-screens' stack
+        // transitions). It starts the animation with a stale start time and
+        // consumes its alpha/end bookkeeping off the hardware path, so the
+        // pushed screen's RenderNode is left at ~0 alpha and the screen stays
+        // blank until reload (react-native-blur#167). Skip the capture while
+        // such an animation is attached, plus a few settle frames after it is
+        // cleared, and keep showing the last blurred frame meanwhile.
+        val guardedListener = ViewTreeObserver.OnPreDrawListener {
+          if (hasPendingViewAnimation(newRoot)) {
+            captureSettleFramesLeft = ANIMATION_SETTLE_FRAMES
+            // Keep frames coming so the capture resumes once the animation
+            // is cleared, even if nothing else invalidates.
+            postInvalidateOnAnimation()
+            true
+          } else if (captureSettleFramesLeft > 0) {
+            captureSettleFramesLeft--
+            postInvalidateOnAnimation()
+            true
+          } else {
+            preDrawListener.onPreDraw()
+          }
+        }
+        newRoot.viewTreeObserver.addOnPreDrawListener(guardedListener)
+        capturePreDrawListener = guardedListener
+        captureRoot = newRoot
 
         val differentRootField = baseClass.getDeclaredField("mDifferentRoot")
         differentRootField.isAccessible = true
@@ -176,6 +217,27 @@ class ReactNativeBlurView : BlurViewGroup {
     } catch (e: Exception) {
       logWarning("Failed to swap blur root: ${e.message}. Falling back to decor view.")
     }
+  }
+
+  /**
+   * True if [view] or any descendant has a legacy view Animation attached that
+   * a draw would still evaluate, including one started but not drawn yet.
+   * hasEnded() alone is not enough: AndroidX Fragment's
+   * EndViewTransitionAnimation reports ended but stays attached, returning
+   * "more" with a stale transformation until the fragment transition ends.
+   * Only an ended fillAfter animation, held on purpose, is ignored so it
+   * cannot freeze the backdrop forever. The walk is cheap next to the full
+   * software draw of the same tree that it guards.
+   */
+  private fun hasPendingViewAnimation(view: View): Boolean {
+    val animation = view.animation
+    if (animation != null && !(animation.hasEnded() && animation.fillAfter)) return true
+    if (view is ViewGroup) {
+      for (i in 0 until view.childCount) {
+        if (hasPendingViewAnimation(view.getChildAt(i))) return true
+      }
+    }
+    return false
   }
 
   private fun findOptimalBlurRoot(): ViewGroup? {
@@ -228,6 +290,16 @@ class ReactNativeBlurView : BlurViewGroup {
     isBlurInitialized = false
     initRunnable?.let { removeCallbacks(it) }
     initRunnable = null
+    capturePreDrawListener?.let { listener ->
+      try {
+        captureRoot?.viewTreeObserver?.removeOnPreDrawListener(listener)
+      } catch (e: Exception) {
+        logDebug("Could not remove guarded pre-draw listener: ${e.message}")
+      }
+    }
+    capturePreDrawListener = null
+    captureRoot = null
+    captureSettleFramesLeft = 0
     logDebug("View cleaned up")
   }
 
