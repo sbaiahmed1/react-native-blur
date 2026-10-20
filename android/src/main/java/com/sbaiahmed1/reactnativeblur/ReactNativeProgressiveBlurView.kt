@@ -64,6 +64,10 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   private var isBlurInitialized: Boolean = false
   private var initRunnable: Runnable? = null
   private var swapRootRunnable: Runnable? = null
+  // Guarded replacement for the internal BlurView's pre-draw listener on the
+  // swapped capture root (see swapBlurRootToScreenAncestor). Tracked so
+  // cleanup() can unregister it: QmBlurView only knows the original listener.
+  private var captureGuard: CaptureAnimationGuard? = null
 
   companion object {
     private const val TAG = "ReactNativeProgressiveBlur"
@@ -239,8 +243,13 @@ class ReactNativeProgressiveBlurView : FrameLayout {
         // Set new root (public field)
         bv.mDecorView = newRoot
 
-        // Add listener to new root
-        newRoot.viewTreeObserver.addOnPreDrawListener(listener)
+        // Register only the guard, which delegates to the original listener
+        // when it is safe to capture (react-native-blur#167). Adding the
+        // original listener too would still capture unguarded, and twice per
+        // frame. Drop any previous guard first so a repeated swap cannot leak
+        // one on the old root.
+        captureGuard?.remove()
+        captureGuard = CaptureAnimationGuard.install(newRoot, listener, bv, TAG)
 
         // Update mDifferentRoot flag (public field)
         bv.mDifferentRoot = newRoot.rootView != bv.rootView
@@ -582,6 +591,8 @@ class ReactNativeProgressiveBlurView : FrameLayout {
       blurView?.removeCallbacks(runnable)
     }
     swapRootRunnable = null
+    captureGuard?.remove()
+    captureGuard = null
 
     // Unregister the OnPreDrawListener from whatever root it was moved to,
     // preventing callbacks into a detached BlurView and avoiding leaks.
