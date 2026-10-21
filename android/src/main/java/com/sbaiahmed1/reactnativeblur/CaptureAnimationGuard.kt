@@ -8,8 +8,9 @@ import android.view.ViewTreeObserver
 
 /**
  * Guarded replacement for QmBlurView's capture pre-draw listener, registered
- * on the capture root that ReactNativeBlurView and
- * ReactNativeProgressiveBlurView swap in (their swapBlurRootToScreenAncestor).
+ * by ReactNativeBlurView and ReactNativeProgressiveBlurView on the activity
+ * decor view as soon as QmBlurView attaches, then moved to the capture root
+ * they swap in (their swapBlurRootToScreenAncestor).
  *
  * QmBlurView's listener rasterizes the capture root into a software canvas on
  * every pre-draw. That software pass runs before the frame's hardware draw,
@@ -81,8 +82,10 @@ internal class CaptureAnimationGuard private constructor(
      *
      * Cost: a full walk of the capture root, once per guarded blur view per
      * frame. Under a Screen root that is one screen's subtree; with the
-     * ReactRootView fallback it is the whole RN tree. Still cheap next to the
-     * full software draw of the same tree that it guards.
+     * ReactRootView fallback it is the whole RN tree; on the decor view
+     * (until the swap, or for good when no root is found) it is the whole
+     * window. Still cheap next to the full software draw of the same tree
+     * that it guards.
      */
     private fun hasPendingViewAnimation(view: View): Boolean {
       val animation = view.animation

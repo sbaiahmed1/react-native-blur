@@ -189,6 +189,17 @@ class ReactNativeProgressiveBlurView : FrameLayout {
           layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
           setDownsampleFactor(DEFAULT_DOWNSAMPLE_FACTOR)
           blurRounds = currentBlurRounds
+          // BlurView registers its unguarded listener on the activity decor
+          // view on every attach, and a pre-draw can run before the posted
+          // root swap. Guard that root as soon as the attach completes
+          // (react-native-blur#167). Covers the initial attach and reattach.
+          addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+            override fun onViewAttachedToWindow(v: View) {
+              installGuardOnCurrentCaptureRoot()
+            }
+
+            override fun onViewDetachedFromWindow(v: View) = Unit
+          })
         }
         addView(blurView)
       }
@@ -213,6 +224,26 @@ class ReactNativeProgressiveBlurView : FrameLayout {
 
     } catch (e: Exception) {
       logError("Failed to initialize progressive blur view: ${e.message}", e)
+    }
+  }
+
+  /**
+   * Replaces the internal BlurView's original pre-draw listener on its current
+   * capture root (the activity decor view right after attach) with a
+   * CaptureAnimationGuard. swapBlurRootToScreenAncestor later moves the guard
+   * to the Screen root; if no such root exists the guard stays here.
+   */
+  private fun installGuardOnCurrentCaptureRoot() {
+    val bv = blurView ?: return
+    val captureRoot = bv.mDecorView ?: return
+    val listener = bv.preDrawListener ?: return
+
+    try {
+      captureRoot.viewTreeObserver.removeOnPreDrawListener(listener)
+      captureGuard?.remove()
+      captureGuard = CaptureAnimationGuard.install(captureRoot, listener, bv, TAG)
+    } catch (e: Exception) {
+      logWarning("Failed to guard initial capture root: ${e.message}. Capture stays unguarded until the root swap.")
     }
   }
 
@@ -246,8 +277,9 @@ class ReactNativeProgressiveBlurView : FrameLayout {
         // Register only the guard, which delegates to the original listener
         // when it is safe to capture (react-native-blur#167). Adding the
         // original listener too would still capture unguarded, and twice per
-        // frame. Drop any previous guard first so a repeated swap cannot leak
-        // one on the old root.
+        // frame. Drop any previous guard first (the one installed on the
+        // decor view at attach, or one from a repeated swap) so none leaks on
+        // the old root.
         captureGuard?.remove()
         captureGuard = CaptureAnimationGuard.install(newRoot, listener, bv, TAG)
 
