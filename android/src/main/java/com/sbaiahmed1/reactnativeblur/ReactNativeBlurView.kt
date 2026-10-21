@@ -44,6 +44,10 @@ class ReactNativeBlurView : BlurViewGroup {
   private var currentBlurType: String = "xlight"
   private var isBlurInitialized: Boolean = false
   private var initRunnable: Runnable? = null
+  // Guarded replacement for QmBlurView's pre-draw listener on the swapped
+  // capture root (see swapBlurRootToScreenAncestor). Tracked so cleanup() can
+  // unregister it: QmBlurView only knows the original listener.
+  private var captureGuard: CaptureAnimationGuard? = null
 
   companion object {
     private const val TAG = "ReactNativeBlurView"
@@ -106,6 +110,12 @@ class ReactNativeBlurView : BlurViewGroup {
 
     if (isBlurInitialized) return
 
+    // super.onAttachedToWindow() registered QmBlurView's unguarded listener on
+    // the activity decor view, and a pre-draw can run before the posted swap
+    // below. Guard the current root right away so that window cannot capture
+    // mid-transition either (react-native-blur#167).
+    installGuardOnCurrentCaptureRoot()
+
     // Defer the root swap and blur init to the next frame rather than running
     // them synchronously here. On a re-attach during navigation (react-native
     // -screens detaches inactive screens), the parent chain up to the Screen
@@ -122,6 +132,40 @@ class ReactNativeBlurView : BlurViewGroup {
     }
     initRunnable = runnable
     post(runnable)
+  }
+
+  /**
+   * Replaces QmBlurView's original pre-draw listener on its current capture
+   * root (the activity decor view right after attach) with a
+   * CaptureAnimationGuard. swapBlurRootToScreenAncestor later moves the guard
+   * to the Screen root; if no such root exists the guard stays here.
+   */
+  private fun installGuardOnCurrentCaptureRoot() {
+    try {
+      val blurViewGroupClass = BlurViewGroup::class.java
+      val baseField = blurViewGroupClass.getDeclaredField("mBaseBlurViewGroup")
+      baseField.isAccessible = true
+      val baseBlurViewGroup = baseField.get(this) ?: return
+
+      val baseClass = BaseBlurViewGroup::class.java
+
+      val decorViewField = baseClass.getDeclaredField("mDecorView")
+      decorViewField.isAccessible = true
+      val captureRoot = decorViewField.get(baseBlurViewGroup) as? View ?: return
+
+      val preDrawListenerField = baseClass.getDeclaredField("preDrawListener")
+      preDrawListenerField.isAccessible = true
+      val preDrawListener =
+        preDrawListenerField.get(baseBlurViewGroup) as? ViewTreeObserver.OnPreDrawListener ?: return
+
+      captureRoot.viewTreeObserver.removeOnPreDrawListener(preDrawListener)
+      captureGuard?.remove()
+      captureGuard = CaptureAnimationGuard.install(captureRoot, preDrawListener, this, TAG)
+    } catch (e: NoSuchFieldException) {
+      logWarning("Reflection failed - QmBlurView field not found: ${e.message}. Capture stays unguarded until the root swap.")
+    } catch (e: Exception) {
+      logWarning("Failed to guard initial capture root: ${e.message}. Capture stays unguarded until the root swap.")
+    }
   }
 
   private fun swapBlurRootToScreenAncestor() {
@@ -159,7 +203,14 @@ class ReactNativeBlurView : BlurViewGroup {
 
         decorViewField.set(baseBlurViewGroup, newRoot)
 
-        newRoot.viewTreeObserver.addOnPreDrawListener(preDrawListener)
+        // Register only the guard, which delegates to QmBlurView's listener
+        // when it is safe to capture (react-native-blur#167). Adding the
+        // original listener too would still capture unguarded, and twice per
+        // frame. Drop any previous guard first (the one installed on the
+        // decor view at attach, or one from a repeated swap) so none leaks on
+        // the old root.
+        captureGuard?.remove()
+        captureGuard = CaptureAnimationGuard.install(newRoot, preDrawListener, this, TAG)
 
         val differentRootField = baseClass.getDeclaredField("mDifferentRoot")
         differentRootField.isAccessible = true
@@ -228,6 +279,8 @@ class ReactNativeBlurView : BlurViewGroup {
     isBlurInitialized = false
     initRunnable?.let { removeCallbacks(it) }
     initRunnable = null
+    captureGuard?.remove()
+    captureGuard = null
     logDebug("View cleaned up")
   }
 
