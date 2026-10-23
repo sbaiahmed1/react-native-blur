@@ -257,11 +257,20 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    */
   private fun swapBlurRootToScreenAncestor() {
     val bv = blurView ?: return
-    val newRoot = findOptimalBlurRoot() ?: return
+    val screenRoot = findOptimalBlurRoot()
 
     try {
       val oldDecorView = bv.mDecorView
       val listener = bv.preDrawListener
+
+      // Inside a Modal no Screen or ReactRootView is an ancestor: the modal
+      // renders into its own Dialog window, which the activity decor view
+      // never contains (react-native-blur#133). Capture both windows instead,
+      // and listen for pre-draws on the dialog window, the one that holds
+      // the blur view.
+      val windowRoot = if (screenRoot == null) WindowCaptureRoot.forHost(bv, oldDecorView) else null
+      val newRoot: View = screenRoot ?: windowRoot ?: return
+      val listenerRoot: View = if (windowRoot != null) bv.rootView else newRoot
 
       if (oldDecorView != null && listener != null) {
         // Remove listener from old root
@@ -281,7 +290,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
         // decor view at attach, or one from a repeated swap) so none leaks on
         // the old root.
         captureGuard?.remove()
-        captureGuard = CaptureAnimationGuard.install(newRoot, listener, bv, TAG)
+        captureGuard = CaptureAnimationGuard.install(listenerRoot, listener, bv, TAG)
 
         // Update mDifferentRoot flag (public field)
         bv.mDifferentRoot = newRoot.rootView != bv.rootView
@@ -312,8 +321,10 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    *    the component is not inside a Screen (e.g. plain View hierarchies). Without
    *    this fallback, QmBlurView defaults to the activity decor view and blurs the
    *    entire screen instead of just the component area (issue #89).
-   * 3. null — returned for modals, which intentionally need to blur content from
-   *    the main activity window (decor view is correct there).
+   * 3. null — e.g. inside a Modal, whose Dialog window has neither ancestor.
+   *    swapBlurRootToScreenAncestor then captures the activity decor view and
+   *    the dialog window together (WindowCaptureRoot), so a full-screen blur
+   *    still shows the screen behind and the modal content is blurred too.
    */
   private fun findOptimalBlurRoot(): ViewGroup? {
     return findNearestScreenAncestor() ?: findNearestReactRootView()

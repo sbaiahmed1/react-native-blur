@@ -169,7 +169,7 @@ class ReactNativeBlurView : BlurViewGroup {
   }
 
   private fun swapBlurRootToScreenAncestor() {
-    val newRoot = findOptimalBlurRoot() ?: return
+    val screenRoot = findOptimalBlurRoot()
 
     try {
       val blurViewGroupClass = BlurViewGroup::class.java
@@ -186,6 +186,15 @@ class ReactNativeBlurView : BlurViewGroup {
       val preDrawListenerField = baseClass.getDeclaredField("preDrawListener")
       preDrawListenerField.isAccessible = true
       val preDrawListener = preDrawListenerField.get(baseBlurViewGroup) as? ViewTreeObserver.OnPreDrawListener
+
+      // Inside a Modal no Screen or ReactRootView is an ancestor: the modal
+      // renders into its own Dialog window, which the activity decor view
+      // never contains (react-native-blur#133). Capture both windows instead,
+      // and listen for pre-draws on the dialog window, the one that holds
+      // this view.
+      val windowRoot = if (screenRoot == null) WindowCaptureRoot.forHost(this, oldDecorView) else null
+      val newRoot: View = screenRoot ?: windowRoot ?: return
+      val listenerRoot: View = if (windowRoot != null) rootView else newRoot
 
       if (oldDecorView == null) {
         logWarning("swapBlurRootToScreenAncestor: oldDecorView is null, skipping swap – falling back to decor view")
@@ -210,7 +219,7 @@ class ReactNativeBlurView : BlurViewGroup {
         // decor view at attach, or one from a repeated swap) so none leaks on
         // the old root.
         captureGuard?.remove()
-        captureGuard = CaptureAnimationGuard.install(newRoot, preDrawListener, this, TAG)
+        captureGuard = CaptureAnimationGuard.install(listenerRoot, preDrawListener, this, TAG)
 
         val differentRootField = baseClass.getDeclaredField("mDifferentRoot")
         differentRootField.isAccessible = true
