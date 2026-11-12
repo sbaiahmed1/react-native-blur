@@ -1,5 +1,5 @@
-// Pins the Swift API mirrored by spm-headers/ReactNativeBlur-Swift.h. If this
-// file fails to compile, update both files together.
+// Pins the @objc API of the Swift files in ios/Helpers and ios/Views mirrored by
+// spm-headers/ReactNativeBlur-Swift.h. If this file fails to compile, update both files together.
 import UIKit
 
 private let _viewTypes: [UIView.Type] = [

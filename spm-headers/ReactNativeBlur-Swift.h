@@ -1,5 +1,5 @@
-// Private SwiftPM declarations used by the Objective-C++ Fabric views. Keep
-// this interface in sync with the @objc APIs pinned by SwiftHeaderPin.swift.
+// This header mirrors the @objc API of the Swift files in ios/Helpers and ios/Views.
+// If spm-support/SwiftHeaderPin.swift fails to compile, update both files together.
 #pragma once
 
 #import <UIKit/UIKit.h>
