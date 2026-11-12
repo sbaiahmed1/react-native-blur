@@ -15,10 +15,13 @@
     "./package.json": "./package.json"
   },
   "files": [
+    "Package.swift",
     "src",
     "lib",
     "android",
     "ios",
+    "spm-headers",
+    "spm-support",
     "*.podspec",
     "!ios/build",
     "!android/build",
@@ -97,6 +100,9 @@
   "peerDependencies": {
     "react": ">=18.2.0",
     "react-native": ">=0.80.0"
+  },
+  "swiftpmConfig": {
+    "name": "ReactNativeBlur"
   },
   "workspaces": [
     "example"
