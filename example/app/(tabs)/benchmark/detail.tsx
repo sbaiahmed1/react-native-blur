@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
 import { parseBenchParams } from '@/benchmark/params';
 import { DEFAULT_PARAMS } from '@/benchmark/scenes';
@@ -14,6 +15,7 @@ export default function BenchmarkDetail() {
       testID="bench-detail"
       style={[styles.root, { paddingTop: insets.top }]}
     >
+      <StatusBar style="dark" />
       <BlurHeaderFeed params={params} title="Detail" />
     </View>
   );
