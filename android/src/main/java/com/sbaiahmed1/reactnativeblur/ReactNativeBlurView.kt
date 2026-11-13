@@ -169,7 +169,7 @@ class ReactNativeBlurView : BlurViewGroup {
   }
 
   private fun swapBlurRootToScreenAncestor() {
-    val screenRoot = findOptimalBlurRoot()
+    val screenRoot = CaptureRoots.resolve(this)
 
     try {
       val blurViewGroupClass = BlurViewGroup::class.java
@@ -236,32 +236,6 @@ class ReactNativeBlurView : BlurViewGroup {
     } catch (e: Exception) {
       logWarning("Failed to swap blur root: ${e.message}. Falling back to decor view.")
     }
-  }
-
-  private fun findOptimalBlurRoot(): ViewGroup? {
-    return findNearestScreenAncestor() ?: findNearestReactRootView()
-  }
-
-  private fun findNearestScreenAncestor(): ViewGroup? {
-    var currentParent = this.parent
-    while (currentParent != null) {
-      if (currentParent.javaClass.name == "com.swmansion.rnscreens.Screen") {
-        return currentParent as? ViewGroup
-      }
-      currentParent = currentParent.parent
-    }
-    return null
-  }
-
-  private fun findNearestReactRootView(): ViewGroup? {
-    var currentParent = this.parent
-    while (currentParent != null) {
-      if (currentParent.javaClass.name == "com.facebook.react.ReactRootView") {
-        return currentParent as? ViewGroup
-      }
-      currentParent = currentParent.parent
-    }
-    return null
   }
 
   private fun initializeBlur() {
