@@ -76,3 +76,13 @@ export function parseBenchParams(
         : defaults.animation,
   };
 }
+
+/** Identity of one run: any query change, `run=<n>` included, starts a new one. */
+export function benchRunKey(raw: RawParams): string {
+  return JSON.stringify(
+    Object.keys(raw)
+      .filter((key) => raw[key] !== undefined)
+      .sort()
+      .map((key) => [key, raw[key]])
+  );
+}
