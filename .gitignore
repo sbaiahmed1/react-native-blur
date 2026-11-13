@@ -178,3 +178,6 @@ CLAUDE.md
 
 # Argent screen recordings (session artifacts, never committed)
 .argent/recordings/
+
+# Benchmark results (local runs, never committed)
+benchmarks/results/
