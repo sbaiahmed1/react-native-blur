@@ -1,12 +1,14 @@
 import {
   Linking,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SymbolView } from 'expo-symbols';
 
 import { version } from '../../../package.json';
@@ -67,6 +69,12 @@ export function AboutSheet({
   onClose: () => void;
 }) {
   const t = useTheme();
+  const insets = useSafeAreaInsets();
+  // A pageSheet brings its own top margin on iOS. Android shows a full-screen edge-to-edge window.
+  const edges =
+    Platform.OS === 'ios'
+      ? null
+      : { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 };
   return (
     <Modal
       visible={visible}
@@ -76,7 +84,7 @@ export function AboutSheet({
     >
       <ScrollView
         style={{ backgroundColor: t.colors.grouped }}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, edges]}
       >
         <View style={styles.header}>
           <View style={styles.grow}>
