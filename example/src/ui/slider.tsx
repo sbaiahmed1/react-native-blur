@@ -109,7 +109,7 @@ export function Slider({
           accessible
           accessibilityRole="adjustable"
           accessibilityLabel={label}
-          accessibilityValue={{ min, max, now: value }}
+          accessibilityValue={{ text: value.toFixed(places) }}
           accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
           onAccessibilityAction={(e) =>
             nudge(e.nativeEvent.actionName === 'increment' ? 1 : -1)
