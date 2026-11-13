@@ -9,6 +9,7 @@ import { benchRunKey, parseBenchParams } from '@/benchmark/params';
 import { nextPhase, type RunEvent, type RunPhase } from '@/benchmark/run-phase';
 import { DEFAULT_PARAMS, getScene, type SceneDef } from '@/benchmark/scenes';
 import { useFrameRecorder } from '@/benchmark/use-frame-recorder';
+import { useTheme } from '@/ui/theme';
 
 type RawParams = Record<string, string | string[] | undefined>;
 
@@ -25,6 +26,7 @@ export default function SceneScreen() {
 }
 
 function SceneRunner({ scene, raw }: { scene: SceneDef; raw: RawParams }) {
+  const t = useTheme();
   const insets = useSafeAreaInsets();
   const params = parseBenchParams(raw, {
     ...DEFAULT_PARAMS,
@@ -60,9 +62,19 @@ function SceneRunner({ scene, raw }: { scene: SceneDef; raw: RawParams }) {
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <Component params={params} running={running} onStop={onStop} />
-      <View style={styles.controls} pointerEvents="box-none">
+      <View
+        style={[styles.controls, { bottom: insets.bottom + 16 }]}
+        pointerEvents="box-none"
+      >
         {phase !== 'stopped' ? null : (
-          <Text testID="bench-stopped" style={styles.stopped}>
+          <Text
+            testID="bench-stopped"
+            style={[
+              t.font.label,
+              styles.pill,
+              { backgroundColor: t.colors.surface, color: t.colors.text },
+            ]}
+          >
             Run stopped. No result was recorded.
           </Text>
         )}
@@ -70,10 +82,12 @@ function SceneRunner({ scene, raw }: { scene: SceneDef; raw: RawParams }) {
           <Pressable
             testID="bench-start"
             accessibilityRole="button"
-            style={styles.start}
+            style={[styles.start, { backgroundColor: t.colors.text }]}
             onPress={() => send('start')}
           >
-            <Text style={styles.startText}>{`Start ${scene.title}`}</Text>
+            <Text style={[t.font.headline, { color: t.colors.bg }]}>
+              {`Start ${scene.title}`}
+            </Text>
           </Pressable>
         )}
         <BenchResult scene={scene.id} params={params} summary={summary} />
@@ -83,13 +97,25 @@ function SceneRunner({ scene, raw }: { scene: SceneDef; raw: RawParams }) {
 }
 
 function UnknownScene({ id }: { id: string }) {
+  const t = useTheme();
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.unknown, { paddingTop: insets.top + 24 }]}>
-      <Text testID="bench-unknown" style={styles.unknownText}>
+    <View
+      style={[
+        styles.unknown,
+        { paddingTop: insets.top + 24, backgroundColor: t.colors.grouped },
+      ]}
+    >
+      <Text
+        testID="bench-unknown"
+        style={[t.font.title, { color: t.colors.text }]}
+      >
         {`Unknown scene: ${id}`}
       </Text>
-      <Link href="/benchmark" style={styles.link}>
+      <Link
+        href="/benchmark"
+        style={[t.font.headline, { color: t.colors.accent }]}
+      >
         Back to the scene list
       </Link>
     </View>
@@ -105,45 +131,27 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     right: 16,
-    bottom: 16,
     gap: 8,
   },
   start: {
     alignSelf: 'center',
-    backgroundColor: '#111111',
+    minHeight: 48,
     borderRadius: 24,
     paddingHorizontal: 24,
-    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  stopped: {
+  pill: {
     alignSelf: 'center',
     overflow: 'hidden',
-    backgroundColor: 'rgba(17,17,17,0.85)',
-    color: '#FFFFFF',
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  startText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
   unknown: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: '#F2F2F7',
+    paddingHorizontal: 20,
     gap: 16,
-  },
-  unknownText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111111',
-  },
-  link: {
-    fontSize: 16,
-    color: '#0A64D8',
   },
 });

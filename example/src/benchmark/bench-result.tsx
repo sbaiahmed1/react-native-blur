@@ -3,6 +3,7 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 
 import type { FrameSummary } from './frame-stats';
 import type { BenchParams } from './params';
+import { useTheme } from '../ui/theme';
 
 export function benchResultJson(
   scene: string,
@@ -21,6 +22,7 @@ export function BenchResult({
   params: BenchParams;
   summary: FrameSummary | null;
 }): React.JSX.Element {
+  const t = useTheme();
   if (!summary) return <></>;
   const json = benchResultJson(scene, params, summary);
   // One labelled accessibility element, so testID and the JSON are readable on both platforms.
@@ -29,9 +31,15 @@ export function BenchResult({
       testID="bench-result"
       accessible
       accessibilityLabel={json}
-      style={styles.card}
+      style={[
+        styles.card,
+        { backgroundColor: t.colors.surface, borderColor: t.colors.border },
+      ]}
     >
-      <Text selectable style={styles.json}>
+      <Text
+        selectable
+        style={[t.font.mono, styles.json, { color: t.colors.text }]}
+      >
         {json}
       </Text>
     </View>
@@ -40,13 +48,9 @@ export function BenchResult({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.94)',
-    borderRadius: 12,
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
     padding: 12,
   },
-  json: {
-    fontFamily: Platform.select({ ios: 'Menlo', default: 'monospace' }),
-    fontSize: 11,
-    color: '#111111',
-  },
+  json: { fontSize: 11, lineHeight: 15 },
 });
