@@ -37,6 +37,7 @@ export const DEFAULT_PARAMS: BenchParams = {
   images: false,
   autoplay: false,
   animation: 'default',
+  warmup: 0,
 };
 
 export const SCENES: readonly SceneDef[] = [

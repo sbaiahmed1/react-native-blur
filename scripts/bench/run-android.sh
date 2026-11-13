@@ -35,6 +35,12 @@ adb shell "am start -W -a android.intent.action.VIEW -d '$URL' $PKG" </dev/null 
 sleep "$SETTLE_SEC"
 adb shell dumpsys gfxinfo "$PKG" reset </dev/null >/dev/null
 sleep "$WINDOW_SEC"
+if [ -z "$(adb shell pidof "$PKG" </dev/null 2>/dev/null || true)" ]; then
+  echo "run-android.sh: $PKG is not running after the window. It crashed or was killed." >&2
+  exit 1
+fi
+# Written to a temp file and moved on success, so a failed run leaves no partial JSON.
+trap 'rm -f "$OUT.tmp"' EXIT
 adb shell dumpsys gfxinfo "$PKG" </dev/null |
   node "$ROOT/scripts/bench/parse-gfxinfo.js" |
   node -e '
@@ -44,6 +50,7 @@ adb shell dumpsys gfxinfo "$PKG" </dev/null |
       const [scene, query] = process.argv.slice(1);
       console.log(JSON.stringify({ scene, query, ...JSON.parse(input) }));
     });
-  ' "$SCENE" "$QUERY" >"$OUT"
+  ' "$SCENE" "$QUERY" >"$OUT.tmp"
+mv "$OUT.tmp" "$OUT"
 
 echo "$OUT"

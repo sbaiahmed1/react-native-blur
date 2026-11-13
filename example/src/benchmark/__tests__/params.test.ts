@@ -8,6 +8,7 @@ const D: BenchParams = {
   images: false,
   autoplay: false,
   animation: 'default',
+  warmup: 0,
 };
 
 it('returns the defaults for an empty query', () => {
@@ -25,6 +26,7 @@ it('parses every param', () => {
         images: '1',
         autoplay: '1',
         animation: 'fade',
+        warmup: '2',
       },
       D
     )
@@ -36,6 +38,7 @@ it('parses every param', () => {
     images: true,
     autoplay: true,
     animation: 'fade',
+    warmup: 2,
   });
 });
 
@@ -45,6 +48,12 @@ it('clamps out-of-range numbers', () => {
     D
   );
   expect([p.count, p.amount, p.rounds, p.duration]).toEqual([12, 0, 1, 1]);
+});
+
+it('parses warmup in seconds and clamps it to 0-10', () => {
+  expect(parseBenchParams({ warmup: '2' }, D).warmup).toBe(2);
+  expect(parseBenchParams({ warmup: '30' }, D).warmup).toBe(10);
+  expect(parseBenchParams({ warmup: '-1' }, D).warmup).toBe(0);
 });
 
 it('falls back on junk and treats only "1" as true', () => {

@@ -63,7 +63,7 @@ function SceneRunner({ scene, raw }: { scene: SceneDef; raw: RawParams }) {
   );
   const onStop = useCallback(() => send('stop'), [send]);
 
-  useFrameRecorder(running, params.duration, onDone);
+  useFrameRecorder(running, params.duration, params.warmup, onDone);
 
   const { Component } = scene;
   return (

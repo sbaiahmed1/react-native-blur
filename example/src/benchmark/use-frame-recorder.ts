@@ -3,16 +3,20 @@ import { useFrameCallback, useSharedValue } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { summarizeFrames, type FrameSummary } from './frame-stats';
+import { isWarmupFrame } from './frame-window';
 
 // Scenes must not register Reanimated event handlers: each animated event re-runs frame callbacks mid-frame.
 export function useFrameRecorder(
   running: boolean,
   durationSec: number,
+  warmupSec: number,
   onDone: (summary: FrameSummary) => void
 ): void {
   const deltas = useSharedValue<number[]>([]);
   const elapsedMs = useSharedValue(0);
   const limitMs = useSharedValue(durationSec * 1000);
+  const warmupMs = useSharedValue(warmupSec * 1000);
+  const sinceStartMs = useSharedValue(0);
   const done = useSharedValue(false);
   const onDoneRef = useRef(onDone);
 
@@ -22,7 +26,8 @@ export function useFrameRecorder(
 
   useEffect(() => {
     limitMs.set(durationSec * 1000);
-  }, [durationSec, limitMs]);
+    warmupMs.set(warmupSec * 1000);
+  }, [durationSec, warmupSec, limitMs, warmupMs]);
 
   const finish = useCallback((collected: number[]) => {
     onDoneRef.current(summarizeFrames(collected));
@@ -32,6 +37,8 @@ export function useFrameRecorder(
     'worklet';
     const dt = info.timeSincePreviousFrame;
     if (done.get() || dt === null) return;
+    sinceStartMs.set(sinceStartMs.get() + dt);
+    if (isWarmupFrame(sinceStartMs.get(), warmupMs.get())) return;
     deltas.modify((list) => {
       'worklet';
       list.push(dt);

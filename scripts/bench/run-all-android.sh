@@ -6,6 +6,10 @@ DIR=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$DIR/../.." && pwd)
 LABEL=${1:-$(git -C "$ROOT" describe --always --dirty)}
 
+if [ -n "$(ls -A "$ROOT/benchmarks/results/$LABEL" 2>/dev/null)" ]; then
+  echo "run-all-android.sh: warning: benchmarks/results/$LABEL already holds results, the table will mix runs" >&2
+fi
+
 RUNS=(
   "baseline-list"
   "blur-list count=1"
