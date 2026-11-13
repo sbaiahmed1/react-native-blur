@@ -67,6 +67,8 @@ class ReactNativeProgressiveBlurView : FrameLayout {
   // swapped capture root (see swapBlurRootToScreenAncestor). Tracked so
   // cleanup() can unregister it: QmBlurView only knows the original listener.
   private var captureGuard: CaptureAnimationGuard? = null
+  // Set only inside a Modal: redraws the blur when the window behind the dialog draws.
+  private var behindWindowInvalidator: BehindWindowInvalidator? = null
 
   companion object {
     private const val TAG = "ReactNativeProgressiveBlur"
@@ -289,10 +291,19 @@ class ReactNativeProgressiveBlurView : FrameLayout {
         // decor view at attach, or one from a repeated swap) so none leaks on
         // the old root.
         captureGuard?.remove()
-        captureGuard = CaptureAnimationGuard.install(listenerRoot, listener, bv, TAG)
+        captureGuard = CaptureAnimationGuard.install(
+          listenerRoot,
+          listener,
+          bv,
+          TAG,
+          animationRoots = windowRoot?.layers ?: listOf(listenerRoot)
+        )
+        behindWindowInvalidator?.remove()
+        behindWindowInvalidator =
+          if (windowRoot != null) BehindWindowInvalidator.install(oldDecorView, bv) else null
 
-        // Update mDifferentRoot flag (public field)
-        bv.mDifferentRoot = newRoot.rootView != bv.rootView
+        // In a Modal a true value makes QmBlurView invalidate itself on every pre-draw of the dialog.
+        bv.mDifferentRoot = windowRoot == null && newRoot.rootView != bv.rootView
 
         // Force a redraw (private field — requires reflection)
         try {
@@ -586,6 +597,8 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     swapRootRunnable = null
     captureGuard?.remove()
     captureGuard = null
+    behindWindowInvalidator?.remove()
+    behindWindowInvalidator = null
 
     // Unregister the OnPreDrawListener from whatever root it was moved to,
     // preventing callbacks into a detached BlurView and avoiding leaks.
