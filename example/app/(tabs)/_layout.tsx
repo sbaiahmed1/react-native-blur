@@ -3,10 +3,6 @@ import { Tabs } from 'expo-router';
 
 import { GlassTabBar } from '@/ui/tab-bar';
 
-export const unstable_settings = {
-  initialRouteName: 'blur',
-};
-
 type TabBarRender = NonNullable<ComponentProps<typeof Tabs>['tabBar']>;
 
 const renderTabBar: TabBarRender = (props) => <GlassTabBar {...props} />;
