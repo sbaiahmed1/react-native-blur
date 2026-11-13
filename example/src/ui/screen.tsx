@@ -5,12 +5,13 @@ import { SymbolView } from 'expo-symbols';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 
 import { AboutSheet } from './about-sheet';
-import { ColorField } from './backdrop';
+import { ColorField } from './field';
+import { FieldSheet } from './field-sheet';
 import { PlatformBadge } from './platform-badge';
 import { TAB_BAR_SPACE } from './tab-bar';
 import { useTheme } from './theme';
 
-/** A showcase tab: color field, large title, About button, then the content. */
+/** A showcase tab: color field, large title, backdrop and About buttons, then the content. */
 export function Screen({
   title,
   subtitle,
@@ -23,6 +24,7 @@ export function Screen({
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const [about, setAbout] = useState(false);
+  const [picker, setPicker] = useState(false);
   return (
     <View style={[styles.root, { backgroundColor: t.colors.bg }]}>
       <ColorField />
@@ -35,37 +37,66 @@ export function Screen({
           },
         ]}
       >
-        <View style={styles.titleRow}>
-          <View style={styles.grow}>
+        <View>
+          <View style={styles.titleRow}>
             <Text
-              style={[t.font.largeTitle, { color: t.colors.text }]}
+              style={[t.font.largeTitle, styles.grow, { color: t.colors.text }]}
               accessibilityRole="header"
             >
               {title}
             </Text>
-            {subtitle ? (
-              <Text style={[t.font.label, { color: t.colors.textMuted }]}>
-                {subtitle}
-              </Text>
-            ) : null}
-          </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="About the library"
-            onPress={() => setAbout(true)}
-            style={[styles.about, { backgroundColor: t.colors.chip }]}
-          >
-            <SymbolView
-              name={{ ios: 'info', android: 'info', web: 'info' }}
-              size={18}
-              tintColor={t.colors.text}
+            <HeaderButton
+              label="Choose the backdrop"
+              ios="gearshape"
+              md="settings"
+              onPress={() => setPicker(true)}
             />
-          </Pressable>
+            <HeaderButton
+              label="About the library"
+              ios="info"
+              md="info"
+              onPress={() => setAbout(true)}
+            />
+          </View>
+          {subtitle ? (
+            <Text style={[t.font.label, { color: t.colors.textMuted }]}>
+              {subtitle}
+            </Text>
+          ) : null}
         </View>
         {children}
       </ScrollView>
+      <FieldSheet visible={picker} onClose={() => setPicker(false)} />
       <AboutSheet visible={about} onClose={() => setAbout(false)} />
     </View>
+  );
+}
+
+function HeaderButton({
+  label,
+  ios,
+  md,
+  onPress,
+}: {
+  label: string;
+  ios: string;
+  md: string;
+  onPress: () => void;
+}) {
+  const t = useTheme();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={[styles.about, { backgroundColor: t.colors.chip }]}
+    >
+      <SymbolView
+        name={{ ios, android: md, web: md } as never}
+        size={18}
+        tintColor={t.colors.text}
+      />
+    </Pressable>
   );
 }
 
@@ -165,7 +196,7 @@ export function PlaygroundLink({
 const styles = StyleSheet.create({
   root: { flex: 1 },
   content: { paddingHorizontal: 20, gap: 24 },
-  titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   grow: { flex: 1 },
   about: {
     width: 44,
