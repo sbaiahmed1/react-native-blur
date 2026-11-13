@@ -107,7 +107,9 @@ const ProgressiveBlurViewComponent = forwardRef<
 
 ProgressiveBlurViewComponent.displayName = 'ProgressiveBlurView';
 
-export const ProgressiveBlurView = memo(ProgressiveBlurViewComponent);
+export const ProgressiveBlurView: React.NamedExoticComponent<
+  ProgressiveBlurViewProps & React.RefAttributes<ProgressiveBlurViewRef>
+> = memo(ProgressiveBlurViewComponent);
 
 export default ProgressiveBlurView;
 

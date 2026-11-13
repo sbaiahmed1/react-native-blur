@@ -202,6 +202,8 @@ const LiquidGlassViewComponent = forwardRef<
 
 LiquidGlassViewComponent.displayName = 'LiquidGlassView';
 
-export const LiquidGlassView = memo(LiquidGlassViewComponent);
+export const LiquidGlassView: React.NamedExoticComponent<
+  LiquidGlassViewProps & React.RefAttributes<LiquidGlassViewRef>
+> = memo(LiquidGlassViewComponent);
 
 export default LiquidGlassView;
