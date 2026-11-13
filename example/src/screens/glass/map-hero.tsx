@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
+import { NATIVE_GLASS } from '@/ui/glass-support';
 import { useTheme } from '@/ui/theme';
 
 const FILTERS = [
@@ -102,7 +103,9 @@ export function MapHero() {
       >
         {FILTERS.map((f, i) => {
           const selected = filter === i;
-          const color = selected ? '#FFFFFF' : t.colors.text;
+          // The blur fallback dilutes the tint, so white only reads on native glass.
+          let color = selected ? t.colors.accent : t.colors.text;
+          if (selected && NATIVE_GLASS) color = '#FFFFFF';
           return (
             <LiquidGlassView
               key={f.label}
