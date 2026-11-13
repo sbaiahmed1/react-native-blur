@@ -38,6 +38,9 @@ export function GlassTabBar({ state, navigateToTab }: TabBarProps) {
   const insets = useSafeAreaInsets();
   if (!isTabBarVisible(state)) return null;
   const current = state.routes[state.index]?.name;
+  const tabs = TABS.filter((tab) =>
+    state.routes.some((r) => r.name === tab.name)
+  );
 
   return (
     <LiquidGlassView
@@ -47,7 +50,7 @@ export function GlassTabBar({ state, navigateToTab }: TabBarProps) {
       style={[styles.bar, { bottom: Math.max(insets.bottom, 12) + 4 }]}
       accessibilityRole="tablist"
     >
-      {TABS.map((tab) => {
+      {tabs.map((tab) => {
         const selected = current === tab.name;
         const color = selected ? t.colors.text : t.colors.textMuted;
         return (
