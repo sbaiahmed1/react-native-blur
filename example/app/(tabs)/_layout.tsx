@@ -18,6 +18,7 @@ export default function TabsLayout() {
     <Tabs screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
       <Tabs.Screen name="blur" />
       <Tabs.Screen name="progressive" />
+      <Tabs.Screen name="glass" />
       <Tabs.Screen name="benchmark" />
       {HIDDEN.map((name) => (
         <Tabs.Screen key={name} name={name} options={{ href: null }} />

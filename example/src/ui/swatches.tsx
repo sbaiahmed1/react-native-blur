@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { cell } from './group';
 import { useTheme } from './theme';
 
-/** Color picker with a leading "none" swatch for undefined. */
+/** Color picker with a leading "none" swatch for undefined, laid out like Segmented. */
 export function Swatches({
   label,
   value,
@@ -18,7 +18,7 @@ export function Swatches({
   const t = useTheme();
   const options: (string | undefined)[] = [undefined, ...colors];
   return (
-    <View style={cell.row}>
+    <View style={cell.column}>
       <Text style={[t.font.body, { color: t.colors.text }]}>{label}</Text>
       <View style={styles.row}>
         {options.map((color) => {
@@ -65,10 +65,8 @@ export function Swatches({
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    gap: 4,
-    flexShrink: 1,
+    gap: 8,
     flexWrap: 'wrap',
-    justifyContent: 'flex-end',
   },
   ring: {
     width: 36,

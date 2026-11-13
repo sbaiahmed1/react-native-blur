@@ -25,7 +25,7 @@ export function Materials() {
         <BlurView
           key={label}
           blurType={type}
-          blurAmount={30}
+          blurAmount={100}
           reducedTransparencyFallbackColor={t.colors.surface}
           style={styles.widget}
         >
