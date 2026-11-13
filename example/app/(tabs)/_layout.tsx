@@ -12,6 +12,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="examples" />
+      <Tabs.Screen name="benchmark" />
       <Tabs.Screen name="settings" />
       <Tabs.Screen name="more" />
     </Tabs>
