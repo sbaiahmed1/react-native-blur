@@ -3,7 +3,7 @@
 #
 # ReactNativeBlurView and ReactNativeProgressiveBlurView redirect the blur
 # capture root by reflecting on the bundled QmBlurView library
-# (com.github.qmdeve:qmblurview) by field name: mBaseBlurViewGroup,
+# (com.qmdeve.blurview:core) by field name: mBaseBlurViewGroup,
 # mDecorView, preDrawListener, mDifferentRoot and mForceRedraw. If R8 renames
 # or removes those fields in a minified release build, the reflection throws
 # NoSuchFieldException, the code silently falls back to capturing the whole
