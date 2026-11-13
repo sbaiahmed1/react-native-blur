@@ -6,6 +6,7 @@ export type BenchParams = {
   images: boolean;
   autoplay: boolean;
   animation: 'default' | 'fade';
+  warmup: number;
 };
 
 export const BENCH_LIMITS = {
@@ -13,6 +14,7 @@ export const BENCH_LIMITS = {
   duration: [1, 120],
   amount: [0, 100],
   rounds: [1, 15],
+  warmup: [0, 10],
 } as const;
 
 type RawParams = Record<string, string | string[] | undefined>;
@@ -74,6 +76,12 @@ export function parseBenchParams(
       animation === 'default' || animation === 'fade'
         ? animation
         : defaults.animation,
+    warmup: parseNumber(
+      first(raw.warmup),
+      defaults.warmup,
+      BENCH_LIMITS.warmup,
+      false
+    ),
   };
 }
 
