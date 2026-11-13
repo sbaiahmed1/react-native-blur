@@ -50,7 +50,7 @@ export const SCENES: readonly SceneDef[] = [
   {
     id: 'blur-list',
     title: 'Blur list',
-    note: 'count BlurView bars pinned over a scrolling feed.',
+    note: 'Three BlurView bars (count) pinned over a scrolling feed.',
     defaults: { count: 3 },
     Component: BlurList,
   },
@@ -64,7 +64,7 @@ export const SCENES: readonly SceneDef[] = [
   {
     id: 'glass-list',
     title: 'Glass list',
-    note: 'count LiquidGlassView bars pinned over a scrolling feed.',
+    note: 'Three LiquidGlassView bars (count) pinned over a scrolling feed.',
     defaults: { count: 3 },
     Component: GlassList,
   },
@@ -78,7 +78,7 @@ export const SCENES: readonly SceneDef[] = [
   {
     id: 'animated-amount',
     title: 'Animated amount',
-    note: 'blurAmount runs 0 to 100 and back through animated props.',
+    note: 'Animates blurAmount from 0 to 100 and back through animated props.',
     defaults: {},
     Component: AnimatedAmount,
   },
