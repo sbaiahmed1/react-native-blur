@@ -18,6 +18,8 @@ export type Theme = {
     text: string;
     textMuted: string;
     accent: string;
+    /** A solid accent that carries white text in both themes. */
+    accentFill: string;
     border: string;
     chip: string;
     selected: string;
@@ -67,6 +69,7 @@ const LIGHT: Theme = {
     text: '#0B0B0F',
     textMuted: '#5F5F6A',
     accent: '#0A64FF',
+    accentFill: '#0A64FF',
     border: 'rgba(60,60,67,0.18)',
     chip: 'rgba(11,11,15,0.06)',
     selected: '#FFFFFF',
@@ -86,6 +89,7 @@ const DARK: Theme = {
     text: '#F5F5F7',
     textMuted: '#8E8E93',
     accent: '#4D8DFF',
+    accentFill: '#0A64FF',
     border: 'rgba(84,84,88,0.6)',
     chip: 'rgba(245,245,247,0.1)',
     selected: '#636366',

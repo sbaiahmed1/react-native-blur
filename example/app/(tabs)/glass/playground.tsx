@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { LiquidGlassView, type GlassType } from '@sbaiahmed1/react-native-blur';
 
-import { GLASS_FALLBACK_NOTICE, NATIVE_GLASS } from '@/ui/glass-support';
+import { glassNotice, NATIVE_GLASS } from '@/ui/glass-support';
 import { Toggle } from '@/ui/group';
 import { Playground } from '@/ui/playground';
 import { Segmented } from '@/ui/segmented';
@@ -38,11 +38,7 @@ export default function GlassPlayground() {
       ? tag.replace(/ \/>$/, ` style={{ borderRadius: ${radius} }} />`)
       : tag;
 
-  const notice = !NATIVE_GLASS
-    ? GLASS_FALLBACK_NOTICE
-    : reduced
-      ? 'Reduce Transparency is on, so the preview shows the fallback color.'
-      : undefined;
+  const notice = glassNotice(NATIVE_GLASS, reduced);
 
   return (
     <Playground
@@ -53,6 +49,7 @@ export default function GlassPlayground() {
           glassTintColor={tint}
           glassOpacity={glassOpacity}
           isInteractive={isInteractive}
+          reducedTransparencyFallbackColor={t.colors.surface}
           style={[styles.glass, { borderRadius: radius }]}
         >
           <Text style={[t.font.headline, { color: t.colors.text }]}>
