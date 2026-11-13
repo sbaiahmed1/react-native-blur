@@ -80,6 +80,8 @@ export function FieldSheet({
                 style={styles.tile}
               >
                 <View
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
                   style={[
                     styles.preview,
                     selected && styles.picked,
