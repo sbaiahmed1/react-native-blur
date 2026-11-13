@@ -8,6 +8,7 @@ import { StyleSheet, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { RootOverlayHost } from '@/benchmark/root-overlay';
+import { FieldProvider } from '@/ui/field';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 
 export default function RootLayout() {
@@ -15,11 +16,13 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <AnimatedSplashOverlay />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
-        </Stack>
-        <RootOverlayHost />
+        <FieldProvider>
+          <AnimatedSplashOverlay />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+          <RootOverlayHost />
+        </FieldProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );
