@@ -1,13 +1,18 @@
 import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Link, useLocalSearchParams } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { BenchResult, benchResultJson } from '@/benchmark/bench-result';
 import type { FrameSummary } from '@/benchmark/frame-stats';
 import { benchRunKey, parseBenchParams } from '@/benchmark/params';
-import { nextPhase, type RunEvent, type RunPhase } from '@/benchmark/run-phase';
+import {
+  canLeave,
+  nextPhase,
+  type RunEvent,
+  type RunPhase,
+} from '@/benchmark/run-phase';
 import { DEFAULT_PARAMS, getScene, type SceneDef } from '@/benchmark/scenes';
 import { useFrameRecorder } from '@/benchmark/use-frame-recorder';
 import { useTheme } from '@/ui/theme';
@@ -28,6 +33,7 @@ export default function SceneScreen() {
 
 function SceneRunner({ scene, raw }: { scene: SceneDef; raw: RawParams }) {
   const t = useTheme();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = parseBenchParams(raw, {
     ...DEFAULT_PARAMS,
@@ -94,6 +100,19 @@ function SceneRunner({ scene, raw }: { scene: SceneDef; raw: RawParams }) {
           </Pressable>
         )}
         <BenchResult scene={scene.id} params={params} summary={summary} />
+        {canLeave(phase) ? (
+          <Pressable
+            testID="bench-exit"
+            accessibilityRole="link"
+            // A deep link opens the scene as the only route, with no back button.
+            onPress={() => router.dismissTo('/benchmark')}
+            style={[styles.pill, { backgroundColor: t.colors.surface }]}
+          >
+            <Text style={[t.font.label, { color: t.colors.accent }]}>
+              Back to the scene list
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );

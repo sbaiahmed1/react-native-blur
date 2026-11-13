@@ -1,4 +1,4 @@
-import { nextPhase } from '../run-phase';
+import { canLeave, nextPhase } from '../run-phase';
 
 it('starts from idle only', () => {
   expect(nextPhase('idle', 'start')).toBe('running');
@@ -21,4 +21,11 @@ it('ignores a finish that lands after a stop', () => {
 it('ignores a stop once the run is over', () => {
   expect(nextPhase('idle', 'stop')).toBe('idle');
   expect(nextPhase('done', 'stop')).toBe('done');
+});
+
+it('offers a way out of the scene unless a run is recording', () => {
+  expect(canLeave('idle')).toBe(true);
+  expect(canLeave('done')).toBe(true);
+  expect(canLeave('stopped')).toBe(true);
+  expect(canLeave('running')).toBe(false);
 });
