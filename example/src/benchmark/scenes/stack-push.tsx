@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { StyleSheet, Text } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRoute, useRouter } from 'expo-router';
+import { StackActions } from 'expo-router/react-navigation';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 
 import { FeedList } from '../content';
 import type { BenchParams } from '../params';
 import type { SceneProps } from '../scenes';
+import { nextStackStep } from '../stack-step';
 
 const SWITCH_MS = 1000;
 
@@ -32,15 +34,27 @@ export function BlurHeaderFeed({
 
 export default function StackPush({ params, running }: SceneProps) {
   const router = useRouter();
+  const navigation = useNavigation();
+  const { key: sceneKey } = useRoute();
   const { animation, images, amount, rounds } = params;
 
   useEffect(() => {
     if (!running) return;
-    let pushed = false;
+    // Pops Detail when it sits on top of this scene, and returns the step for the caller.
+    const tick = () => {
+      const state = navigation.getState();
+      const next = nextStackStep(state, sceneKey, navigation.isFocused());
+      if (next.type === 'pop' && state) {
+        navigation.dispatch({
+          ...StackActions.pop(),
+          source: next.key,
+          target: state.key,
+        });
+      }
+      return next;
+    };
     const id = setInterval(() => {
-      if (pushed) {
-        router.back();
-      } else {
+      if (tick().type === 'push') {
         router.push({
           pathname: '/benchmark/detail',
           params: {
@@ -51,13 +65,21 @@ export default function StackPush({ params, running }: SceneProps) {
           },
         });
       }
-      pushed = !pushed;
     }, SWITCH_MS);
     return () => {
       clearInterval(id);
-      if (pushed) router.back();
+      tick();
     };
-  }, [running, router, animation, images, amount, rounds]);
+  }, [
+    running,
+    router,
+    navigation,
+    sceneKey,
+    animation,
+    images,
+    amount,
+    rounds,
+  ]);
 
   return <BlurHeaderFeed params={params} title="Stack push" />;
 }
