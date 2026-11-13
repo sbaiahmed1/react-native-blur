@@ -1,5 +1,14 @@
-import { createContext, use, useMemo, useState, type ReactNode } from 'react';
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import {
+  createContext,
+  use,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentRef,
+  type ReactNode,
+} from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from './theme';
 
@@ -150,15 +159,26 @@ export function useField(): FieldChoice {
 /** The picked backdrop behind a whole screen. It stays put while content scrolls over it. */
 export function ColorField() {
   const { field } = useField();
-  const { width, height } = useWindowDimensions();
+  const ref = useRef<ComponentRef<typeof View>>(null);
+  const [size, setSize] = useState<FieldSize | null>(null);
+  // Sized from layout, read before paint, so a static web render hydrates at the real size.
+  useLayoutEffect(() => {
+    const rect = ref.current?.getBoundingClientRect();
+    if (rect) setSize({ width: rect.width, height: rect.height });
+  }, []);
   return (
     <View
+      ref={ref}
       style={styles.fill}
       pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
+      onLayout={(e) => {
+        const { width, height } = e.nativeEvent.layout;
+        setSize({ width, height });
+      }}
     >
-      <Field name={field} width={width} height={height} />
+      {size ? <Field name={field} {...size} /> : null}
     </View>
   );
 }
