@@ -6,6 +6,7 @@ import {
   getProgressiveLayers,
   getProgressiveTintGradient,
   useBackdropFilterSupport,
+  useCornerRadii,
 } from './webBlurUtils';
 import type { WebBlurStyle } from './webBlurUtils';
 
@@ -52,6 +53,7 @@ const ProgressiveBlurViewComponent = forwardRef<
     ref
   ) => {
     const canUseBackdropFilter = useBackdropFilterSupport();
+    const radii = useCornerRadii(style);
 
     const blurLayerStyles = useMemo(() => {
       if (!canUseBackdropFilter) return [];
@@ -85,8 +87,9 @@ const ProgressiveBlurViewComponent = forwardRef<
         StyleSheet.absoluteFill,
         styles.layer,
         { backgroundColor: overlayColor },
+        radii,
       ],
-      [overlayColor]
+      [overlayColor, radii]
     );
 
     return (
@@ -94,10 +97,12 @@ const ProgressiveBlurViewComponent = forwardRef<
         {blurLayerStyles.map((layerStyle, index) => (
           <View
             key={index}
-            style={[StyleSheet.absoluteFill, styles.layer, layerStyle]}
+            style={[StyleSheet.absoluteFill, styles.layer, layerStyle, radii]}
           />
         ))}
-        <View style={[StyleSheet.absoluteFill, styles.layer, tintLayerStyle]} />
+        <View
+          style={[StyleSheet.absoluteFill, styles.layer, tintLayerStyle, radii]}
+        />
         {overlayColor != null && <View style={overlayLayerStyle} />}
         {children}
       </View>

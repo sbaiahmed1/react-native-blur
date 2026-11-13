@@ -1,5 +1,6 @@
-import { useSyncExternalStore } from 'react';
-import type { ViewStyle } from 'react-native';
+import { useMemo, useSyncExternalStore } from 'react';
+import { StyleSheet } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import type { BlurType } from './ReactNativeBlurViewNativeComponent';
 import type { ProgressiveBlurDirection } from './ReactNativeProgressiveBlurViewNativeComponent';
 
@@ -233,4 +234,35 @@ export function getProgressiveTintGradient(
 
   const axis = direction === 'blurredBottomClearTop' ? 'to top' : 'to bottom';
   return `linear-gradient(${axis}, ${tint} 0%, ${tint} ${pct(s * 100)}, transparent 100%)`;
+}
+
+const CORNER_RADIUS_KEYS = [
+  'borderRadius',
+  'borderTopLeftRadius',
+  'borderTopRightRadius',
+  'borderBottomLeftRadius',
+  'borderBottomRightRadius',
+  'borderTopStartRadius',
+  'borderTopEndRadius',
+  'borderBottomStartRadius',
+  'borderBottomEndRadius',
+  'borderStartStartRadius',
+  'borderStartEndRadius',
+  'borderEndStartRadius',
+  'borderEndEndRadius',
+] as const;
+
+/** The container's corner radii, so each absolute layer clips its backdrop to the same rounded shape. */
+export function useCornerRadii(style: StyleProp<ViewStyle>): ViewStyle {
+  const flat = (StyleSheet.flatten(style) ?? {}) as ViewStyle;
+  const key = JSON.stringify(CORNER_RADIUS_KEYS.map((name) => flat[name]));
+  return useMemo(() => {
+    const values = JSON.parse(key) as Array<ViewStyle['borderRadius'] | null>;
+    const radii: Record<string, ViewStyle['borderRadius']> = {};
+    CORNER_RADIUS_KEYS.forEach((name, index) => {
+      const value = values[index];
+      if (value != null) radii[name] = value;
+    });
+    return radii as ViewStyle;
+  }, [key]);
 }
