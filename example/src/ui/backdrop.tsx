@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { SHAPES, useTheme } from './theme';
 
@@ -82,42 +82,9 @@ export function Backdrop({
   );
 }
 
-type Circle = { color: string; size: number; left: number; top: number };
-
-/** Flat color circles behind a whole screen. They stay put while content scrolls over them. */
-export function ColorField() {
-  const { width } = useWindowDimensions();
-  const k = width / 390;
-  const circles: Circle[] = [
-    { color: SHAPES.orange, size: 280, left: -110, top: 120 },
-    { color: SHAPES.blue, size: 300, left: 90, top: 330 },
-    { color: SHAPES.pink, size: 220, left: -80, top: 580 },
-    { color: SHAPES.yellow, size: 170, left: 250, top: 690 },
-  ];
-  return (
-    <View style={styles.fill} pointerEvents="none">
-      {circles.map((c) => (
-        <View
-          key={c.color}
-          style={{
-            ...styles.fieldCircle,
-            left: c.left * k,
-            top: c.top * k,
-            width: c.size * k,
-            height: c.size * k,
-            borderRadius: (c.size * k) / 2,
-            backgroundColor: c.color,
-          }}
-        />
-      ))}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   fill: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
   circle: { position: 'absolute', aspectRatio: 1, borderRadius: 9999 },
-  fieldCircle: { position: 'absolute' },
   c1: { width: '62%', left: '-14%', top: '-30%' },
   c2: { width: '58%', left: '48%', top: '18%' },
   c3: { width: '36%', left: '10%', top: '62%' },

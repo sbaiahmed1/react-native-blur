@@ -22,6 +22,8 @@ export type Theme = {
     chip: string;
     selected: string;
   };
+  /** Brand colors of the showcase backdrop, taken from the website mark. */
+  field: readonly [string, string, string];
   space: (n: number) => number;
   radius: { sm: number; md: number; lg: number };
   font: {
@@ -69,6 +71,7 @@ const LIGHT: Theme = {
     chip: 'rgba(11,11,15,0.06)',
     selected: '#FFFFFF',
   },
+  field: ['#7DD3FC', '#C084FC', '#F472B6'],
   space,
   radius,
   font,
@@ -87,6 +90,7 @@ const DARK: Theme = {
     chip: 'rgba(245,245,247,0.1)',
     selected: '#636366',
   },
+  field: ['#0369A1', '#7E22CE', '#BE185D'],
   space,
   radius,
   font,
