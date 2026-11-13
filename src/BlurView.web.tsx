@@ -1,7 +1,11 @@
 import React, { forwardRef, memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { BlurViewProps } from './BlurView';
-import { getBlurLayerStyle, useBackdropFilterSupport } from './webBlurUtils';
+import {
+  getBlurLayerStyle,
+  useBackdropFilterSupport,
+  useCornerRadii,
+} from './webBlurUtils';
 
 export type { BlurViewProps } from './BlurView';
 
@@ -38,22 +42,25 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
     ref
   ) => {
     const hasBackdropFilter = useBackdropFilterSupport();
+    const radii = useCornerRadii(style);
 
     const blurLayerStyle = useMemo(
       () => [
         StyleSheet.absoluteFill,
         styles.layer,
         getBlurLayerStyle(blurType, blurAmount, hasBackdropFilter),
+        radii,
       ],
-      [blurType, blurAmount, hasBackdropFilter]
+      [blurType, blurAmount, hasBackdropFilter, radii]
     );
     const overlayLayerStyle = useMemo(
       () => [
         StyleSheet.absoluteFill,
         styles.layer,
         { backgroundColor: overlayColor },
+        radii,
       ],
-      [overlayColor]
+      [overlayColor, radii]
     );
 
     return (

@@ -72,3 +72,44 @@ it('ProgressiveBlurView stacks the masked ramp layers plus the tint gradient', (
   }
   expect(styles.filter((style) => 'backgroundImage' in style)).toHaveLength(1);
 });
+
+it('BlurView rounds its blur and overlay layers like its container', () => {
+  const renderer = render(
+    <BlurView style={{ borderRadius: 24 }} overlayColor="rgba(0,0,0,0.2)" />
+  );
+
+  const styles = flattenedStyles(renderer.root);
+  const blurLayer = styles.find((style) => 'backdropFilter' in style);
+  const overlayLayer = styles.find(
+    (style) => style.backgroundColor === 'rgba(0,0,0,0.2)'
+  );
+  expect(blurLayer?.borderRadius).toBe(24);
+  expect(overlayLayer?.borderRadius).toBe(24);
+});
+
+it('BlurView copies per-corner radii to its blur layer', () => {
+  const renderer = render(
+    <BlurView style={{ borderTopLeftRadius: 8, borderBottomEndRadius: 4 }} />
+  );
+
+  const blurLayer = flattenedStyles(renderer.root).find(
+    (style) => 'backdropFilter' in style
+  );
+  expect(blurLayer).toMatchObject({
+    borderTopLeftRadius: 8,
+    borderBottomEndRadius: 4,
+  });
+});
+
+it('ProgressiveBlurView rounds every ramp layer and the tint gradient', () => {
+  const renderer = render(
+    <ProgressiveBlurView blurAmount={20} style={{ borderRadius: 30 }} />
+  );
+
+  const styles = flattenedStyles(renderer.root);
+  const layers = styles.filter(
+    (style) => 'backdropFilter' in style || 'backgroundImage' in style
+  );
+  expect(layers).toHaveLength(PROGRESSIVE_LAYER_COUNT + 1);
+  for (const layer of layers) expect(layer.borderRadius).toBe(30);
+});
