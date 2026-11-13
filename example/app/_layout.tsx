@@ -1,9 +1,10 @@
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import { StyleSheet, useColorScheme } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 
 import { RootOverlayHost } from '@/benchmark/root-overlay';
+import { useColorScheme } from '@/ui/color-scheme';
 import { FieldProvider } from '@/ui/field';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 
