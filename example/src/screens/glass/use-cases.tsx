@@ -6,11 +6,14 @@ import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
 import { MaterialCard, Section } from '@/ui/screen';
 import { SHAPES, useTheme } from '@/ui/theme';
+import { useReduceTransparency } from '@/ui/use-reduce-transparency';
 
 const COVERS = [SHAPES.blue, SHAPES.violet, SHAPES.pink] as const;
 
 /** Glass buttons floating over artwork, like a video or music player. */
 function ButtonsOverMedia() {
+  const t = useTheme();
+  const reduce = useReduceTransparency();
   const [cover, setCover] = useState(0);
   const [playing, setPlaying] = useState(false);
   const step = (by: number) =>
@@ -50,7 +53,12 @@ function ButtonsOverMedia() {
         <View style={[styles.mediaHill, { backgroundColor: SHAPES.green }]} />
         <View style={styles.controls}>
           {controls.map((control, i) => (
-            <LiquidGlassView key={i} glassType="clear" style={styles.control}>
+            <LiquidGlassView
+              key={i}
+              glassType="clear"
+              reducedTransparencyFallbackColor={t.colors.surface}
+              style={styles.control}
+            >
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={control.label}
@@ -66,7 +74,8 @@ function ButtonsOverMedia() {
                     } as never
                   }
                   size={22}
-                  tintColor="#FFFFFF"
+                  // Reduce Transparency paints the button in the surface color.
+                  tintColor={reduce ? t.colors.text : '#FFFFFF'}
                 />
               </Pressable>
             </LiquidGlassView>
@@ -82,7 +91,11 @@ function GlassCard() {
   const t = useTheme();
   return (
     <Section title="Card">
-      <LiquidGlassView glassType="regular" style={styles.card}>
+      <LiquidGlassView
+        glassType="regular"
+        reducedTransparencyFallbackColor={t.colors.surface}
+        style={styles.card}
+      >
         <Text style={[t.font.footnote, styles.bold, { color: t.colors.text }]}>
           LISBON
         </Text>
@@ -133,6 +146,7 @@ function GlassSheet() {
         />
         <LiquidGlassView
           glassType="regular"
+          reducedTransparencyFallbackColor={t.colors.surface}
           style={[styles.sheet, { paddingBottom: insets.bottom + 20 }]}
         >
           <View style={[styles.handle, { backgroundColor: t.colors.border }]} />

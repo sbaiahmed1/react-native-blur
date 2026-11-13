@@ -3,8 +3,9 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
-import { NATIVE_GLASS } from '@/ui/glass-support';
+import { chipFill, NATIVE_GLASS } from '@/ui/glass-support';
 import { useTheme } from '@/ui/theme';
+import { useReduceTransparency } from '@/ui/use-reduce-transparency';
 
 const FILTERS = [
   {
@@ -87,6 +88,7 @@ function MapLayer({ zoom }: { zoom: number }) {
 /** Glass map controls: filter chips, a zoom pill and a place card over a drawn map. */
 export function MapHero() {
   const t = useTheme();
+  const reduce = useReduceTransparency();
   const [filter, setFilter] = useState(0);
   const [zoom, setZoom] = useState(1.25);
   const place = FILTERS[filter] ?? FILTERS[0];
@@ -103,15 +105,24 @@ export function MapHero() {
       >
         {FILTERS.map((f, i) => {
           const selected = filter === i;
-          // The blur fallback dilutes the tint, so white only reads on native glass.
-          const color = selected && NATIVE_GLASS ? '#FFFFFF' : t.colors.text;
+          const fill = chipFill(selected, NATIVE_GLASS, reduce);
+          const color = fill === 'none' ? t.colors.text : '#FFFFFF';
           return (
             <LiquidGlassView
               key={f.label}
               glassType="regular"
-              glassTintColor={selected ? t.colors.accent : undefined}
+              glassTintColor={fill === 'tint' ? t.colors.accent : undefined}
+              reducedTransparencyFallbackColor={t.colors.surface}
               style={styles.chip}
             >
+              {fill === 'solid' ? (
+                <View
+                  style={[
+                    styles.fill,
+                    { backgroundColor: t.colors.accentFill },
+                  ]}
+                />
+              ) : null}
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={f.label}
@@ -132,7 +143,11 @@ export function MapHero() {
           );
         })}
       </ScrollView>
-      <LiquidGlassView glassType="regular" style={styles.zoom}>
+      <LiquidGlassView
+        glassType="regular"
+        reducedTransparencyFallbackColor={t.colors.surface}
+        style={styles.zoom}
+      >
         {[
           { label: 'Zoom in', ios: 'plus', md: 'add', by: ZOOM.step },
           { label: 'Zoom out', ios: 'minus', md: 'remove', by: -ZOOM.step },
@@ -157,7 +172,11 @@ export function MapHero() {
           );
         })}
       </LiquidGlassView>
-      <LiquidGlassView glassType="regular" style={styles.place}>
+      <LiquidGlassView
+        glassType="regular"
+        reducedTransparencyFallbackColor={t.colors.surface}
+        style={styles.place}
+      >
         <View
           style={[styles.badge, { backgroundColor: t.colors.accent }]}
           accessibilityElementsHidden
@@ -243,6 +262,7 @@ const styles = StyleSheet.create({
   chips: { position: 'absolute', top: 14, left: 0, right: 0 },
   chipRow: { paddingHorizontal: 14, gap: 8 },
   chip: { height: 36, borderRadius: 18, overflow: 'hidden' },
+  fill: { ...StyleSheet.absoluteFill, borderRadius: 18 },
   chipPress: {
     flex: 1,
     flexDirection: 'row',

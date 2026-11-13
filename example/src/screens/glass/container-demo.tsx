@@ -23,8 +23,16 @@ export function ContainerDemo() {
       <View style={styles.stage}>
         <Backdrop variant="shapes">
           <LiquidGlassContainer spacing={spacing} style={styles.container}>
-            <LiquidGlassView glassType="regular" style={styles.circle} />
-            <LiquidGlassView glassType="regular" style={styles.circle} />
+            <LiquidGlassView
+              glassType="regular"
+              reducedTransparencyFallbackColor={t.colors.surface}
+              style={styles.circle}
+            />
+            <LiquidGlassView
+              glassType="regular"
+              reducedTransparencyFallbackColor={t.colors.surface}
+              style={styles.circle}
+            />
           </LiquidGlassContainer>
         </Backdrop>
       </View>
