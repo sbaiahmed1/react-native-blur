@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BenchResult, benchResultJson } from '@/benchmark/bench-result';
 import type { FrameSummary } from '@/benchmark/frame-stats';
-import { parseBenchParams } from '@/benchmark/params';
+import { benchRunKey, parseBenchParams } from '@/benchmark/params';
 import { DEFAULT_PARAMS, getScene, type SceneDef } from '@/benchmark/scenes';
 import { useFrameRecorder } from '@/benchmark/use-frame-recorder';
 
@@ -20,7 +20,7 @@ export default function SceneScreen() {
   const id = firstString(raw.scene);
   const scene = getScene(id);
   if (!scene) return <UnknownScene id={id} />;
-  return <SceneRunner key={scene.id} scene={scene} raw={raw} />;
+  return <SceneRunner key={benchRunKey(raw)} scene={scene} raw={raw} />;
 }
 
 function SceneRunner({ scene, raw }: { scene: SceneDef; raw: RawParams }) {

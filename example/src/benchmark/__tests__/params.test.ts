@@ -1,4 +1,4 @@
-import { parseBenchParams, type BenchParams } from '../params';
+import { benchRunKey, parseBenchParams, type BenchParams } from '../params';
 
 const D: BenchParams = {
   count: 3,
@@ -58,4 +58,30 @@ it('falls back on junk and treats only "1" as true', () => {
 it('takes the first value of a repeated param and floors count', () => {
   expect(parseBenchParams({ count: ['4', '9'] }, D).count).toBe(4);
   expect(parseBenchParams({ count: '3.9' }, D).count).toBe(3);
+});
+
+describe('benchRunKey', () => {
+  it('is the same for the same query in any order', () => {
+    expect(benchRunKey({ scene: 'blur-list', count: '3', autoplay: '1' })).toBe(
+      benchRunKey({ autoplay: '1', count: '3', scene: 'blur-list' })
+    );
+  });
+
+  it('changes when a param changes', () => {
+    expect(benchRunKey({ scene: 'blur-list', count: '1' })).not.toBe(
+      benchRunKey({ scene: 'blur-list', count: '6' })
+    );
+  });
+
+  it('changes when only run changes, so a repeat can force a new run', () => {
+    expect(benchRunKey({ scene: 'blur-list', run: '1' })).not.toBe(
+      benchRunKey({ scene: 'blur-list', run: '2' })
+    );
+  });
+
+  it('ignores undefined values', () => {
+    expect(benchRunKey({ scene: 'blur-list', count: undefined })).toBe(
+      benchRunKey({ scene: 'blur-list' })
+    );
+  });
 });
