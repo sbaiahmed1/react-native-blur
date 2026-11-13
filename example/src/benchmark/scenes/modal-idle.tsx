@@ -7,11 +7,17 @@ import type { SceneProps } from '../scenes';
 export function ModalScene({
   params,
   running,
+  onStop,
   scrolling,
 }: SceneProps & { scrolling: boolean }) {
   return (
     <FeedList scrolling={scrolling} images={params.images}>
-      <Modal visible={running} transparent animationType="none">
+      <Modal
+        visible={running}
+        transparent
+        animationType="none"
+        onRequestClose={onStop}
+      >
         <BlurView
           blurType="light"
           blurAmount={params.amount}
