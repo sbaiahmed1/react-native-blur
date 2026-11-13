@@ -4,7 +4,7 @@ set -euo pipefail
 
 DIR=$(cd "$(dirname "$0")" && pwd)
 ROOT=$(cd "$DIR/../.." && pwd)
-LABEL=${1:-$(git -C "$ROOT" rev-parse --short HEAD)}
+LABEL=${1:-$(git -C "$ROOT" describe --always --dirty)}
 
 RUNS=(
   "baseline-list"
