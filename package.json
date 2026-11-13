@@ -35,6 +35,7 @@
     "example": "yarn workspace @sbaiahmed1/react-native-blur-example-app",
     "test": "jest",
     "typecheck": "tsc",
+    "bench:android": "bash scripts/bench/run-all-android.sh",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli example/android example/ios lib",
     "prepare": "bob build",
