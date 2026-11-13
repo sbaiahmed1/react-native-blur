@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BenchResult, benchResultJson } from '@/benchmark/bench-result';
 import type { FrameSummary } from '@/benchmark/frame-stats';
 import { benchRunKey, parseBenchParams } from '@/benchmark/params';
+import { nextPhase, type RunEvent, type RunPhase } from '@/benchmark/run-phase';
 import { DEFAULT_PARAMS, getScene, type SceneDef } from '@/benchmark/scenes';
 import { useFrameRecorder } from '@/benchmark/use-frame-recorder';
 
@@ -29,34 +30,48 @@ function SceneRunner({ scene, raw }: { scene: SceneDef; raw: RawParams }) {
     ...DEFAULT_PARAMS,
     ...scene.defaults,
   });
-  const [phase, setPhase] = useState<'idle' | 'running' | 'done'>(
-    params.autoplay ? 'running' : 'idle'
-  );
+  const initial: RunPhase = params.autoplay ? 'running' : 'idle';
+  const phaseRef = useRef<RunPhase>(initial);
+  const [phase, setPhase] = useState<RunPhase>(initial);
   const [summary, setSummary] = useState<FrameSummary | null>(null);
   const running = phase === 'running';
 
+  // The ref answers right away, so a finish that lands after a stop is dropped.
+  const send = useCallback((event: RunEvent) => {
+    const next = nextPhase(phaseRef.current, event);
+    phaseRef.current = next;
+    setPhase(next);
+    return next;
+  }, []);
+
   const onDone = useCallback(
     (result: FrameSummary) => {
+      if (send('finish') !== 'done') return;
       console.log(`BENCH_RESULT ${benchResultJson(scene.id, params, result)}`);
       setSummary(result);
-      setPhase('done');
     },
-    [scene.id, params]
+    [send, scene.id, params]
   );
+  const onStop = useCallback(() => send('stop'), [send]);
 
   useFrameRecorder(running, params.duration, onDone);
 
   const { Component } = scene;
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
-      <Component params={params} running={running} />
+      <Component params={params} running={running} onStop={onStop} />
       <View style={styles.controls} pointerEvents="box-none">
+        {phase !== 'stopped' ? null : (
+          <Text testID="bench-stopped" style={styles.stopped}>
+            Run stopped. No result was recorded.
+          </Text>
+        )}
         {phase !== 'idle' ? null : (
           <Pressable
             testID="bench-start"
             accessibilityRole="button"
             style={styles.start}
-            onPress={() => setPhase('running')}
+            onPress={() => send('start')}
           >
             <Text style={styles.startText}>{`Start ${scene.title}`}</Text>
           </Pressable>
@@ -99,6 +114,17 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     paddingHorizontal: 24,
     paddingVertical: 12,
+  },
+  stopped: {
+    alignSelf: 'center',
+    overflow: 'hidden',
+    backgroundColor: 'rgba(17,17,17,0.85)',
+    color: '#FFFFFF',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 15,
+    fontWeight: '600',
   },
   startText: {
     color: '#FFFFFF',

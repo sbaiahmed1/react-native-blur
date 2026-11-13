@@ -14,7 +14,12 @@ import Recycle from './scenes/recycle';
 import RootOverlay from './scenes/root-overlay';
 import StackPush from './scenes/stack-push';
 
-export type SceneProps = { params: BenchParams; running: boolean };
+/** `onStop` ends the run early, with no result, for example on Android back. */
+export type SceneProps = {
+  params: BenchParams;
+  running: boolean;
+  onStop: () => void;
+};
 
 export type SceneDef = {
   id: string;
