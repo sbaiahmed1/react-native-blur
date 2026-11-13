@@ -2,9 +2,9 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from './theme';
 
-const HUES = { ios: '#0A64FF', android: '#14A05A' };
+const HUES = { ios: '#0A64FF', android: '#0B7A43' };
 
-/** One chip per platform limit, colored by platform. */
+/** One solid chip per platform limit, readable over any backdrop. */
 export function PlatformBadge({ text }: { text: string }) {
   const t = useTheme();
   const key = text.toLowerCase();
@@ -14,13 +14,14 @@ export function PlatformBadge({ text }: { text: string }) {
       ? HUES.android
       : t.colors.textMuted;
   return (
-    <View style={[styles.badge, { backgroundColor: `${hue}22` }]}>
-      <Text style={[t.font.caption, { color: hue }]}>{text}</Text>
+    <View style={[styles.badge, { backgroundColor: hue }]}>
+      <Text style={[t.font.caption, styles.text]}>{text}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  text: { color: '#FFFFFF' },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 3,

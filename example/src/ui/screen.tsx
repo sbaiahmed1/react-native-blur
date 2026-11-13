@@ -96,13 +96,13 @@ export function Section({
   );
 }
 
-/** The standard showcase card: a thin system material that follows the color scheme. */
+/** The standard showcase card: the regular system material at full intensity, as UIKit draws it. */
 export function MaterialCard({ children }: { children: ReactNode }) {
   const t = useTheme();
   return (
     <BlurView
-      blurType={t.dark ? 'systemThinMaterialDark' : 'systemThinMaterialLight'}
-      blurAmount={30}
+      blurType={t.dark ? 'systemMaterialDark' : 'systemMaterialLight'}
+      blurAmount={100}
       reducedTransparencyFallbackColor={t.colors.surface}
       style={styles.card}
     >
