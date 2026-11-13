@@ -22,6 +22,7 @@ export default function BenchmarkIndex() {
               key={scene.id}
               testID={`bench-scene-${scene.id}`}
               accessibilityRole="button"
+              accessibilityLabel={`${scene.title}. ${scene.note}`}
               style={({ pressed }) => [
                 cell.row,
                 pressed && { backgroundColor: t.colors.chip },
