@@ -62,14 +62,14 @@ const font: Theme['font'] = {
 const space = (n: number) => n * 4;
 const radius = { sm: 10, md: 16, lg: 24 };
 
-const LIGHT: Theme = {
+export const LIGHT: Theme = {
   dark: false,
   colors: {
     bg: '#FFFFFF',
     surface: '#FFFFFF',
     grouped: '#F2F2F7',
     text: '#0B0B0F',
-    textMuted: '#5F5F6A',
+    textMuted: '#4A4A53',
     accent: '#0A64FF',
     accentFill: '#0A64FF',
     border: 'rgba(60,60,67,0.18)',
@@ -82,14 +82,14 @@ const LIGHT: Theme = {
   font,
 };
 
-const DARK: Theme = {
+export const DARK: Theme = {
   dark: true,
   colors: {
     bg: '#000000',
     surface: '#1C1C1E',
     grouped: '#000000',
     text: '#F5F5F7',
-    textMuted: '#8E8E93',
+    textMuted: '#AEAEB2',
     accent: '#4D8DFF',
     accentFill: '#0A64FF',
     border: 'rgba(84,84,88,0.6)',
