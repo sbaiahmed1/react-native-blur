@@ -1,4 +1,6 @@
-import { Platform, useColorScheme, type TextStyle } from 'react-native';
+import { Platform, type TextStyle } from 'react-native';
+
+import { useColorScheme } from './color-scheme';
 
 export const SHAPES = {
   orange: '#FF6B2C',
