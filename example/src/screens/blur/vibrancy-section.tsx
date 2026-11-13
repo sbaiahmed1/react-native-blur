@@ -44,7 +44,7 @@ export function VibrancySection() {
           ))}
         </View>
       </VibrancyView>
-      <Text style={[t.font.footnote, { color: t.colors.textMuted }]}>
+      <Text style={[t.font.footnote, { color: t.colors.text }]}>
         On Android, VibrancyView renders a regular BlurView.
       </Text>
     </Section>

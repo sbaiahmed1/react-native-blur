@@ -65,7 +65,7 @@ const LIGHT: Theme = {
     surface: '#FFFFFF',
     grouped: '#F2F2F7',
     text: '#0B0B0F',
-    textMuted: '#6B6B76',
+    textMuted: '#5F5F6A',
     accent: '#0A64FF',
     border: 'rgba(60,60,67,0.18)',
     chip: 'rgba(11,11,15,0.06)',

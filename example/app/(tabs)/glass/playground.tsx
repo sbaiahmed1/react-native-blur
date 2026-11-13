@@ -58,7 +58,7 @@ export default function GlassPlayground() {
           <Text style={[t.font.headline, { color: t.colors.text }]}>
             Liquid glass
           </Text>
-          <Text style={[t.font.footnote, { color: t.colors.textMuted }]}>
+          <Text style={[t.font.footnote, { color: t.colors.text }]}>
             {isInteractive ? 'Press and drag me' : 'Static'}
           </Text>
         </LiquidGlassView>
