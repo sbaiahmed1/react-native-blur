@@ -10,10 +10,17 @@ WINDOW_SEC=10
 SCENE=${1:?usage: run-android.sh <scene> [query] [label]}
 QUERY=${2:-}
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
-LABEL=${3:-$(git -C "$ROOT" rev-parse --short HEAD)}
+LABEL=${3:-$(git -C "$ROOT" describe --always --dirty)}
 
 if [ "$(adb get-state 2>/dev/null)" != "device" ]; then
   echo "run-android.sh: no single Android device attached (set ANDROID_SERIAL)" >&2
+  exit 1
+fi
+
+# Captured first, since grep -q on a live pipe can SIGPIPE adb and fail under pipefail.
+PKG_INFO=$(adb shell dumpsys package "$PKG" </dev/null)
+if grep -q DEBUGGABLE <<<"$PKG_INFO"; then
+  echo "run-android.sh: $PKG is a debuggable build. Install a release build for numbers." >&2
   exit 1
 fi
 
