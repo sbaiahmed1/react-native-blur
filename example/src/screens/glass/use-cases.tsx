@@ -83,9 +83,7 @@ function GlassCard() {
   return (
     <Section title="Card">
       <LiquidGlassView glassType="regular" style={styles.card}>
-        <Text
-          style={[t.font.footnote, styles.bold, { color: t.colors.textMuted }]}
-        >
+        <Text style={[t.font.footnote, styles.bold, { color: t.colors.text }]}>
           LISBON
         </Text>
         <Text style={[styles.temp, { color: t.colors.text }]}>21°</Text>
