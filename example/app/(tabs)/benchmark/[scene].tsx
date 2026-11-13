@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Link, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 
 import { BenchResult, benchResultJson } from '@/benchmark/bench-result';
 import type { FrameSummary } from '@/benchmark/frame-stats';
@@ -61,6 +62,8 @@ function SceneRunner({ scene, raw }: { scene: SceneDef; raw: RawParams }) {
   const { Component } = scene;
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
+      {/* Scenes draw light content in every theme. */}
+      <StatusBar style="dark" />
       <Component params={params} running={running} onStop={onStop} />
       <View
         style={[styles.controls, { bottom: insets.bottom + 16 }]}
