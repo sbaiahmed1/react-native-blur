@@ -10,11 +10,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from '@sbaiahmed1/react-native-blur';
 
 import { FIELDS, FIELD_LABELS, Field, useField } from './field';
+import {
+  SHEET_GAP as GAP,
+  SHEET_INSET as INSET,
+  SHEET_PADDING as PADDING,
+  sheetLayout,
+} from './sheet-layout';
 import { useTheme } from './theme';
-
-const GAP = 12;
-const INSET = 8;
-const PADDING = 20;
 
 /** A blurred bottom sheet that picks the backdrop, live behind it. */
 export function FieldSheet({
@@ -28,8 +30,7 @@ export function FieldSheet({
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { field, setField } = useField();
-  const tileWidth = (width - 2 * INSET - 2 * PADDING - 2 * GAP) / 3;
-  const tileHeight = tileWidth * 1.7;
+  const { sheetWidth, left, tileWidth, tileHeight } = sheetLayout(width);
   return (
     <Modal
       visible={visible}
@@ -49,7 +50,10 @@ export function FieldSheet({
         blurType={t.dark ? 'systemMaterialDark' : 'systemMaterialLight'}
         blurAmount={100}
         reducedTransparencyFallbackColor={t.colors.surface}
-        style={[styles.sheet, { paddingBottom: insets.bottom + PADDING }]}
+        style={[
+          styles.sheet,
+          { left, width: sheetWidth, paddingBottom: insets.bottom + PADDING },
+        ]}
       >
         <View style={styles.header}>
           <Text
@@ -117,8 +121,6 @@ const styles = StyleSheet.create({
   fill: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0 },
   sheet: {
     position: 'absolute',
-    left: INSET,
-    right: INSET,
     bottom: INSET,
     borderRadius: 36,
     padding: PADDING,
