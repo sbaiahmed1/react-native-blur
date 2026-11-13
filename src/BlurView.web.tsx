@@ -70,7 +70,9 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
 
 BlurViewComponent.displayName = 'BlurView';
 
-export const BlurView = memo(BlurViewComponent);
+export const BlurView: React.NamedExoticComponent<
+  BlurViewProps & React.RefAttributes<BlurViewRef>
+> = memo(BlurViewComponent);
 
 export default BlurView;
 

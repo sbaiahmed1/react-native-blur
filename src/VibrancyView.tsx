@@ -83,7 +83,9 @@ const VibrancyViewComponent = forwardRef<VibrancyViewRef, VibrancyViewProps>(
 
 VibrancyViewComponent.displayName = 'VibrancyView';
 
-export const VibrancyView = memo(VibrancyViewComponent);
+export const VibrancyView: React.NamedExoticComponent<
+  VibrancyViewProps & React.RefAttributes<VibrancyViewRef>
+> = memo(VibrancyViewComponent);
 
 const styles = StyleSheet.create({
   container: {

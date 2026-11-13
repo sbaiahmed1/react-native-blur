@@ -28,6 +28,8 @@ const LiquidGlassContainerComponent = forwardRef<
 
 LiquidGlassContainerComponent.displayName = 'LiquidGlassContainer';
 
-export const LiquidGlassContainer = memo(LiquidGlassContainerComponent);
+export const LiquidGlassContainer: React.NamedExoticComponent<
+  LiquidGlassContainerProps & React.RefAttributes<LiquidGlassContainerRef>
+> = memo(LiquidGlassContainerComponent);
 
 export default LiquidGlassContainer;
