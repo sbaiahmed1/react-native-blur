@@ -164,8 +164,7 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     // last resort: software capture self-excludes via the draw() guard.
     val runnable = Runnable {
       initRunnable = null
-      val source =
-        findNearestScreenAncestor() ?: findNearestReactRootView() ?: parent as? ViewGroup
+      val source = CaptureRoots.resolve(this) ?: parent as? ViewGroup
       captureSource = source
       source?.let { SharedBackdropCapture.register(it) }
       refreshBackdrop()
@@ -415,28 +414,6 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     )
     node.setRenderEffect(effect)
     effectDirty = false
-  }
-
-  private fun findNearestScreenAncestor(): ViewGroup? {
-    var currentParent = this.parent
-    while (currentParent != null) {
-      if (currentParent.javaClass.name == "com.swmansion.rnscreens.Screen") {
-        return currentParent as? ViewGroup
-      }
-      currentParent = currentParent.parent
-    }
-    return null
-  }
-
-  private fun findNearestReactRootView(): ViewGroup? {
-    var currentParent = this.parent
-    while (currentParent != null) {
-      if (currentParent.javaClass.name == "com.facebook.react.ReactRootView") {
-        return currentParent as? ViewGroup
-      }
-      currentParent = currentParent.parent
-    }
-    return null
   }
 
   fun setGlassType(type: String) {

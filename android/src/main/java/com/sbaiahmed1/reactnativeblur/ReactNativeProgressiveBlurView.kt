@@ -15,7 +15,6 @@ import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
-import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.view.View.MeasureSpec
@@ -257,7 +256,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    */
   private fun swapBlurRootToScreenAncestor() {
     val bv = blurView ?: return
-    val screenRoot = findOptimalBlurRoot()
+    val screenRoot = CaptureRoots.resolve(this)
 
     try {
       val oldDecorView = bv.mDecorView
@@ -309,55 +308,6 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     } catch (e: Exception) {
       logWarning("Failed to swap progressive blur root: ${e.message}")
     }
-  }
-
-  /**
-   * Finds the optimal view to use as blur capture root.
-   *
-   * Priority:
-   * 1. Nearest react-native-screens Screen ancestor — scopes blur to the current
-   *    screen and prevents capturing navigation transition artifacts.
-   * 2. Nearest ReactRootView ancestor — scopes blur to the React Native root when
-   *    the component is not inside a Screen (e.g. plain View hierarchies). Without
-   *    this fallback, QmBlurView defaults to the activity decor view and blurs the
-   *    entire screen instead of just the component area (issue #89).
-   * 3. null — e.g. inside a Modal, whose Dialog window has neither ancestor.
-   *    swapBlurRootToScreenAncestor then captures the activity decor view and
-   *    the dialog window together (WindowCaptureRoot), so a full-screen blur
-   *    still shows the screen behind and the modal content is blurred too.
-   */
-  private fun findOptimalBlurRoot(): ViewGroup? {
-    return findNearestScreenAncestor() ?: findNearestReactRootView()
-  }
-
-  /**
-   * Walks up the view hierarchy looking for react-native-screens Screen components.
-   */
-  private fun findNearestScreenAncestor(): ViewGroup? {
-    var currentParent = this.parent
-    while (currentParent != null) {
-      if (currentParent.javaClass.name == "com.swmansion.rnscreens.Screen") {
-        return currentParent as? ViewGroup
-      }
-      currentParent = currentParent.parent
-    }
-    return null
-  }
-
-  /**
-   * Walks up the view hierarchy looking for the React Native root view.
-   * Used as a fallback when no Screen ancestor exists, to scope the blur
-   * capture to the RN root rather than the full activity decor view.
-   */
-  private fun findNearestReactRootView(): ViewGroup? {
-    var currentParent = this.parent
-    while (currentParent != null) {
-      if (currentParent.javaClass.name == "com.facebook.react.ReactRootView") {
-        return currentParent as? ViewGroup
-      }
-      currentParent = currentParent.parent
-    }
-    return null
   }
 
   override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

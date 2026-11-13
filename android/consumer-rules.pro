@@ -10,3 +10,8 @@
 # activity decor view, and the app regresses to full-screen blur and
 # navigation flicker (issue #89). Keep the library's classes and fields intact.
 -keep class com.qmdeve.blurview.** { *; }
+
+# The capture root is matched by class name (CaptureRoots.kt), so R8 must not rename react-native-screens' screens.
+-keepnames class com.swmansion.rnscreens.Screen
+-keepnames class com.swmansion.rnscreens.gamma.tabs.screen.TabsScreen
+-keepnames class com.swmansion.rnscreens.gamma.tabs.TabScreen
