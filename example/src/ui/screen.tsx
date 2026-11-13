@@ -42,6 +42,9 @@ export function Screen({
             <Text
               style={[t.font.largeTitle, styles.grow, { color: t.colors.text }]}
               accessibilityRole="header"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.7}
             >
               {title}
             </Text>
