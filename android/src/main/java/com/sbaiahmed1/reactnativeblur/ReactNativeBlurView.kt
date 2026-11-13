@@ -48,6 +48,8 @@ class ReactNativeBlurView : BlurViewGroup {
   // capture root (see swapBlurRootToScreenAncestor). Tracked so cleanup() can
   // unregister it: QmBlurView only knows the original listener.
   private var captureGuard: CaptureAnimationGuard? = null
+  // Set only inside a Modal: redraws this view when the window behind the dialog draws.
+  private var behindWindowInvalidator: BehindWindowInvalidator? = null
 
   companion object {
     private const val TAG = "ReactNativeBlurView"
@@ -219,11 +221,21 @@ class ReactNativeBlurView : BlurViewGroup {
         // decor view at attach, or one from a repeated swap) so none leaks on
         // the old root.
         captureGuard?.remove()
-        captureGuard = CaptureAnimationGuard.install(listenerRoot, preDrawListener, this, TAG)
+        captureGuard = CaptureAnimationGuard.install(
+          listenerRoot,
+          preDrawListener,
+          this,
+          TAG,
+          animationRoots = windowRoot?.layers ?: listOf(listenerRoot)
+        )
+        behindWindowInvalidator?.remove()
+        behindWindowInvalidator =
+          if (windowRoot != null) BehindWindowInvalidator.install(oldDecorView, this) else null
 
+        // In a Modal a true value makes QmBlurView invalidate itself on every pre-draw of the dialog.
         val differentRootField = baseClass.getDeclaredField("mDifferentRoot")
         differentRootField.isAccessible = true
-        differentRootField.setBoolean(baseBlurViewGroup, newRoot.rootView != this.rootView)
+        differentRootField.setBoolean(baseBlurViewGroup, windowRoot == null && newRoot.rootView != this.rootView)
 
         val forceRedrawField = baseClass.getDeclaredField("mForceRedraw")
         forceRedrawField.isAccessible = true
@@ -264,6 +276,8 @@ class ReactNativeBlurView : BlurViewGroup {
     initRunnable = null
     captureGuard?.remove()
     captureGuard = null
+    behindWindowInvalidator?.remove()
+    behindWindowInvalidator = null
     logDebug("View cleaned up")
   }
 

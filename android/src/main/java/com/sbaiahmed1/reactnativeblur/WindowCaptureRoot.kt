@@ -26,7 +26,8 @@ import android.view.View
  */
 internal class WindowCaptureRoot private constructor(
   context: Context,
-  private val layers: List<View>
+  // The activity root first, the dialog root last.
+  val layers: List<View>
 ) : View(context) {
 
   private val location = IntArray(2)

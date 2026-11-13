@@ -32,7 +32,8 @@ internal class CaptureAnimationGuard private constructor(
   private val captureRoot: View,
   private val capture: ViewTreeObserver.OnPreDrawListener,
   private val frameRequester: View,
-  private val logTag: String
+  private val logTag: String,
+  private val animationRoots: List<View>
 ) : ViewTreeObserver.OnPreDrawListener {
 
   private var settleFramesLeft = 0
@@ -64,9 +65,11 @@ internal class CaptureAnimationGuard private constructor(
       captureRoot: View,
       capture: ViewTreeObserver.OnPreDrawListener,
       frameRequester: View,
-      logTag: String
+      logTag: String,
+      // Views scanned for pending animations, every window a Modal capture draws.
+      animationRoots: List<View> = listOf(captureRoot)
     ): CaptureAnimationGuard {
-      val guard = CaptureAnimationGuard(captureRoot, capture, frameRequester, logTag)
+      val guard = CaptureAnimationGuard(captureRoot, capture, frameRequester, logTag, animationRoots)
       captureRoot.viewTreeObserver.addOnPreDrawListener(guard)
       return guard
     }
@@ -100,7 +103,7 @@ internal class CaptureAnimationGuard private constructor(
   }
 
   override fun onPreDraw(): Boolean {
-    if (hasPendingViewAnimation(captureRoot)) {
+    if (animationRoots.any { hasPendingViewAnimation(it) }) {
       settleFramesLeft = ANIMATION_SETTLE_FRAMES
       if (!shouldKeepSkippingWhileAnimating()) return capture.onPreDraw()
       frameRequester.postInvalidateOnAnimation()
