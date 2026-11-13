@@ -7,3 +7,8 @@ export function nextPhase(phase: RunPhase, event: RunEvent): RunPhase {
   if (phase !== 'running') return phase;
   return event === 'finish' ? 'done' : 'stopped';
 }
+
+/** A scene offers its exit unless a run is recording, so no tap lands in the measured window. */
+export function canLeave(phase: RunPhase): boolean {
+  return phase !== 'running';
+}
