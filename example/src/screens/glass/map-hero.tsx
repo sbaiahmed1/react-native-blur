@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
@@ -94,7 +94,12 @@ export function MapHero() {
   return (
     <View style={styles.map}>
       <MapLayer zoom={zoom} />
-      <View style={styles.chips}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.chips}
+        contentContainerStyle={styles.chipRow}
+      >
         {FILTERS.map((f, i) => {
           const selected = filter === i;
           const color = selected ? '#FFFFFF' : t.colors.text;
@@ -124,7 +129,7 @@ export function MapHero() {
             </LiquidGlassView>
           );
         })}
-      </View>
+      </ScrollView>
       <LiquidGlassView glassType="regular" style={styles.zoom}>
         {[
           { label: 'Zoom in', ios: 'plus', md: 'add', by: ZOOM.step },
@@ -233,14 +238,8 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#FFFFFF',
   },
-  chips: {
-    position: 'absolute',
-    top: 14,
-    left: 14,
-    right: 14,
-    flexDirection: 'row',
-    gap: 8,
-  },
+  chips: { position: 'absolute', top: 14, left: 0, right: 0 },
+  chipRow: { paddingHorizontal: 14, gap: 8 },
   chip: { height: 36, borderRadius: 18, overflow: 'hidden' },
   chipPress: {
     flex: 1,
