@@ -27,7 +27,7 @@ type TabBarProps = {
     routes: readonly {
       key: string;
       name: string;
-      state?: { index?: number };
+      state?: { index?: number; routes: readonly { name: string }[] };
     }[];
   };
   navigateToTab: (routeKey: string) => void;
