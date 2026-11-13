@@ -3,6 +3,7 @@ package com.sbaiahmed1.reactnativeblur
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.SystemClock
+import android.util.Log
 import android.view.View
 
 /**
@@ -19,6 +20,10 @@ import android.view.View
  */
 internal object SharedBackdropCapture {
 
+  private const val LOG_TAG = "RNSharedBackdrop"
+  private const val FAILED_CAPTURE_RETRY_MS = 500L
+  private const val NO_FAILURE = -1L
+
   private class Entry {
     var bitmap: Bitmap? = null
     var canvas: Canvas? = null
@@ -27,6 +32,8 @@ internal object SharedBackdropCapture {
     // Bumped on every successful capture so consumers can cheaply detect
     // whether the shared bitmap changed since they last consumed it.
     var generation = 0L
+    var lastFailureUptimeMs = NO_FAILURE
+    var failureLogged = false
   }
 
   private val entries = HashMap<View, Entry>()
@@ -79,6 +86,10 @@ internal object SharedBackdropCapture {
     if (!sizeChanged && now - entry.lastCaptureUptimeMs < maxAgeMs) {
       return bitmap
     }
+    // A source that failed to draw is retried every FAILED_CAPTURE_RETRY_MS, not on every tick.
+    if (entry.lastFailureUptimeMs != NO_FAILURE && now - entry.lastFailureUptimeMs < FAILED_CAPTURE_RETRY_MS) {
+      return bitmap
+    }
 
     val canvas = entry.canvas ?: return bitmap
     bitmap!!.eraseColor(0)
@@ -88,19 +99,24 @@ internal object SharedBackdropCapture {
     var captured = true
     try {
       source.draw(canvas)
-    } catch (_: Exception) {
-      // A view that throws mid-draw leaves a partial backdrop for one tick.
+    } catch (e: Exception) {
+      // A view that throws mid-draw leaves a partial backdrop until the next retry.
+      entry.lastFailureUptimeMs = now
+      if (!entry.failureLogged) {
+        entry.failureLogged = true
+        Log.w(LOG_TAG, "Backdrop capture failed: ${e.message}")
+      }
       captured = false
     } finally {
       captureInProgress = false
       canvas.restoreToCount(save)
     }
-    // Only a successful draw counts as fresh — a partial capture keeps the
-    // stale timestamp so the very next acquire re-rasterizes instead of
-    // serving the broken frame for the whole interval.
+    // Only a successful draw counts as fresh. A failed one is retried after FAILED_CAPTURE_RETRY_MS.
     if (captured) {
       entry.lastCaptureUptimeMs = now
       entry.generation++
+      entry.lastFailureUptimeMs = NO_FAILURE
+      entry.failureLogged = false
     }
     return bitmap
   }
