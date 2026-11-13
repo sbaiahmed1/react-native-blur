@@ -7,8 +7,6 @@ export const unstable_settings = {
   initialRouteName: 'blur',
 };
 
-const HIDDEN = ['index', 'examples', 'settings', 'more'] as const;
-
 type TabBarRender = NonNullable<ComponentProps<typeof Tabs>['tabBar']>;
 
 const renderTabBar: TabBarRender = (props) => <GlassTabBar {...props} />;
@@ -20,9 +18,8 @@ export default function TabsLayout() {
       <Tabs.Screen name="progressive" />
       <Tabs.Screen name="glass" />
       <Tabs.Screen name="benchmark" />
-      {HIDDEN.map((name) => (
-        <Tabs.Screen key={name} name={name} options={{ href: null }} />
-      ))}
+      {/* The root path redirects to /blur. */}
+      <Tabs.Screen name="index" options={{ href: null }} />
     </Tabs>
   );
 }
