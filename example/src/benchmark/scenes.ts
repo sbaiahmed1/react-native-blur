@@ -7,7 +7,12 @@ import BlurInScroll from './scenes/blur-in-scroll';
 import BlurList from './scenes/blur-list';
 import GlassList from './scenes/glass-list';
 import IdleCursor from './scenes/idle-cursor';
+import ModalIdle from './scenes/modal-idle';
+import ModalLive from './scenes/modal-live';
 import ProgressiveBars from './scenes/progressive-bars';
+import Recycle from './scenes/recycle';
+import RootOverlay from './scenes/root-overlay';
+import StackPush from './scenes/stack-push';
 
 export type SceneProps = { params: BenchParams; running: boolean };
 
@@ -78,6 +83,41 @@ export const SCENES: readonly SceneDef[] = [
     note: 'A static blur bar while only a text caret blinks.',
     defaults: {},
     Component: IdleCursor,
+  },
+  {
+    id: 'modal-idle',
+    title: 'Modal idle',
+    note: 'A full-screen BlurView in a Modal, nothing moving (B2).',
+    defaults: {},
+    Component: ModalIdle,
+  },
+  {
+    id: 'modal-live',
+    title: 'Modal live',
+    note: 'The same Modal blur with the feed scrolling behind it.',
+    defaults: {},
+    Component: ModalLive,
+  },
+  {
+    id: 'stack-push',
+    title: 'Stack push',
+    note: 'Push and pop a screen under a blur header every second (#167, #109).',
+    defaults: {},
+    Component: StackPush,
+  },
+  {
+    id: 'root-overlay',
+    title: 'Root overlay',
+    note: 'Glass and blur rendered outside every Screen (B3a).',
+    defaults: {},
+    Component: RootOverlay,
+  },
+  {
+    id: 'recycle',
+    title: 'Recycle',
+    note: 'Swaps two blur and glass pairs every second (B7).',
+    defaults: {},
+    Component: Recycle,
   },
 ];
 
