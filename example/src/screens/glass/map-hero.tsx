@@ -104,8 +104,7 @@ export function MapHero() {
         {FILTERS.map((f, i) => {
           const selected = filter === i;
           // The blur fallback dilutes the tint, so white only reads on native glass.
-          let color = selected ? t.colors.accent : t.colors.text;
-          if (selected && NATIVE_GLASS) color = '#FFFFFF';
+          const color = selected && NATIVE_GLASS ? '#FFFFFF' : t.colors.text;
           return (
             <LiquidGlassView
               key={f.label}
