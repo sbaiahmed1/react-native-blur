@@ -12,7 +12,6 @@ import {
   Image,
   StyleSheet,
   Animated,
-  useAnimatedValue,
 } from 'react-native';
 import { glassColors } from '@/constants/blur';
 
@@ -29,7 +28,8 @@ const LiquidGlassExample = ({
     glassTintColor === 'clear' ? 'transparent' : glassTintColor + '40';
   const [glassOpacity, setGlassOpacity] = useState(0.8);
   const [containerSpacing, setContainerSpacing] = useState(20);
-  const translateX = useAnimatedValue(0);
+  // react-native-web has no useAnimatedValue.
+  const [translateX] = useState(() => new Animated.Value(0));
 
   const animateCirclesCloser = () => {
     Animated.sequence([

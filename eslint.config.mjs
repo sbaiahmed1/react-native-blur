@@ -40,6 +40,7 @@ export default defineConfig([
       'example/android/',
       'example/ios/',
       'example/.expo/',
+      'example/expo-env.d.ts',
       'website/'
     ],
   },
