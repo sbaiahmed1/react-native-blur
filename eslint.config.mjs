@@ -36,6 +36,7 @@ export default defineConfig([
     ignores: [
       'node_modules/',
       'lib/',
+      'android/build/',
       'example/dist/',
       'example/android/',
       'example/ios/',
