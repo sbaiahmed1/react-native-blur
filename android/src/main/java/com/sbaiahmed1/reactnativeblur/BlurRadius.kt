@@ -1,0 +1,23 @@
+package com.sbaiahmed1.reactnativeblur
+
+/** Maps blurAmount to a Gaussian blur that matches QmBlurView at downsample 8 and 5 rounds. */
+internal object BlurRadius {
+  // QmBlurView clamps its downsampled radius at 2, which is amount 16 at downsample 8, so amounts below look alike.
+  const val FLOOR_AMOUNT = 16f
+  // Sigma in px at the floor and at amount 100, calibrated against QmBlurView screenshots (plan 04 Task 4).
+  const val FLOOR_SIGMA = 20f
+  const val MAX_SIGMA = 64f
+  const val DEFAULT_AMOUNT = 10f
+  private const val MAX_AMOUNT = 100f
+
+  /** Sigma in px, linear from the floor to amount 100. An amount of 0 or less gives no blur. */
+  fun sigmaPx(amount: Float): Float {
+    val value = if (amount.isNaN() || amount.isInfinite()) DEFAULT_AMOUNT else amount
+    if (value <= 0f) return 0f
+    val clamped = value.coerceIn(FLOOR_AMOUNT, MAX_AMOUNT)
+    return FLOOR_SIGMA + (clamped - FLOOR_AMOUNT) * (MAX_SIGMA - FLOOR_SIGMA) / (MAX_AMOUNT - FLOOR_AMOUNT)
+  }
+
+  /** The RenderEffect.createBlurEffect radius for a sigma, hwui converts with sigma = 0.57735 * radius + 0.5. */
+  fun effectRadius(sigmaPx: Float): Float = if (sigmaPx <= 0.5f) 0f else (sigmaPx - 0.5f) / 0.57735f
+}
