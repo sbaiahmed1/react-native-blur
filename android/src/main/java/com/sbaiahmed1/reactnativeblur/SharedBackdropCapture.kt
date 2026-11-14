@@ -45,6 +45,7 @@ internal object SharedBackdropCapture {
     var lastSightingMs = 0L
     var animationSkipStartMs = NOT_SKIPPING
     var failSafeTripped = false
+    var releaseListener: View.OnAttachStateChangeListener? = null
   }
 
   private val entries = HashMap<View, Entry>()
@@ -60,16 +61,42 @@ internal object SharedBackdropCapture {
 
   fun register(source: View) {
     val entry = entries.getOrPut(source) { Entry() }
+    entry.releaseListener?.let { source.removeOnAttachStateChangeListener(it) }
+    entry.releaseListener = null
+    if (entry.refCount <= 0) {
+      // A kept entry brings back its last capture only, never a stale fail-safe run.
+      entry.refCount = 0
+      entry.animationSkipStartMs = NOT_SKIPPING
+      entry.failSafeTripped = false
+    }
     entry.refCount++
   }
 
   fun unregister(source: View) {
     val entry = entries[source] ?: return
     entry.refCount--
-    if (entry.refCount <= 0) {
-      entry.bitmap?.recycle()
-      entries.remove(source)
+    if (entry.refCount > 0 || entry.releaseListener != null) return
+    if (!source.isAttachedToWindow) {
+      release(source, entry)
+      return
     }
+    // Keep the last capture while the source stays in the window, so a remounted glass view shows it at once.
+    val listener = object : View.OnAttachStateChangeListener {
+      override fun onViewAttachedToWindow(v: View) = Unit
+
+      override fun onViewDetachedFromWindow(v: View) {
+        v.removeOnAttachStateChangeListener(this)
+        if (entry.releaseListener === this) entry.releaseListener = null
+        if (entry.refCount <= 0 && entries[source] === entry) release(source, entry)
+      }
+    }
+    entry.releaseListener = listener
+    source.addOnAttachStateChangeListener(listener)
+  }
+
+  private fun release(source: View, entry: Entry) {
+    entry.bitmap?.recycle()
+    entries.remove(source)
   }
 
   /**
