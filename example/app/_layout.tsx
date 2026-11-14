@@ -6,6 +6,7 @@ import {
 import { Stack } from 'expo-router';
 import { useColorScheme } from 'react-native';
 
+import { RootOverlayHost } from '@/benchmark/root-overlay';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 
 export default function RootLayout() {
@@ -16,6 +17,7 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
       </Stack>
+      <RootOverlayHost />
     </ThemeProvider>
   );
 }
