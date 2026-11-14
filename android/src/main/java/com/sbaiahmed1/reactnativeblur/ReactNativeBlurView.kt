@@ -28,7 +28,7 @@ import android.view.View.MeasureSpec
  * to the nearest react-native-screens Screen ancestor, preventing flickering and
  * wrong frame capture during navigation transitions.
  */
-class ReactNativeBlurView : BlurViewGroup {
+class ReactNativeBlurView : BlurViewGroup, BlurViewProps {
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
   private var currentOverlayColor = Color.TRANSPARENT
   private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
@@ -270,7 +270,7 @@ class ReactNativeBlurView : BlurViewGroup {
     cleanup()
   }
 
-  fun cleanup() {
+  override fun cleanup() {
     isBlurInitialized = false
     initRunnable?.let { removeCallbacks(it) }
     initRunnable = null
@@ -281,7 +281,7 @@ class ReactNativeBlurView : BlurViewGroup {
     logDebug("View cleaned up")
   }
 
-  fun setBlurAmount(amount: Float) {
+  override fun setBlurAmount(amount: Float) {
     currentBlurRadius = mapBlurAmountToRadius(amount)
     logDebug("setBlurAmount: $amount -> $currentBlurRadius")
 
@@ -292,7 +292,7 @@ class ReactNativeBlurView : BlurViewGroup {
     }
   }
 
-  fun setRounds(rounds: Int) {
+  override fun setRounds(rounds: Int) {
     val blurRounds = rounds.coerceIn(1, 15)
     currentBlurRounds = blurRounds
     logDebug("setRounds: $rounds -> $blurRounds")
@@ -308,7 +308,7 @@ class ReactNativeBlurView : BlurViewGroup {
    * Set the blur type which determines the overlay color.
    * @param type The blur type string (case-insensitive)
    */
-  fun setBlurType(type: String) {
+  override fun setBlurType(type: String) {
     currentBlurType = type
     val blurType = BlurType.fromString(type)
     currentOverlayColor = blurType.overlayColor
@@ -387,31 +387,31 @@ class ReactNativeBlurView : BlurViewGroup {
     }
   }
 
-  fun setBorderRadius(radius: Float) {
+  override fun setBorderRadius(radius: Float) {
     borderRadius = radius
     logDebug("setBorderRadius: $radius dp")
     updateCornerRadius()
   }
 
-  fun setBorderTopLeftRadius(radius: Float) {
+  override fun setBorderTopLeftRadius(radius: Float) {
     borderTopLeftRadius = radius
     logDebug("setBorderTopLeftRadius: $radius dp")
     updateCornerRadius()
   }
 
-  fun setBorderTopRightRadius(radius: Float) {
+  override fun setBorderTopRightRadius(radius: Float) {
     borderTopRightRadius = radius
     logDebug("setBorderTopRightRadius: $radius dp")
     updateCornerRadius()
   }
 
-  fun setBorderBottomLeftRadius(radius: Float) {
+  override fun setBorderBottomLeftRadius(radius: Float) {
     borderBottomLeftRadius = radius
     logDebug("setBorderBottomLeftRadius: $radius dp")
     updateCornerRadius()
   }
 
-  fun setBorderBottomRightRadius(radius: Float) {
+  override fun setBorderBottomRightRadius(radius: Float) {
     borderBottomRightRadius = radius
     logDebug("setBorderBottomRightRadius: $radius dp")
     updateCornerRadius()

@@ -1,5 +1,7 @@
 package com.sbaiahmed1.reactnativeblur
 
+import android.os.Build
+import android.view.ViewGroup
 import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.ThemedReactContext
@@ -9,15 +11,15 @@ import com.facebook.react.viewmanagers.ReactNativeBlurViewManagerInterface
 import com.facebook.react.viewmanagers.ReactNativeBlurViewManagerDelegate
 
 @ReactModule(name = ReactNativeBlurViewManager.NAME)
-class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
-  ReactNativeBlurViewManagerInterface<ReactNativeBlurView> {
-  private val mDelegate: ViewManagerDelegate<ReactNativeBlurView>
+class ReactNativeBlurViewManager : ViewGroupManager<ViewGroup>(),
+  ReactNativeBlurViewManagerInterface<ViewGroup> {
+  private val mDelegate: ViewManagerDelegate<ViewGroup>
 
   init {
     mDelegate = ReactNativeBlurViewManagerDelegate(this)
   }
 
-  override fun getDelegate(): ViewManagerDelegate<ReactNativeBlurView>? {
+  override fun getDelegate(): ViewManagerDelegate<ViewGroup>? {
     return mDelegate
   }
 
@@ -25,57 +27,57 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
     return NAME
   }
 
-  public override fun createViewInstance(context: ThemedReactContext): ReactNativeBlurView {
-    return ReactNativeBlurView(context)
-  }
+  // API 31+ blurs on the GPU through the backdrop engine, older versions keep QmBlurView.
+  public override fun createViewInstance(context: ThemedReactContext): ViewGroup =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) EngineBlurView(context) else ReactNativeBlurView(context)
 
   @ReactProp(name = "blurType")
-  override fun setBlurType(view: ReactNativeBlurView?, blurType: String?) {
-    view?.setBlurType(blurType ?: "xlight")
+  override fun setBlurType(view: ViewGroup?, blurType: String?) {
+    (view as? BlurViewProps)?.setBlurType(blurType ?: "xlight")
   }
 
   @ReactProp(name = "blurAmount")
-  override fun setBlurAmount(view: ReactNativeBlurView?, blurAmount: Double) {
-    view?.setBlurAmount(blurAmount.toFloat())
+  override fun setBlurAmount(view: ViewGroup?, blurAmount: Double) {
+    (view as? BlurViewProps)?.setBlurAmount(blurAmount.toFloat())
   }
 
   @ReactProp(name = "blurRounds")
-  override fun setBlurRounds(view: ReactNativeBlurView?, blurRounds: Int) {
-    view?.setRounds(blurRounds)
+  override fun setBlurRounds(view: ViewGroup?, blurRounds: Int) {
+    (view as? BlurViewProps)?.setRounds(blurRounds)
   }
 
   @ReactProp(name = "borderRadius")
-  override fun setBorderRadius(view: ReactNativeBlurView?, borderRadius: Float) {
-    view?.setBorderRadius(borderRadius)
+  override fun setBorderRadius(view: ViewGroup?, borderRadius: Float) {
+    (view as? BlurViewProps)?.setBorderRadius(borderRadius)
   }
 
   @ReactProp(name = "borderTopLeftRadius")
-  override fun setBorderTopLeftRadius(view: ReactNativeBlurView?, borderTopLeftRadius: Float) {
-    view?.setBorderTopLeftRadius(borderTopLeftRadius)
+  override fun setBorderTopLeftRadius(view: ViewGroup?, borderTopLeftRadius: Float) {
+    (view as? BlurViewProps)?.setBorderTopLeftRadius(borderTopLeftRadius)
   }
 
   @ReactProp(name = "borderTopRightRadius")
-  override fun setBorderTopRightRadius(view: ReactNativeBlurView?, borderTopRightRadius: Float) {
-    view?.setBorderTopRightRadius(borderTopRightRadius)
+  override fun setBorderTopRightRadius(view: ViewGroup?, borderTopRightRadius: Float) {
+    (view as? BlurViewProps)?.setBorderTopRightRadius(borderTopRightRadius)
   }
 
   @ReactProp(name = "borderBottomLeftRadius")
-  override fun setBorderBottomLeftRadius(view: ReactNativeBlurView?, borderBottomLeftRadius: Float) {
-    view?.setBorderBottomLeftRadius(borderBottomLeftRadius)
+  override fun setBorderBottomLeftRadius(view: ViewGroup?, borderBottomLeftRadius: Float) {
+    (view as? BlurViewProps)?.setBorderBottomLeftRadius(borderBottomLeftRadius)
   }
 
   @ReactProp(name = "borderBottomRightRadius")
-  override fun setBorderBottomRightRadius(view: ReactNativeBlurView?, borderBottomRightRadius: Float) {
-    view?.setBorderBottomRightRadius(borderBottomRightRadius)
+  override fun setBorderBottomRightRadius(view: ViewGroup?, borderBottomRightRadius: Float) {
+    (view as? BlurViewProps)?.setBorderBottomRightRadius(borderBottomRightRadius)
   }
 
   @ReactProp(name = "reducedTransparencyFallbackColor", customType = "Color")
-  override fun setReducedTransparencyFallbackColor(view: ReactNativeBlurView?, reducedTransparencyFallbackColor: Int?) {
+  override fun setReducedTransparencyFallbackColor(view: ViewGroup?, reducedTransparencyFallbackColor: Int?) {
     // no-op
   }
 
   @ReactProp(name = "ignoreSafeArea")
-  override fun setIgnoreSafeArea(view: ReactNativeBlurView?, ignoreSafeArea: Boolean) {
+  override fun setIgnoreSafeArea(view: ViewGroup?, ignoreSafeArea: Boolean) {
     // no-op
   }
 
@@ -83,10 +85,10 @@ class ReactNativeBlurViewManager : ViewGroupManager<ReactNativeBlurView>(),
    * Called when view is detached from view hierarchy and allows for cleanup.
    * This prevents the white screen issue during navigation transitions on Android.
    */
-  override fun onDropViewInstance(view: ReactNativeBlurView) {
+  override fun onDropViewInstance(view: ViewGroup) {
     super.onDropViewInstance(view)
     // Call cleanup to reset state and prevent white screen artifacts
-    view.cleanup()
+    (view as? BlurViewProps)?.cleanup()
   }
 
   /**
