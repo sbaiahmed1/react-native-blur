@@ -75,7 +75,7 @@ export type BlurViewRef = React.ComponentRef<typeof ReactNativeBlurView>;
  * A cross-platform blur view component that provides native blur effects.
  *
  * On iOS, this uses UIVisualEffectView for true blur effects.
- * On Android, this uses the BlurView library for hardware-accelerated blur effects.
+ * On Android, this captures the views behind it and blurs them on the CPU with QmBlurView.
  *
  * This component automatically handles the proper positioning pattern where the blur
  * effect is positioned absolutely behind the content, ensuring interactive elements
