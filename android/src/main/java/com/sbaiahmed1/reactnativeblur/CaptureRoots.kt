@@ -1,8 +1,12 @@
 package com.sbaiahmed1.reactnativeblur
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.view.View
 import android.view.ViewGroup
 import com.facebook.react.ReactRootView
+import com.facebook.react.bridge.ReactContext
 
 /** Resolves the ancestor a blur or glass view captures as its backdrop. */
 internal object CaptureRoots {
@@ -21,6 +25,17 @@ internal object CaptureRoots {
   fun findReactRoot(view: View): ViewGroup? = findAncestor(view) { it is ReactRootView }
 
   fun resolve(view: View): ViewGroup? = findScreenAncestor(view) ?: findReactRoot(view)
+
+  /** The decor view of the activity that hosts [view], which a Modal's own window never contains. */
+  fun activityDecor(view: View): View? {
+    (view.context as? ReactContext)?.currentActivity?.window?.decorView?.let { return it }
+    var context: Context? = view.context
+    while (context is ContextWrapper) {
+      if (context is Activity) return context.window?.decorView
+      context = context.baseContext
+    }
+    return null
+  }
 
   private inline fun findAncestor(view: View, match: (ViewGroup) -> Boolean): ViewGroup? {
     var parent = view.parent
