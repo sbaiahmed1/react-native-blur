@@ -37,26 +37,9 @@ internal class CaptureAnimationGuard private constructor(
   private val animationRoots: List<View>
 ) : ViewTreeObserver.OnPreDrawListener {
 
-  private var settleFramesLeft = 0
-  private var animationSkipStartMs = NOT_SKIPPING
-  private var failSafeTripped = false
+  private val deferral = AnimationDeferral()
 
   companion object {
-    // Pre-draws to keep skipping the backdrop capture after the last legacy
-    // view animation in the capture root is gone. The frame that clears an
-    // animation leaves the view's RenderNode alpha at its last animated value
-    // and relies on the NEXT hardware draw to reset it to 1; a software
-    // capture running first in that frame consumes the reset. One frame is
-    // enough, the second is margin.
-    private const val ANIMATION_SETTLE_FRAMES = 2
-    // Fail-safe: the longest the capture stays skipped for one run of pending
-    // animations. An animated view that never gets a hardware draw (e.g. under
-    // a GONE parent) never clears its Animation, which would otherwise freeze
-    // the blur and keep requesting frames forever. Stack transitions finish
-    // well within this.
-    internal const val MAX_ANIMATION_SKIP_MS = 1000L
-    private const val NOT_SKIPPING = -1L
-
     /**
      * Registers a guard that drives [capture] on [captureRoot]'s pre-draws.
      * [frameRequester] is invalidated while the capture is skipped so frames
@@ -104,21 +87,23 @@ internal class CaptureAnimationGuard private constructor(
   }
 
   override fun onPreDraw(): Boolean {
-    if (animationRoots.any { hasPendingViewAnimation(it) }) {
-      settleFramesLeft = ANIMATION_SETTLE_FRAMES
-      if (!shouldKeepSkippingWhileAnimating()) return capture.onPreDraw()
-      frameRequester.postInvalidateOnAnimation()
-      return true
+    val pending = animationRoots.any { hasPendingViewAnimation(it) }
+    return when (deferral.onFrame(SystemClock.uptimeMillis(), pending)) {
+      AnimationDeferral.Decision.CAPTURE -> capture.onPreDraw()
+      AnimationDeferral.Decision.SKIP -> {
+        frameRequester.postInvalidateOnAnimation()
+        true
+      }
+      AnimationDeferral.Decision.CAPTURE_FAIL_SAFE -> {
+        Log.w(
+          logTag,
+          "Backdrop capture skipped for ${AnimationDeferral.MAX_SKIP_MS}ms and " +
+            "${AnimationDeferral.MIN_SKIP_FRAMES} frames while a view animation stayed attached in " +
+            "${captureRoot.javaClass.simpleName}, resuming capture."
+        )
+        capture.onPreDraw()
+      }
     }
-
-    animationSkipStartMs = NOT_SKIPPING
-    failSafeTripped = false
-    if (settleFramesLeft > 0) {
-      settleFramesLeft--
-      frameRequester.postInvalidateOnAnimation()
-      return true
-    }
-    return capture.onPreDraw()
   }
 
   fun remove() {
@@ -127,25 +112,5 @@ internal class CaptureAnimationGuard private constructor(
     } catch (e: Exception) {
       Log.d(logTag, "Could not remove guarded pre-draw listener: ${e.message}")
     }
-  }
-
-  /**
-   * False once the current run of pending animations has kept the capture
-   * skipped for [MAX_ANIMATION_SKIP_MS]; the capture then runs unguarded until
-   * no animation is pending.
-   */
-  private fun shouldKeepSkippingWhileAnimating(): Boolean {
-    if (failSafeTripped) return false
-    val now = SystemClock.uptimeMillis()
-    if (animationSkipStartMs == NOT_SKIPPING) animationSkipStartMs = now
-    if (now - animationSkipStartMs < MAX_ANIMATION_SKIP_MS) return true
-
-    failSafeTripped = true
-    Log.w(
-      logTag,
-      "Backdrop capture skipped for ${MAX_ANIMATION_SKIP_MS}ms while a view animation stayed " +
-        "attached in ${captureRoot.javaClass.simpleName}; resuming capture."
-    )
-    return false
   }
 }
