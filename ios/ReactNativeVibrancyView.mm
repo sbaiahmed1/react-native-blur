@@ -34,6 +34,7 @@ using namespace facebook::react;
     _props = defaultProps;
     
     _vibrancyView = [ReactNativeVibrancyViewHelper createVibrancyViewWithFrame:frame];
+    [_vibrancyView beginBatchUpdate];
     
     // Initialize props
     const auto &props = *std::static_pointer_cast<const ReactNativeVibrancyViewProps>(_props);
@@ -42,6 +43,7 @@ using namespace facebook::react;
       
     [ReactNativeVibrancyViewHelper updateVibrancyView:_vibrancyView withBlurAmount:props.blurAmount];
     
+    [_vibrancyView endBatchUpdate];
     _vibrancyView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self addSubview:_vibrancyView];
   }
@@ -52,6 +54,7 @@ using namespace facebook::react;
 {
   const auto &oldViewProps = *std::static_pointer_cast<ReactNativeVibrancyViewProps const>(_props);
   const auto &newViewProps = *std::static_pointer_cast<ReactNativeVibrancyViewProps const>(props);
+  [_vibrancyView beginBatchUpdate];
 
   if (oldViewProps.blurType != newViewProps.blurType) {
     NSString *blurType = [[NSString alloc] initWithUTF8String:toString(newViewProps.blurType).c_str()];
@@ -62,6 +65,7 @@ using namespace facebook::react;
       [ReactNativeVibrancyViewHelper updateVibrancyView:_vibrancyView withBlurAmount:newViewProps.blurAmount];
   }
 
+  [_vibrancyView endBatchUpdate];
   [super updateProps:props oldProps:oldProps];
 }
 

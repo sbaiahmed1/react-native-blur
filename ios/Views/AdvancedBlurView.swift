@@ -21,6 +21,18 @@ import UIKit
   }
 
   private var reduceTransparencyObserver: NSObjectProtocol?
+  private var isBatchingUpdates = false
+
+  // MARK: - Batched prop updates
+
+  @objc public func beginBatchUpdate() {
+    isBatchingUpdates = true
+  }
+
+  @objc public func endBatchUpdate() {
+    isBatchingUpdates = false
+    updateBlur()
+  }
 
   public override init(frame: CGRect) {
     super.init(frame: frame)
@@ -67,6 +79,7 @@ import UIKit
   }
 
   private func updateBlur() {
+    if isBatchingUpdates { return }
     let interfaceStyle = interfaceStyleForBlurType(blurTypeString) ?? .unspecified
     overrideUserInterfaceStyle = interfaceStyle
     blurView.overrideUserInterfaceStyle = interfaceStyle

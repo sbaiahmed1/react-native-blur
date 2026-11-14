@@ -37,6 +37,7 @@ using namespace facebook::react;
     const auto &pbvProps = *std::static_pointer_cast<const ReactNativeProgressiveBlurViewProps>(defaultProps);
 
     _progressiveBlurView = [ReactNativeProgressiveBlurViewHelper createProgressiveBlurViewWithFrame:frame];
+    [_progressiveBlurView beginBatchUpdate];
 
     // Set initial properties from default props
     [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withBlurAmount:pbvProps.blurAmount];
@@ -59,6 +60,7 @@ using namespace facebook::react;
     UIColor *fallbackColor = RCTUIColorFromSharedColor(pbvProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
     [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withReducedTransparencyFallbackColor:fallbackColor];
 
+    [_progressiveBlurView endBatchUpdate];
     [self addSubview:_progressiveBlurView];
   }
   return self;
@@ -68,6 +70,7 @@ using namespace facebook::react;
 {
   const auto &oldViewProps = *std::static_pointer_cast<ReactNativeProgressiveBlurViewProps const>(_props);
   const auto &newViewProps = *std::static_pointer_cast<ReactNativeProgressiveBlurViewProps const>(props);
+  [_progressiveBlurView beginBatchUpdate];
 
   if (oldViewProps.blurAmount != newViewProps.blurAmount) {
     [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withBlurAmount:newViewProps.blurAmount];
@@ -94,6 +97,7 @@ using namespace facebook::react;
     [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withReducedTransparencyFallbackColor:fallbackColor];
   }
 
+  [_progressiveBlurView endBatchUpdate];
   [super updateProps:props oldProps:oldProps];
 }
 

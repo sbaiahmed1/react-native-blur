@@ -23,6 +23,13 @@ class BlurEffectView: UIVisualEffectView {
   }
 
   func updateBlur(style: UIBlurEffect.Style, intensity: Double) {
+    // Same style on a live animator: scrub it instead of rebuilding the effect.
+    if style == blurStyle, let animator, animator.state == .active, !isDetoxPresent() {
+      blurIntensity = intensity
+      animator.fractionComplete = CGFloat(intensity)
+      BlurDebugCounters.fastPath("BlurEffectView")
+      return
+    }
     blurStyle = style
     blurIntensity = intensity
     rebuildAnimator()
@@ -68,6 +75,7 @@ class BlurEffectView: UIVisualEffectView {
   }
 
   private func rebuildAnimator() {
+    BlurDebugCounters.rebuild("BlurEffectView")
     // Paused animators hang Detox indefinitely — use on/off blur when Detox is running
     if isDetoxPresent() {
       effect = blurIntensity > 0 ? UIBlurEffect(style: blurStyle) : nil
