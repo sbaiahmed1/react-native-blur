@@ -25,6 +25,7 @@ RUNS=(
   "stack-push"
   "root-overlay"
   "recycle"
+  "overlap"
 )
 
 for run in "${RUNS[@]}"; do
