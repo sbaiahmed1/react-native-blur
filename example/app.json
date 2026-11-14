@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "example-app",
+    "name": "Blur Example",
     "slug": "example-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -36,12 +36,15 @@
             "imageWidth": 76
           }
         }
-      ]
+      ],
+      "expo-font",
+      "expo-image",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    },
-    "newArchEnabled": true
+    }
   }
 }
