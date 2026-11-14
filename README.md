@@ -1,6 +1,6 @@
 # @sbaiahmed1/react-native-blur
 
-Native blur, vibrancy, and iOS 26 liquid-glass effects for React Native — on iOS, Android, and Web. Six focused components: `BlurView`, `ProgressiveBlurView`, `VibrancyView`, `LiquidGlassView`, `LiquidGlassContainer`, and `BlurSwitch`. Built for the New Architecture (Fabric).
+Native blur, vibrancy, and iOS 26 liquid-glass effects for React Native, on iOS, Android, and Web. Six focused components: `BlurView`, `ProgressiveBlurView`, `VibrancyView`, `LiquidGlassView`, `LiquidGlassContainer`, and `BlurSwitch`. Built for the New Architecture (Fabric).
 
 <div align="center">
   <p>
@@ -41,7 +41,7 @@ Full documentation, guides, and the complete API reference live on the docs site
 ## Features
 
 - Six focused components for blur, vibrancy, progressive/gradient blur, liquid glass, and a blurred switch.
-- True native effects: `UIVisualEffectView` / `UIGlassEffect` on iOS. On Android, blur captures the views behind it and blurs them on the CPU (QmBlurView), and liquid glass runs as a GPU shader.
+- True native effects: `UIVisualEffectView` / `UIGlassEffect` on iOS. On Android 12 and later, blur captures the screen behind it once and blurs it on the GPU. On Android 11 and earlier it blurs on the CPU with QmBlurView. Liquid glass runs as a GPU shader.
 - Web support out of the box (Expo Web / react-native-web) via CSS `backdrop-filter`, including a real progressive-blur ramp.
 - Native liquid glass on iOS 26+ and Android 13+, with automatic fallback to an enhanced blur on older iOS, older Android, and Web.
 - New Architecture (Fabric) components with full TypeScript types.
@@ -50,7 +50,7 @@ Full documentation, guides, and the complete API reference live on the docs site
 
 | Platform | Minimum version |
 | --- | --- |
-| iOS | 13.0+ (Xcode 16; 26.0+ for liquid glass) |
+| iOS | 13.0+ (Xcode 16, and 26.0+ for liquid glass) |
 | React Native | 0.80+ (New Architecture required) |
 | Android | API 24+, AGP 8.9.1+ (API 33+ for liquid glass) |
 | Web | react-native-web (blur needs [`backdrop-filter`](https://caniuse.com/css-backdrop-filter)) |
@@ -79,7 +79,7 @@ Every component, prop, and platform note is documented on the [docs site](https:
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md). The documentation site lives in [`website/`](./website) — when you change the public API, update the website in the same pull request.
+See [CONTRIBUTING.md](./CONTRIBUTING.md). The documentation site lives in [`website/`](./website). When you change the public API, update the website in the same pull request.
 
 ## License
 
@@ -87,4 +87,4 @@ MIT
 
 ## Credits
 
-Built with [create-react-native-library](https://github.com/callstack/react-native-builder-bob). Android blur is powered by [QmBlurView](https://github.com/QmDeve/QmBlurView); Android liquid glass by the [AndroidLiquidGlassView](https://github.com/QmDeve/AndroidLiquidGlassView) shader (both by QmDeve, MIT).
+Built with [create-react-native-library](https://github.com/callstack/react-native-builder-bob). On Android 11 and earlier, and for `BlurSwitch`, blur is powered by [QmBlurView](https://github.com/QmDeve/QmBlurView). Android liquid glass uses the [AndroidLiquidGlassView](https://github.com/QmDeve/AndroidLiquidGlassView) shader (both by QmDeve, MIT).

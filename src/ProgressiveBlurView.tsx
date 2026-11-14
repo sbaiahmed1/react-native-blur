@@ -23,8 +23,9 @@ export interface ProgressiveBlurViewProps extends ViewProps {
   blurAmount?: number;
 
   /**
-   * @description The number of blur interactions to perform for a smoother
-   * effect (1-15)
+   * @description Sets how many blur passes QmBlurView runs, for a smoother
+   * blur (1-15). Applies on Android 11 and earlier. Android 12 and later use
+   * a Gaussian blur and ignore it.
    *
    * @default 5
    *
