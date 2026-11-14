@@ -97,31 +97,6 @@ using namespace facebook::react;
   [super updateProps:props oldProps:oldProps];
 }
 
-// Fabric recycles component views. Reset cached props and the inner view's
-// visual state to defaults so no blur setting leaks into the next mount.
-- (void)prepareForRecycle
-{
-  [super prepareForRecycle];
-
-  static const auto defaultProps = std::make_shared<const ReactNativeProgressiveBlurViewProps>();
-  _props = defaultProps;
-
-  const auto &pbvProps = *std::static_pointer_cast<const ReactNativeProgressiveBlurViewProps>(defaultProps);
-
-  [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withBlurAmount:pbvProps.blurAmount];
-
-  NSString *blurTypeString = [[NSString alloc] initWithUTF8String:toString(pbvProps.blurType).c_str()];
-  [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withBlurType:blurTypeString];
-
-  NSString *directionString = [[NSString alloc] initWithUTF8String:toString(pbvProps.direction).c_str()];
-  [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withDirection:directionString];
-
-  [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withStartOffset:pbvProps.startOffset];
-
-  UIColor *fallbackColor = RCTUIColorFromSharedColor(pbvProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
-  [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withReducedTransparencyFallbackColor:fallbackColor];
-}
-
 - (void)layoutSubviews
 {
   [super layoutSubviews];
