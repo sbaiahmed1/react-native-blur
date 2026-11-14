@@ -7,6 +7,18 @@ import UIKit
 
   private var variableBlurView: VariableBlurView?
   private var reduceTransparencyObserver: NSObjectProtocol?
+  private var isBatchingUpdates = false
+
+  // MARK: - Batched prop updates
+
+  @objc public func beginBatchUpdate() {
+    isBatchingUpdates = true
+  }
+
+  @objc public func endBatchUpdate() {
+    isBatchingUpdates = false
+    updateBlur()
+  }
 
   @objc public var blurAmount: Double = 20.0 {
     didSet {
@@ -83,6 +95,7 @@ import UIKit
   }
 
   private func updateBlur() {
+    if isBatchingUpdates { return }
     guard let variableBlurView = variableBlurView else {
       setupView()
       return

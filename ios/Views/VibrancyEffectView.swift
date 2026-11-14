@@ -8,6 +8,8 @@ import UIKit
   private var foregroundObserver: NSObjectProtocol?
   private var stabilizationDisplayLink: CADisplayLink?
   private var stabilizationFramesRemaining = 0
+  private var isBatchingUpdates = false
+  private var appliedBlurType: String?
 
   @objc public var blurType: String = "xlight" {
     didSet {
@@ -64,7 +66,7 @@ import UIKit
   public override func didMoveToWindow() {
     super.didMoveToWindow()
     if window != nil {
-      updateEffect()
+      rebuildEffect()
       startStabilizationIfNeeded()
       return
     }
@@ -78,11 +80,36 @@ import UIKit
       object: nil,
       queue: .main
     ) { [weak self] _ in
-      self?.updateEffect()
+      self?.rebuildEffect()
     }
   }
 
+  // MARK: - Batched prop updates
+
+  @objc public func beginBatchUpdate() {
+    isBatchingUpdates = true
+  }
+
+  @objc public func endBatchUpdate() {
+    isBatchingUpdates = false
+    updateEffect()
+  }
+
+  // Prop changes: an unchanged blurType on a live animator only scrubs the intensity.
   private func updateEffect() {
+    if isBatchingUpdates { return }
+    if blurType == appliedBlurType, let blurAnimator, blurAnimator.state == .active {
+      blurAnimator.fractionComplete = min(max(blurAmount / 100.0, 0.0), 1.0)
+      BlurDebugCounters.fastPath("VibrancyEffectView")
+      return
+    }
+    rebuildEffect()
+  }
+
+  // Lifecycle heals always rebuild, since UIKit can flush a live animator's effect.
+  private func rebuildEffect() {
+    BlurDebugCounters.rebuild("VibrancyEffectView")
+    appliedBlurType = blurType
     let interfaceStyle = interfaceStyleForBlurType(blurType) ?? .unspecified
     overrideUserInterfaceStyle = interfaceStyle
 
@@ -132,7 +159,7 @@ import UIKit
       return
     }
 
-    updateEffect()
+    rebuildEffect()
     stabilizationFramesRemaining -= 1
 
     if stabilizationFramesRemaining == 0 {

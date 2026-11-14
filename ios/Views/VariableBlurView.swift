@@ -40,6 +40,8 @@ open class VariableBlurView: UIVisualEffectView {
   private var maxBlurRadius: CGFloat = 20
   private var direction: VariableBlurDirection = .blurredTopClearBottom
   private var startOffset: CGFloat = 0
+  private var blurStyle: UIBlurEffect.Style = .regular
+  private var cachedMask: (direction: VariableBlurDirection, startOffset: CGFloat, image: CGImage)?
   private var foregroundObserver: NSObjectProtocol?
 
   public init(
@@ -51,6 +53,7 @@ open class VariableBlurView: UIVisualEffectView {
     self.maxBlurRadius = maxBlurRadius
     self.direction = direction
     self.startOffset = startOffset
+    self.blurStyle = blurStyle
 
     super.init(effect: UIBlurEffect(style: blurStyle))
 
@@ -94,12 +97,17 @@ open class VariableBlurView: UIVisualEffectView {
     self.maxBlurRadius = maxBlurRadius
     self.direction = direction
     self.startOffset = startOffset
-    self.effect = UIBlurEffect(style: blurStyle)
+    // A new effect resets the backdrop layer, so it is assigned only when the style changes.
+    if blurStyle != self.blurStyle {
+      self.blurStyle = blurStyle
+      self.effect = UIBlurEffect(style: blurStyle)
+    }
 
     setupVariableBlur()
   }
 
   private func setupVariableBlur() {
+    BlurDebugCounters.rebuild("VariableBlurView")
     // Creates filter via runtime reflection
     // This uses a private Core Animation filter called "variableBlur"
     let clsName = String("retliFAC".reversed()) // CAFilter
@@ -117,10 +125,7 @@ open class VariableBlurView: UIVisualEffectView {
       return
     }
 
-    let gradientImage = makeGradientImage(
-      startOffset: startOffset,
-      direction: direction
-    )
+    let gradientImage = maskImage()
 
     variableBlur.setValue(maxBlurRadius, forKey: "inputRadius")
     variableBlur.setValue(gradientImage, forKey: "inputMaskImage")
@@ -152,6 +157,16 @@ open class VariableBlurView: UIVisualEffectView {
     if currentScale != newScale {
       backdropLayer.setValue(newScale, forKey: "scale")
     }
+  }
+
+  // The mask depends only on direction and startOffset, so it is drawn once per pair.
+  private func maskImage() -> CGImage {
+    if let cachedMask, cachedMask.direction == direction, cachedMask.startOffset == startOffset {
+      return cachedMask.image
+    }
+    let image = makeGradientImage(startOffset: startOffset, direction: direction)
+    cachedMask = (direction, startOffset, image)
+    return image
   }
 
   private func makeGradientImage(

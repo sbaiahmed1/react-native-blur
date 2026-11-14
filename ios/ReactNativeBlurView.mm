@@ -37,6 +37,7 @@ using namespace facebook::react;
     const auto &bvProps = *std::static_pointer_cast<const ReactNativeBlurViewProps>(defaultProps);
 
     _advancedBlurView = [ReactNativeBlurViewHelper createBlurViewWithFrame:frame];
+    [_advancedBlurView beginBatchUpdate];
 
     // Set initial blurAmount from default props
     [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withBlurAmount:bvProps.blurAmount];
@@ -54,6 +55,7 @@ using namespace facebook::react;
     // Set initial ignoreSafeArea from default props
     [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringSafeArea:bvProps.ignoreSafeArea];
 
+    [_advancedBlurView endBatchUpdate];
     [self addSubview:_advancedBlurView];
   }
   return self;
@@ -63,6 +65,7 @@ using namespace facebook::react;
 {
   const auto &oldViewProps = *std::static_pointer_cast<ReactNativeBlurViewProps const>(_props);
   const auto &newViewProps = *std::static_pointer_cast<ReactNativeBlurViewProps const>(props);
+  [_advancedBlurView beginBatchUpdate];
 
   // Update blurAmount if it has changed
   if (oldViewProps.blurAmount != newViewProps.blurAmount) {
@@ -88,6 +91,7 @@ using namespace facebook::react;
     [ReactNativeBlurViewHelper updateBlurView:_advancedBlurView withIgnoringSafeArea:newViewProps.ignoreSafeArea];
   }
 
+  [_advancedBlurView endBatchUpdate];
   [super updateProps:props oldProps:oldProps];
 }
 
