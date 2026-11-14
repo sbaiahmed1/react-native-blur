@@ -23,6 +23,7 @@ class ReactNativeBlurSwitch : BlurSwitchButtonView {
   private var currentValue = false
   private var isDisabled = false
   private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
+  private var captureGuard: CaptureAnimationGuard? = null
 
   companion object {
     private const val TAG = "ReactNativeBlurSwitch"
@@ -203,6 +204,28 @@ class ReactNativeBlurSwitch : BlurSwitchButtonView {
     isClickable = !disabled
     alpha = if (disabled) 0.5f else 1f
     logDebug("setDisabled: $disabled")
+  }
+
+  override fun onAttachedToWindow() {
+    super.onAttachedToWindow()
+    // Capture the switch's own Screen through the guard, so no capture runs a stack transition (react-native-blur#167).
+    val decor = mDecorView ?: return
+    try {
+      decor.viewTreeObserver.removeOnPreDrawListener(preDrawListener)
+      val captureRoot = CaptureRoots.resolve(this) ?: decor
+      mDecorView = captureRoot
+      mDifferentRoot = captureRoot.rootView != rootView
+      captureGuard?.remove()
+      captureGuard = CaptureAnimationGuard.install(captureRoot, preDrawListener, this, TAG)
+    } catch (e: Exception) {
+      logWarning("Failed to guard the backdrop capture: ${e.message}")
+    }
+  }
+
+  override fun onDetachedFromWindow() {
+    captureGuard?.remove()
+    captureGuard = null
+    super.onDetachedFromWindow()
   }
 
   override fun onTouchEvent(event: MotionEvent?): Boolean {

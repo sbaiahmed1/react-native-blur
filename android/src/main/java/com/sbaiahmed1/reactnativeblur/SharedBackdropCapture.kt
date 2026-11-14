@@ -23,6 +23,11 @@ internal object SharedBackdropCapture {
   private const val LOG_TAG = "RNSharedBackdrop"
   private const val FAILED_CAPTURE_RETRY_MS = 500L
   private const val NO_FAILURE = -1L
+  // Drawn frames to keep deferring after the last animation sighting, the clearing frame plus two.
+  private const val ANIMATION_SETTLE_FRAMES = 3
+  private const val NOT_SKIPPING = -1L
+  // A sighting more than this after the previous one starts a new run, so a longer ticker stop never counts.
+  private const val ANIMATION_RUN_GAP_MS = 1000L
 
   private class Entry {
     var bitmap: Bitmap? = null
@@ -34,6 +39,12 @@ internal object SharedBackdropCapture {
     var generation = 0L
     var lastFailureUptimeMs = NO_FAILURE
     var failureLogged = false
+    var deferred = false
+    var settleFramesLeft = 0
+    var lastSeenDrawingTime = 0L
+    var lastSightingMs = 0L
+    var animationSkipStartMs = NOT_SKIPPING
+    var failSafeTripped = false
   }
 
   private val entries = HashMap<View, Entry>()
@@ -74,13 +85,6 @@ internal object SharedBackdropCapture {
     val bitmapHeight = (source.height / downsample).coerceAtLeast(1)
     var bitmap = entry.bitmap
     val sizeChanged = bitmap == null || bitmap.width != bitmapWidth || bitmap.height != bitmapHeight
-    if (sizeChanged) {
-      entry.bitmap?.recycle()
-      bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
-      entry.bitmap = bitmap
-      entry.canvas = Canvas(bitmap)
-      entry.lastCaptureUptimeMs = 0L
-    }
 
     val now = SystemClock.uptimeMillis()
     if (!sizeChanged && now - entry.lastCaptureUptimeMs < maxAgeMs) {
@@ -89,6 +93,18 @@ internal object SharedBackdropCapture {
     // A source that failed to draw is retried every FAILED_CAPTURE_RETRY_MS, not on every tick.
     if (entry.lastFailureUptimeMs != NO_FAILURE && now - entry.lastFailureUptimeMs < FAILED_CAPTURE_RETRY_MS) {
       return bitmap
+    }
+
+    // Until a capture runs, consumers keep the previous one, even at the old size.
+    entry.deferred = shouldDeferForAnimation(entry, source, now)
+    if (entry.deferred) return bitmap
+
+    if (sizeChanged) {
+      entry.bitmap?.recycle()
+      bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
+      entry.bitmap = bitmap
+      entry.canvas = Canvas(bitmap)
+      entry.lastCaptureUptimeMs = 0L
     }
 
     val canvas = entry.canvas ?: return bitmap
@@ -120,6 +136,44 @@ internal object SharedBackdropCapture {
     }
     return bitmap
   }
+
+  /** True while [source] has a pending legacy view Animation or settles after one (react-native-blur#167). */
+  private fun shouldDeferForAnimation(entry: Entry, source: View, now: Long): Boolean {
+    if (CaptureAnimationGuard.hasPendingViewAnimation(source)) {
+      if (now - entry.lastSightingMs > ANIMATION_RUN_GAP_MS) {
+        entry.animationSkipStartMs = NOT_SKIPPING
+        entry.failSafeTripped = false
+      }
+      entry.lastSightingMs = now
+      entry.settleFramesLeft = ANIMATION_SETTLE_FRAMES
+      entry.lastSeenDrawingTime = source.drawingTime
+      if (entry.failSafeTripped) return false
+      if (entry.animationSkipStartMs == NOT_SKIPPING) entry.animationSkipStartMs = now
+      if (now - entry.animationSkipStartMs < CaptureAnimationGuard.MAX_ANIMATION_SKIP_MS) return true
+      entry.failSafeTripped = true
+      Log.w(
+        LOG_TAG,
+        "Backdrop capture skipped for ${CaptureAnimationGuard.MAX_ANIMATION_SKIP_MS}ms while a view " +
+          "animation stayed attached in ${source.javaClass.simpleName}; resuming capture."
+      )
+      return false
+    }
+
+    entry.animationSkipStartMs = NOT_SKIPPING
+    entry.failSafeTripped = false
+    if (entry.settleFramesLeft > 0) {
+      // drawingTime only moves when a frame is drawn, so each change is one more drawn frame.
+      val drawingTime = source.drawingTime
+      if (drawingTime != entry.lastSeenDrawingTime) {
+        entry.lastSeenDrawingTime = drawingTime
+        entry.settleFramesLeft--
+      }
+    }
+    return entry.settleFramesLeft > 0
+  }
+
+  /** True when the last [acquire] kept the old bitmap for a view animation. The caller must then request a frame. */
+  fun isDeferred(source: View): Boolean = entries[source]?.deferred == true
 
   /** Generation of the last successful capture for [source]; consumers use it
    * to skip re-recording when neither the bitmap nor their sub-rect moved. */

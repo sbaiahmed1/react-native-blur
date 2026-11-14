@@ -7,21 +7,22 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 
 /**
- * Guarded replacement for QmBlurView's capture pre-draw listener, registered
- * by ReactNativeBlurView and ReactNativeProgressiveBlurView on the activity
- * decor view as soon as QmBlurView attaches, then moved to the capture root
- * they swap in (their swapBlurRootToScreenAncestor).
+ * Guarded replacement for QmBlurView's capture pre-draw listener, used by
+ * ReactNativeBlurView, ReactNativeProgressiveBlurView and ReactNativeBlurSwitch.
+ * QmBlurView registers its listener on the activity decor view at attach. Each
+ * view swaps it for this guard on the capture root it resolves, a Screen
+ * ancestor when there is one.
  *
  * QmBlurView's listener rasterizes the capture root into a software canvas on
  * every pre-draw. That software pass runs before the frame's hardware draw,
  * with a stale drawing time, and evaluates any legacy view Animation in the
  * subtree (react-native-screens' stack transitions). It starts the animation
  * with a stale start time and consumes its alpha/end bookkeeping off the
- * hardware path, so the pushed screen's RenderNode is left at ~0 alpha and the
- * screen stays blank until reload (react-native-blur#167). This listener skips
- * the capture while such an animation is attached, plus a few settle frames
- * after it is cleared, and the blur keeps showing the last blurred frame
- * meanwhile.
+ * hardware path, so the pushed screen's RenderNode is left at a stale alpha
+ * (0 or partial) and the screen stays blank or veiled until reload
+ * (react-native-blur#167). This listener skips the capture while such an
+ * animation is attached, plus a few settle frames after it is cleared, and
+ * the blur keeps showing the last blurred frame meanwhile.
  *
  * It must be the ONLY listener driving [capture] on the root: QmBlurView's
  * original listener is not registered alongside it, otherwise it would still
@@ -53,7 +54,7 @@ internal class CaptureAnimationGuard private constructor(
     // a GONE parent) never clears its Animation, which would otherwise freeze
     // the blur and keep requesting frames forever. Stack transitions finish
     // well within this.
-    private const val MAX_ANIMATION_SKIP_MS = 1000L
+    internal const val MAX_ANIMATION_SKIP_MS = 1000L
     private const val NOT_SKIPPING = -1L
 
     /**
@@ -90,7 +91,7 @@ internal class CaptureAnimationGuard private constructor(
      * window. Still cheap next to the full software draw of the same tree
      * that it guards.
      */
-    private fun hasPendingViewAnimation(view: View): Boolean {
+    internal fun hasPendingViewAnimation(view: View): Boolean {
       val animation = view.animation
       if (animation != null && !(animation.hasEnded() && animation.fillAfter)) return true
       if (view is ViewGroup) {
