@@ -338,8 +338,10 @@ class ReactNativeLiquidGlassView(context: Context) : FrameLayout(context) {
     // effect actually changed — a fully idle screen therefore stops
     // invalidating (and stops forcing the window to re-render 30x/s), while
     // scrolling gets per-frame backdrop tracking from dispatchDraw.
-    SharedBackdropCapture.acquire(source, CAPTURE_DOWNSAMPLE, SHARED_CAPTURE_MAX_AGE_MS)
-      ?: return
+    val bitmap = SharedBackdropCapture.acquire(source, CAPTURE_DOWNSAMPLE, SHARED_CAPTURE_MAX_AGE_MS)
+    // A deferred capture only resumes after frames are drawn, so keep them coming on an idle screen.
+    if (SharedBackdropCapture.isDeferred(source)) postInvalidateOnAnimation()
+    if (bitmap == null) return
     if (SharedBackdropCapture.generationOf(source) != appliedGeneration || effectDirty) {
       invalidate()
     }
