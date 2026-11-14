@@ -32,7 +32,7 @@ import kotlin.math.roundToInt
  * no startOffset/plateau control, no center direction, and no curve tuning,
  * so it is not a viable replacement for this class.
  */
-class ReactNativeProgressiveBlurView : FrameLayout {
+class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
   private var blurView: BlurView? = null
   // RN border radii (dp; -1f sentinels for unset per-corner values). With
   // children mounted inside the native view on Android, the view itself must
@@ -459,27 +459,27 @@ class ReactNativeProgressiveBlurView : FrameLayout {
     }
   }
 
-  fun setBorderRadius(radius: Float) {
+  override fun setBorderRadius(radius: Float) {
     borderRadius = radius
     updateCornerRadius()
   }
 
-  fun setBorderTopLeftRadius(radius: Float) {
+  override fun setBorderTopLeftRadius(radius: Float) {
     borderTopLeftRadius = radius
     updateCornerRadius()
   }
 
-  fun setBorderTopRightRadius(radius: Float) {
+  override fun setBorderTopRightRadius(radius: Float) {
     borderTopRightRadius = radius
     updateCornerRadius()
   }
 
-  fun setBorderBottomLeftRadius(radius: Float) {
+  override fun setBorderBottomLeftRadius(radius: Float) {
     borderBottomLeftRadius = radius
     updateCornerRadius()
   }
 
-  fun setBorderBottomRightRadius(radius: Float) {
+  override fun setBorderBottomRightRadius(radius: Float) {
     borderBottomRightRadius = radius
     updateCornerRadius()
   }
@@ -587,7 +587,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    * Cleanup method to prevent memory leaks.
    * Resets initialization state so blur is re-initialized on next attach.
    */
-  fun cleanup() {
+  override fun cleanup() {
     isBlurInitialized = false
     initRunnable?.let { removeCallbacks(it) }
     initRunnable = null
@@ -623,7 +623,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    * Set the blur amount with cross-platform mapping.
    * @param amount The blur amount value (0-100), will be mapped to Android's 0-25 radius range
    */
-  fun setBlurAmount(amount: Float) {
+  override fun setBlurAmount(amount: Float) {
     currentBlurAmount = amount
     applyBlurRadius()
   }
@@ -656,7 +656,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    * Set the number of blur rounds.
    * @param rounds The number of blur rounds (1-15)
    */
-  fun setRounds(rounds: Int) {
+  override fun setRounds(rounds: Int) {
     val blurRounds = rounds.coerceIn(1, 15)
     currentBlurRounds = blurRounds
     logDebug("setRounds: $rounds -> $blurRounds")
@@ -672,7 +672,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    * Set the direction of the progressive blur gradient.
    * @param direction The direction string: "blurredTopClearBottom" or "blurredBottomClearTop"
    */
-  fun setDirection(direction: String) {
+  override fun setDirection(direction: String) {
     currentDirection = when (direction.lowercase()) {
       "blurredbottomcleartop", "bottomtotop", "bottom" -> "bottomToTop"
       "blurredtopclearbottom", "toptobottom", "top" -> "topToBottom"
@@ -701,7 +701,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    *
    * @param offset The offset value (0.0 to 1.0) - where 0 starts immediately, 1 delays to the end
    */
-  fun setStartOffset(offset: Float) {
+  override fun setStartOffset(offset: Float) {
     currentStartOffset = offset.coerceIn(0.0f, 1.0f)
     logDebug("setStartOffset: $offset -> clamped to $currentStartOffset")
 
@@ -716,7 +716,7 @@ class ReactNativeProgressiveBlurView : FrameLayout {
    * Set the blur type which determines the overlay color.
    * @param type The blur type string (case-insensitive)
    */
-  fun setBlurType(type: String) {
+  override fun setBlurType(type: String) {
     currentBlurType = type
     val blurType = BlurType.fromString(type)
     currentOverlayColor = blurType.overlayColor

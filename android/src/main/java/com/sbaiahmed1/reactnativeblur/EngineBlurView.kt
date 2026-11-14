@@ -8,6 +8,11 @@ import android.graphics.RenderEffect
 import android.graphics.RenderNode
 import android.graphics.Shader
 
+/** A Gaussian blur with clamped edges, or no blur at radius 0, where Skia's null filter throws on API 31-32. */
+internal fun gpuBlurEffect(radius: Float): RenderEffect =
+  if (radius <= 0f) RenderEffect.createOffsetEffect(0f, 0f)
+  else RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.CLAMP)
+
 /** BlurView on API 31+: the shared software capture, blurred on the GPU with RenderEffect. */
 internal class EngineBlurView(context: Context) : BackdropHostView(context), BlurViewProps {
   private var blurAmount = BlurRadius.DEFAULT_AMOUNT
@@ -21,12 +26,7 @@ internal class EngineBlurView(context: Context) : BackdropHostView(context), Blu
   private val effectRadius: Float
     get() = BlurRadius.effectRadius(BlurRadius.sigmaPx(blurAmount) / downsample)
 
-  private fun createBlurEffect(): RenderEffect {
-    val radius = effectRadius
-    // A blur radius of 0 makes Skia return a null filter, which throws on API 31-32.
-    if (radius <= 0f) return RenderEffect.createOffsetEffect(0f, 0f)
-    return RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.CLAMP)
-  }
+  private fun createBlurEffect(): RenderEffect = gpuBlurEffect(effectRadius)
 
   override fun drawBackdrop(canvas: Canvas, node: RenderNode) {
     // At amount 0 legacy QmBlurView draws no backdrop either, only the overlay.
