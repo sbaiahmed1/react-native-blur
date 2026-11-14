@@ -8,6 +8,7 @@ import UIKit
   private var variableBlurView: VariableBlurView?
   private var reduceTransparencyObserver: NSObjectProtocol?
   private var isBatchingUpdates = false
+  private var hasPendingBatchUpdate = false
 
   // MARK: - Batched prop updates
 
@@ -15,8 +16,11 @@ import UIKit
     isBatchingUpdates = true
   }
 
+  // Applies only when a setter ran, so a style-only update (an animated opacity) costs nothing.
   @objc public func endBatchUpdate() {
     isBatchingUpdates = false
+    guard hasPendingBatchUpdate else { return }
+    hasPendingBatchUpdate = false
     updateBlur()
   }
 
@@ -95,7 +99,10 @@ import UIKit
   }
 
   private func updateBlur() {
-    if isBatchingUpdates { return }
+    if isBatchingUpdates {
+      hasPendingBatchUpdate = true
+      return
+    }
     guard let variableBlurView = variableBlurView else {
       setupView()
       return

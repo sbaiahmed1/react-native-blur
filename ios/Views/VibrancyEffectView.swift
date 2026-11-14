@@ -9,6 +9,7 @@ import UIKit
   private var stabilizationDisplayLink: CADisplayLink?
   private var stabilizationFramesRemaining = 0
   private var isBatchingUpdates = false
+  private var hasPendingBatchUpdate = false
   private var appliedBlurType: String?
 
   @objc public var blurType: String = "xlight" {
@@ -90,14 +91,20 @@ import UIKit
     isBatchingUpdates = true
   }
 
+  // Applies only when a setter ran, so a style-only update (an animated opacity) costs nothing.
   @objc public func endBatchUpdate() {
     isBatchingUpdates = false
+    guard hasPendingBatchUpdate else { return }
+    hasPendingBatchUpdate = false
     updateEffect()
   }
 
   // Prop changes: an unchanged blurType on a live animator only scrubs the intensity.
   private func updateEffect() {
-    if isBatchingUpdates { return }
+    if isBatchingUpdates {
+      hasPendingBatchUpdate = true
+      return
+    }
     if blurType == appliedBlurType, let blurAnimator, blurAnimator.state == .active {
       blurAnimator.fractionComplete = min(max(blurAmount / 100.0, 0.0), 1.0)
       BlurDebugCounters.fastPath("VibrancyEffectView")
