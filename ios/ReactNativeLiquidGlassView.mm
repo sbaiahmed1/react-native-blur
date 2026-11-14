@@ -124,34 +124,6 @@ using namespace facebook::react;
   [super updateProps:props oldProps:oldProps];
 }
 
-// Fabric recycles component views: after unmount this instance returns to a
-// pool and is reused for a future mount, whose updateProps diffs against
-// whatever _props holds. Reset both the cached props and the inner container's
-// visual state to defaults so no glass type/tint/opacity leaks between mounts.
-- (void)prepareForRecycle
-{
-  [super prepareForRecycle];
-
-  static const auto defaultProps = std::make_shared<const ReactNativeLiquidGlassViewProps>();
-  _props = defaultProps;
-
-  const auto &lgProps = *std::static_pointer_cast<const ReactNativeLiquidGlassViewProps>(defaultProps);
-
-  NSString *defaultGlassTypeString = [[NSString alloc] initWithUTF8String:toString(lgProps.glassType).c_str()];
-  [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassType:defaultGlassTypeString];
-
-  UIColor *defaultGlassTintColor = RCTUIColorFromSharedColor(lgProps.glassTintColor) ?: [UIColor clearColor];
-  [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassTintColor:defaultGlassTintColor];
-
-  [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withGlassOpacity:lgProps.glassOpacity];
-  [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIsInteractive:lgProps.isInteractive];
-  [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withIgnoringSafeArea:lgProps.ignoreSafeArea];
-
-  // Reset the fallback colour too; the component default is white.
-  UIColor *defaultFallbackColor = RCTUIColorFromSharedColor(lgProps.reducedTransparencyFallbackColor) ?: [UIColor whiteColor];
-  [ReactNativeLiquidGlassViewHelper updateLiquidGlassView:_liquidGlassView withReducedTransparencyFallbackColor:defaultFallbackColor];
-}
-
 - (void)finalizeUpdates:(RNComponentViewUpdateMask)updateMask
 {
   [super finalizeUpdates:updateMask];
