@@ -48,9 +48,9 @@ Check `android/build.gradle` if you hit a build error related to AGP:
 classpath "com.android.tools.build:gradle:8.9.1" // or higher
 ```
 
-The library depends on [QmBlurView](https://github.com/QmDeve/QmBlurView) (`com.qmdeve.blurview:core:1.3.0`, resolved from Maven Central) for blur, pulled in automatically. No manual Gradle dependency setup is needed. Liquid glass adds no dependency: the [AndroidLiquidGlassView](https://github.com/QmDeve/AndroidLiquidGlassView) AGSL shader is bundled (MIT, attributed in the resource).
+The library depends on [QmBlurView](https://github.com/QmDeve/QmBlurView) (`com.qmdeve.blurview:core:1.3.0`, resolved from Maven Central) for blur on Android 11 and earlier and for `BlurSwitch`, pulled in automatically. No manual Gradle dependency setup is needed. Liquid glass adds no dependency: the [AndroidLiquidGlassView](https://github.com/QmDeve/AndroidLiquidGlassView) AGSL shader is bundled (MIT, attributed in the resource).
 
-Under the hood, Android blur is produced by capturing the view into a downsampled bitmap and applying a native blur pass. Downsampling (and the configurable `blurRounds`) keeps it fast across all supported API levels (24+). Liquid glass (Android 13+) captures the backdrop the same safe way and feeds it to the AndroidLiquidGlassView AGSL shader, which runs refraction, dispersion, blur and tint on the GPU — the library's own widgets bind backdrops through live `RenderNode` references, which form render-tree cycles inside a React Native hierarchy, so only its shader is used.
+Android blur captures the view tree behind the blur into a downsampled bitmap. On Android 12 and later the GPU blurs it with `RenderEffect`, and every blur on a screen shares one capture. On Android 11 and earlier QmBlurView blurs it on the CPU, and `blurRounds` sets how many passes it runs. Liquid glass (Android 13+) captures the screen the same way and feeds it to the AndroidLiquidGlassView AGSL shader, which runs refraction, dispersion, blur and tint on the GPU. The library's own widgets bind backdrops through live `RenderNode` references, which form render-tree cycles inside a React Native hierarchy, so only its shader is used.
 
 ## Web setup
 

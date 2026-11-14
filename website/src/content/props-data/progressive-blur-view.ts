@@ -8,7 +8,7 @@ export const progressiveBlurViewProps: PropRow[] = [
     type: 'number',
     default: '5',
     platform: 'Android',
-    description: 'Number of blur interactions for a smoother effect (1-15).',
+    description: 'Sets how many blur passes run on Android 11 and earlier, for a smoother blur (1-15). Android 12 and later ignore it.',
   },
   {
     name: 'direction',

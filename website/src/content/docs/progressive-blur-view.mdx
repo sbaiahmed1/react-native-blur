@@ -14,7 +14,7 @@ import { progressiveBlurDirectionValues } from '../props-data/enums';
 
 - **iOS**: private Core Animation filters for true variable blur.
 - **iOS accessibility**: Reduce Transparency switches to `reducedTransparencyFallbackColor` immediately, including changes while mounted. Turning it off restores the configured blur without changing the children.
-- **Android**: extends QmBlurView's `BlurView` with custom gradient masking.
+- **Android**: blurs the backdrop and fades it out with a gradient mask. Android 12 and later blur on the GPU, and Android 11 and earlier use QmBlurView's `BlurView`.
 - **Web**: stacks several CSS `backdrop-filter` layers with gradient masks, halving the radius per layer — a genuine blur-radius ramp (from `blurAmount` px down to sharp), not a single blur fading in opacity.
 
 On web, `blurAmount` is the maximum radius in px (matching native), and browsers without `backdrop-filter` fall back to the directional tint gradient alone. Since 6.0, `startOffset` means the same thing on every platform — see [Platform differences](#platform-differences) for how the fade is constructed per backend.
