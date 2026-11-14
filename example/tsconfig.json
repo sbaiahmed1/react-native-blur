@@ -1,8 +1,7 @@
 {
   "extends": "../tsconfig",
   "compilerOptions": {
-    "baseUrl": ".",
-    "rootDir": ".",
+    "types": ["jest"],
     "paths": {
       "@sbaiahmed1/react-native-blur": ["../src/index"],
       "@/assets/*": ["./assets/*"],
