@@ -18,7 +18,12 @@ const GFXINFO = [
   .map((line) => `'${line}'`)
   .join(' ');
 
-function stubBin({ debuggable, alive = true, gfxinfoFails = false }) {
+function stubBin({
+  debuggable,
+  alive = true,
+  gfxinfoFails = false,
+  gfxinfo = GFXINFO,
+}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bench-stub-'));
   const write = (name, body) =>
     fs.writeFileSync(path.join(dir, name), `#!/usr/bin/env bash\n${body}\n`, {
@@ -31,7 +36,7 @@ function stubBin({ debuggable, alive = true, gfxinfoFails = false }) {
   get-state) echo device ;;
   "shell dumpsys package "*) echo "    flags=[ ${flags} ]" ;;
   "shell dumpsys gfxinfo "*" reset") ;;
-  "shell dumpsys gfxinfo "*) ${gfxinfoFails ? 'exit 1' : `printf '%s\\n' ${GFXINFO}`} ;;
+  "shell dumpsys gfxinfo "*) ${gfxinfoFails ? 'exit 1' : `printf '%s\\n' ${gfxinfo}`} ;;
   "shell pidof "*) ${alive ? 'echo 4242' : 'exit 1'} ;;
 esac`
   );
@@ -46,8 +51,8 @@ esac`
   return dir;
 }
 
-function run(stubs) {
-  return spawnSync('bash', [SCRIPT, 'blur-list', 'count=3'], {
+function run(stubs, args = ['blur-list', 'count=3']) {
+  return spawnSync('bash', [SCRIPT, ...args], {
     encoding: 'utf8',
     env: { ...process.env, PATH: `${stubs}:${process.env.PATH}` },
   });
@@ -92,6 +97,18 @@ it('fails and writes no result when the app is gone after the window', () => {
 it('leaves no partial file when a step fails', () => {
   const result = run(stubBin({ debuggable: false, gfxinfoFails: true }));
   expect(result.status).not.toBe(0);
+  expect(labelFiles()).toEqual([]);
+});
+
+it('fails and writes no result when the dump has no frame summary', () => {
+  const result = run(
+    stubBin({
+      debuggable: false,
+      gfxinfo: `'No process found for: com.sbaiahmed1.reactnativeblurexampleapp'`,
+    })
+  );
+  expect(result.status).not.toBe(0);
+  expect(result.stderr).toMatch(/no frame summary/i);
   expect(labelFiles()).toEqual([]);
 });
 
