@@ -36,6 +36,26 @@ it('returns null for missing lines', () => {
   });
 });
 
+it('drops the placeholder percentiles of a run that drew no frames', () => {
+  const idle = `
+Total frames rendered: 0
+Janky frames: 0 (0.00%)
+50th percentile: 4950ms
+90th percentile: 4950ms
+95th percentile: 4950ms
+99th percentile: 4950ms
+`;
+  expect(parseGfxinfo(idle)).toEqual({
+    totalFrames: 0,
+    jankyFrames: 0,
+    jankyPct: 0,
+    p50: null,
+    p90: null,
+    p95: null,
+    p99: null,
+  });
+});
+
 it('formats a table and prints null as n/a', () => {
   const table = formatTable([
     {
