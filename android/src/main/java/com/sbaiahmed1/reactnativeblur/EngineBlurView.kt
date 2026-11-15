@@ -22,9 +22,9 @@ internal class EngineBlurView(context: Context) : BackdropHostView(context), Blu
   override val downsample: Int = BackdropScale.BLUR
   override val effect = BackdropEffect { createBlurEffect() }
 
-  // The node is blurred in its own pixels, each downsample view px wide.
+  // The node is blurred in its own pixels, each backdropScale view px wide.
   private val effectRadius: Float
-    get() = BlurRadius.effectRadius(BlurRadius.sigmaPx(blurAmount) / downsample)
+    get() = BlurRadius.radius(blurAmount, backdropScale)
 
   override val wantsBackdrop: Boolean
     get() = effectRadius > 0f

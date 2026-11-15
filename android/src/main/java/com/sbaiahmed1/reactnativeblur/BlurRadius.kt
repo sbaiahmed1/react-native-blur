@@ -18,6 +18,9 @@ internal object BlurRadius {
     return FLOOR_SIGMA + (clamped - FLOOR_AMOUNT) * (MAX_SIGMA - FLOOR_SIGMA) / (MAX_AMOUNT - FLOOR_AMOUNT)
   }
 
+  /** The effect radius for [amount] on a node whose px are [scale] view px wide. */
+  fun radius(amount: Float, scale: Int): Float = effectRadius(sigmaPx(amount) / scale)
+
   /** The RenderEffect.createBlurEffect radius for a sigma, hwui converts with sigma = 0.57735 * radius + 0.5. */
   fun effectRadius(sigmaPx: Float): Float = if (sigmaPx <= 0.5f) 0f else (sigmaPx - 0.5f) / 0.57735f
 }
