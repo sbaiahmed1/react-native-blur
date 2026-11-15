@@ -5,14 +5,17 @@ internal object BehindOrder {
   /** One child: its position in dispatchDraw, its getZ(), and whether dispatchDraw draws it at all. */
   data class Child(val dispatchPosition: Int, val z: Float, val drawn: Boolean)
 
+  /** The path index of a child that left its parent's list but is still drawn, after every other child. */
+  const val DISAPPEARING = -1
+
   /** Indices into [children] painted before children[pathIndex], in paint order. */
   fun behind(children: List<Child>, pathIndex: Int): List<Int> {
-    val path = children[pathIndex]
+    val path = if (pathIndex == DISAPPEARING) null else children[pathIndex]
     val result = ArrayList<Int>()
     for (index in children.indices) {
       val child = children[index]
       if (index == pathIndex || !child.drawn) continue
-      if (child.z < path.z || (child.z == path.z && child.dispatchPosition < path.dispatchPosition)) result.add(index)
+      if (path == null || child.z < path.z || (child.z == path.z && child.dispatchPosition < path.dispatchPosition)) result.add(index)
     }
     result.sortWith(compareBy({ children[it].z }, { children[it].dispatchPosition }))
     return result
