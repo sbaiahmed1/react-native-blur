@@ -1,19 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { BlurView, LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
 import type { SceneProps } from '../scenes';
 
 const SWAP_MS = 1000;
 
-// Swaps from mount and keeps going after the recorder stops, so B7 stays observable.
+// Swaps while the scene has focus and keeps going after the recorder stops, so B7 stays observable.
 export default function Recycle(_props: SceneProps) {
   const [showA, setShowA] = useState(true);
 
-  useEffect(() => {
-    const id = setInterval(() => setShowA((value) => !value), SWAP_MS);
-    return () => clearInterval(id);
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const id = setInterval(() => setShowA((value) => !value), SWAP_MS);
+      return () => clearInterval(id);
+    }, [])
+  );
 
   return (
     <View style={styles.root}>
