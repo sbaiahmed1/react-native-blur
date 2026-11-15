@@ -8,6 +8,7 @@ import android.graphics.RenderNode
 import android.os.Build
 import android.view.View
 import android.view.ViewOutlineProvider
+import androidx.annotation.RequiresApi
 import android.widget.FrameLayout
 
 /** Base of the engine views: joins its [BackdropSource], owns the backdrop node and its effect, clips to the corners. */
@@ -22,6 +23,9 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
     get() = true
   /** False while the host draws no backdrop, so its source neither records nor captures for it. */
   internal open val wantsBackdrop: Boolean
+    get() = true
+  /** False keeps this kind of host off Android's own backdrop. */
+  internal open val allowsPlatformBackdrop: Boolean
     get() = true
 
   private var source: BackdropSource? = null
@@ -49,6 +53,14 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
 
   internal val isBackdropVisible: Boolean
     get() = isAttachedToWindow && isShown && windowVisibility == VISIBLE && width > 0 && height > 0
+
+  /** View px per px of the backdrop node, which the effect radius divides by. */
+  internal val backdropScale: Int
+    get() = source?.scale(this) ?: downsample
+
+  /** True while Android blurs this host's backdrop itself. */
+  internal val isPlatformBackdrop: Boolean
+    get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && source is PlatformSource
 
   init {
     clipChildren = true
@@ -80,6 +92,24 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
     recordedKey = null
     nodeDrawn = false
     if (engineEnabled) node?.discardDisplayList()
+    // A host attached again may land on another source, which must not inherit this node's effect.
+    node = null
+    effectDirty = true
+  }
+
+  /** Leaves the current source for the one [BackdropSources] picks now, with a fresh node. */
+  @RequiresApi(Build.VERSION_CODES.S)
+  internal fun resolveSourceAgain() {
+    val current = source ?: return
+    if (!isAttachedToWindow) return
+    current.removeHost(this)
+    source = null
+    recordedKey = null
+    nodeDrawn = false
+    node?.discardDisplayList()
+    node = null
+    source = BackdropSources.resolve(this)?.also { it.addHost(this) }
+    markEffectDirty()
   }
 
   /** The effect is rebuilt at the next frame, for a prop or a size change. */
@@ -108,7 +138,7 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
     }
     // Some API 31 builds key the filtered layer on the effect object only, so new content needs a new effect.
     if (effectDirty || (rerecord && Build.VERSION.SDK_INT == Build.VERSION_CODES.S)) {
-      backdropNode.setRenderEffect(effect.create(this))
+      if (!currentSource.applyEffect(backdropNode, effect.create(this))) return
       effectDirty = false
     }
     // A software canvas never draws the node, so asking it for one more frame would loop on every vsync.

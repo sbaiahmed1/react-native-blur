@@ -1,6 +1,7 @@
 package com.sbaiahmed1.reactnativeblur
 
 import android.content.Context
+import android.graphics.BlendMode
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -26,14 +27,25 @@ internal class EngineProgressiveBlurView(context: Context) : BackdropHostView(co
   override val effect = BackdropEffect { createBlurEffect() }
 
   private val effectRadius: Float
-    get() = BlurRadius.effectRadius(BlurRadius.sigmaPx(ProgressiveMask.effectiveAmount(blurAmount, direction)) / downsample)
+    get() = BlurRadius.radius(ProgressiveMask.effectiveAmount(blurAmount, direction), backdropScale)
 
   override val wantsBackdrop: Boolean
     get() = effectRadius > 0f
 
-  private fun createBlurEffect(): RenderEffect = gpuBlurEffect(effectRadius)
+  private fun createBlurEffect(): RenderEffect {
+    val blur = gpuBlurEffect(effectRadius)
+    val mask = maskPaint.shader
+    // Android's backdrop snapshots an open layer instead of what is behind it, so the ramp masks the effect itself.
+    if (!isPlatformBackdrop || mask == null) return blur
+    return RenderEffect.createBlendModeEffect(blur, RenderEffect.createShaderEffect(mask), BlendMode.DST_IN)
+  }
 
   override fun drawBackdrop(canvas: Canvas, node: RenderNode) {
+    if (isPlatformBackdrop) {
+      if (effectRadius > 0f) canvas.drawRenderNode(node)
+      drawSoftwareFallback(canvas)
+      return
+    }
     val save = canvas.saveLayer(0f, 0f, width.toFloat(), height.toFloat(), null)
     if (effectRadius > 0f) canvas.drawRenderNode(node)
     drawOverlay(canvas)
@@ -60,7 +72,8 @@ internal class EngineProgressiveBlurView(context: Context) : BackdropHostView(co
     val spec = ProgressiveMask.spec(direction, startOffset, width.toFloat(), height.toFloat())
     val colors = IntArray(spec.alphas.size) { Color.argb(Math.round(spec.alphas[it] * 255f), 255, 255, 255) }
     maskPaint.shader = LinearGradient(spec.x0, spec.y0, spec.x1, spec.y1, colors, spec.positions, Shader.TileMode.CLAMP)
-    invalidate()
+    // On Android's backdrop the ramp lives in the effect, which must be built again.
+    if (isPlatformBackdrop) markEffectDirty() else invalidate()
   }
 
   override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {

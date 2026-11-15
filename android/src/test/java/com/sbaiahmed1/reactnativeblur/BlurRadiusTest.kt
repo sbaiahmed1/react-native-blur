@@ -48,4 +48,10 @@ class BlurRadiusTest {
   @Test fun localRadiusAtMax() {
     assertEquals((40f / 8f - 0.5f) / 0.57735f, BlurRadius.effectRadius(BlurRadius.sigmaPx(100f) / 8f), 0.001f)
   }
+
+  @Test fun platformRadiusUsesTheFullSigma() =
+    assertEquals(BlurRadius.effectRadius(40f), BlurRadius.radius(100f, scale = 1), 1e-4f)
+
+  @Test fun capturedRadiusDividesByTheScale() =
+    assertEquals(BlurRadius.effectRadius(5f), BlurRadius.radius(100f, scale = 8), 1e-4f)
 }

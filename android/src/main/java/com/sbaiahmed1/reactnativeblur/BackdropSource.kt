@@ -17,6 +17,16 @@ internal interface BackdropSource {
   /** Records [host]'s backdrop into [node]. False when nothing can be drawn yet. */
   @RequiresApi(Build.VERSION_CODES.Q)
   fun recordInto(node: RenderNode, host: BackdropHostView): Boolean
+
+  /** Puts [effect] on a host's node. False when it could not. */
+  @RequiresApi(Build.VERSION_CODES.S)
+  fun applyEffect(node: RenderNode, effect: RenderEffect): Boolean {
+    node.setRenderEffect(effect)
+    return true
+  }
+
+  /** View px per px of [host]'s node. */
+  fun scale(host: BackdropHostView): Int = host.downsample
 }
 
 /** What a backdrop host does to its pixels. */
