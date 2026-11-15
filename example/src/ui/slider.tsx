@@ -106,8 +106,18 @@ export function Slider({
     else return;
     e.preventDefault();
   };
-  // React Native Web drops accessibility actions, so the web slider takes arrow keys, Home and End.
-  const webKeys = Platform.OS === 'web' ? { focusable: true, onKeyDown } : null;
+  // React Native Web drops accessibility actions and accessibilityValue, so the web slider gets keys and ARIA values.
+  const webKeys =
+    Platform.OS === 'web'
+      ? {
+          'focusable': true,
+          onKeyDown,
+          'aria-valuemin': min,
+          'aria-valuemax': max,
+          'aria-valuenow': value,
+          'aria-valuetext': value.toFixed(places),
+        }
+      : null;
 
   return (
     <View style={cell.column}>
