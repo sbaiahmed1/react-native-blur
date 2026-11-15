@@ -1,8 +1,6 @@
 package com.sbaiahmed1.reactnativeblur
 
 import com.sbaiahmed1.reactnativeblur.CaptureLane.Bounds
-import com.sbaiahmed1.reactnativeblur.CaptureLane.Mode.FULL
-import com.sbaiahmed1.reactnativeblur.CaptureLane.Mode.HOST
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -14,29 +12,22 @@ class SoftwareSourceRegionsTest {
   private val screen = Bounds(0, 0, 1080, 2424)
   private val bar = Bounds(0, 200, 1080, 160)
 
-  private fun blurLane(mode: CaptureLane.Mode = FULL) = CaptureLane(8, mode, 0L, 0L)
-  private fun glassLane() = CaptureLane(3, FULL, 33L, 100L)
+  private fun blurLane() = CaptureLane(8, 0L, 0L)
+  private fun glassLane() = CaptureLane(3, 33L, 100L)
 
   @Test fun fullRegionIsRoot() {
-    val lane = blurLane(FULL)
+    val lane = blurLane()
     val region = lane.regionBounds(screen, bar)
     assertEquals(screen, region)
     assertEquals(135 to 303, lane.bitmapSize(region!!))
   }
 
-  @Test fun hostRegionIsHost() {
-    val lane = blurLane(HOST)
-    val region = lane.regionBounds(screen, bar)
-    assertEquals(bar, region)
-    assertEquals(135 to 20, lane.bitmapSize(region!!))
-  }
-
   @Test fun windowRootUsesDecorScreenBounds() {
-    assertEquals(screen, blurLane(FULL).regionBounds(screen, Bounds(40, 900, 1000, 300)))
+    assertEquals(screen, blurLane().regionBounds(screen, Bounds(40, 900, 1000, 300)))
   }
 
   @Test fun zeroRootIsNotCaptured() {
-    assertNull(blurLane(FULL).regionBounds(Bounds(0, 0, 0, 0), Bounds(0, 0, 100, 100)))
+    assertNull(blurLane().regionBounds(Bounds(0, 0, 0, 0), Bounds(0, 0, 100, 100)))
   }
 
   @Test fun bitmapCoversAPartialLastRowAndColumn() {
@@ -98,18 +89,13 @@ class SoftwareSourceRegionsTest {
     assertEquals(listOf<String?>("glass"), glassLane().captureTargets(listOf("glass"), setOf("glass")))
   }
 
-  @Test fun hostLaneCapturesEachHost() {
-    assertEquals(listOf<String?>("a", "b"), blurLane(HOST).captureTargets(listOf("a", "b"), emptySet()))
-  }
-
   @Test fun hostCapturingAloneInAFullLaneGetsItsOwnBounds() {
-    assertEquals(bar, blurLane(FULL).regionBounds(screen, bar, alone = true))
-    assertEquals(screen, blurLane(FULL).regionBounds(screen, bar, alone = false))
+    assertEquals(bar, blurLane().regionBounds(screen, bar, alone = true))
+    assertEquals(screen, blurLane().regionBounds(screen, bar, alone = false))
   }
 
   @Test fun nestedHostReadsItsOwnRegion() {
     assertTrue(blurLane().sharesRoot(nested = false))
     assertFalse(blurLane().sharesRoot(nested = true))
-    assertFalse(blurLane(HOST).sharesRoot(nested = false))
   }
 }
