@@ -135,7 +135,7 @@ internal class BehindSource private constructor(
     return true
   }
 
-  // Only a sibling that paints over part of the host can reach its pixels, and skipping the rest keeps hwui's walk linear.
+  // Only a sibling that paints over part of the host can reach its pixels, and skipping the rest keeps hwui's walk linear while hosts do not overlap each other.
   private fun overlapsHost(child: View, level: Int): Boolean {
     overflowBudget = OVERFLOW_VIEW_BUDGET
     overflowMatrix(0).set(nodeTransform(child))
@@ -177,9 +177,10 @@ internal class BehindSource private constructor(
     return overflowMatrices[depth]
   }
 
-  // hwui's node transform without the legacy animation matrix, which no public API returns.
+  // hwui's node transform: the position, the legacy animation matrix set by the last draw, then the view's own matrix.
   private fun nodeTransform(view: View): Matrix {
     step.setTranslate(view.left.toFloat(), view.top.toFloat())
+    view.animationMatrix?.let { step.preConcat(it) }
     val own = view.matrix
     if (!own.isIdentity) step.preConcat(own)
     return step
