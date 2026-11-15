@@ -29,3 +29,7 @@ it('summarizes with an explicit refresh interval', () => {
 it('derives the refresh interval from the 10th percentile', () => {
   expect(summarizeFrames([8, 8, 8, 8, 8, 8, 8, 8, 8, 30]).jankPct).toBe(10);
 });
+
+it('counts sustained slow frames as jank', () => {
+  expect(summarizeFrames(new Array(20).fill(33.33)).jankPct).toBe(100);
+});
