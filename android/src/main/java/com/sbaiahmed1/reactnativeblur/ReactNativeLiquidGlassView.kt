@@ -13,25 +13,7 @@ import android.util.TypedValue
 import android.view.MotionEvent
 import androidx.annotation.RequiresApi
 
-/**
- * Android implementation of React Native LiquidGlassView, rendering the
- * AndroidLiquidGlassView (com.qmdeve.liquidglass) AGSL glass shader on
- * Android 13+ (RuntimeShader requires API 33, the JS wrapper falls back to
- * BlurView below that).
- *
- * Only the library's shader and effect parameters are used, not its widget
- * classes. Those record the bound backdrop source with `target.draw()` on a
- * hardware RecordingCanvas, which references the cached display lists of the
- * source's children. With an ancestor as the source (the only general choice
- * inside an RN hierarchy) that recording references the glass view's own
- * RenderNode, a cyclic render tree that stack-overflows the render thread.
- *
- * The backdrop comes from the shared [SoftwareSource] instead: a software draw
- * of the capture root into a flat bitmap, which holds no node references, so
- * a cycle is impossible by construction. The host draws it into a standalone
- * RenderNode that carries the RuntimeShader effect, so refraction,
- * dispersion, blur and tint all run on the GPU.
- */
+/** LiquidGlassView on Android 13+: the AndroidLiquidGlassView AGSL shader over the backdrop [BackdropSources] picks, the views behind it or the software capture. */
 class ReactNativeLiquidGlassView(context: Context) : BackdropHostView(context) {
 
   private var glassType: String = "clear"
