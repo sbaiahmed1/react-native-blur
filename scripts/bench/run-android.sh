@@ -12,6 +12,12 @@ QUERY=${2:-}
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 LABEL=${3:-$(git -C "$ROOT" describe --always --dirty)}
 
+# The app shows a placeholder for an unknown scene, whose frames would be saved under the typo.
+if ! grep -qF "id: '$SCENE'," "$ROOT/example/src/benchmark/scenes.ts"; then
+  echo "run-android.sh: unknown scene '$SCENE', see example/src/benchmark/scenes.ts" >&2
+  exit 1
+fi
+
 if [ "$(adb get-state 2>/dev/null)" != "device" ]; then
   echo "run-android.sh: no single Android device attached (set ANDROID_SERIAL)" >&2
   exit 1
