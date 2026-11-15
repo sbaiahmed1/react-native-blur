@@ -24,6 +24,7 @@ RUNS=(
   "modal-live"
   "stack-push"
   "root-overlay"
+  "recycle"
 )
 
 for run in "${RUNS[@]}"; do
