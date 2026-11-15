@@ -5,6 +5,7 @@ import AnimatedAmount from './scenes/animated-amount';
 import BaselineList from './scenes/baseline-list';
 import BlurInScroll from './scenes/blur-in-scroll';
 import BlurList from './scenes/blur-list';
+import Geometry from './scenes/geometry';
 import GlassList from './scenes/glass-list';
 import Halo from './scenes/halo';
 import IdleCursor from './scenes/idle-cursor';
@@ -16,6 +17,7 @@ import ProgressiveBars from './scenes/progressive-bars';
 import Recycle from './scenes/recycle';
 import RootOverlay from './scenes/root-overlay';
 import StackPush from './scenes/stack-push';
+import Stacked from './scenes/stacked';
 
 /** `onStop` ends the run early, with no result, for example on Android back. */
 export type SceneProps = {
@@ -148,6 +150,20 @@ export const SCENES: readonly SceneDef[] = [
     note: 'A raised button over a blur tab bar (#132).',
     defaults: {},
     Component: Halo,
+  },
+  {
+    id: 'geometry',
+    title: 'Geometry',
+    note: 'Blur, progressive and glass over stripes: cut by the window edge, scaled to 0.5, in a hardware layer, resizing.',
+    defaults: {},
+    Component: Geometry,
+  },
+  {
+    id: 'stacked',
+    title: 'Stacked',
+    note: 'Ten BlurView cards (count) stacked over each other over a scrolling feed (B14).',
+    defaults: { count: 10 },
+    Component: Stacked,
   },
 ];
 
