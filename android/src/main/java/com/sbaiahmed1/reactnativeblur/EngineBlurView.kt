@@ -19,7 +19,7 @@ internal class EngineBlurView(context: Context) : BackdropHostView(context), Blu
   private var overlayColor = Color.TRANSPARENT
   private val overlayPaint = Paint()
 
-  override val downsample: Int = SoftwareSource.BLUR_DOWNSAMPLE
+  override val downsample: Int = BackdropScale.BLUR
   override val effect = BackdropEffect { createBlurEffect() }
 
   // The node is blurred in its own pixels, each downsample view px wide.
