@@ -28,6 +28,8 @@ RUNS=(
   "overlap"
   "nested"
   "halo"
+  "geometry"
+  "stacked count=10"
 )
 
 for run in "${RUNS[@]}"; do
