@@ -22,11 +22,11 @@ class BlurRadiusTest {
   }
 
   @Test fun linearBetweenTheAnchors() {
-    assertEquals(42f, BlurRadius.sigmaPx(58f), 0.0001f)
+    assertEquals(30f, BlurRadius.sigmaPx(58f), 0.0001f)
   }
 
   @Test fun capsAtHundred() {
-    assertEquals(64f, BlurRadius.sigmaPx(100f), 0.0001f)
+    assertEquals(40f, BlurRadius.sigmaPx(100f), 0.0001f)
     assertEquals(BlurRadius.sigmaPx(100f), BlurRadius.sigmaPx(150f), 0f)
   }
 
@@ -46,6 +46,6 @@ class BlurRadiusTest {
   }
 
   @Test fun localRadiusAtMax() {
-    assertEquals((64f / 8f - 0.5f) / 0.57735f, BlurRadius.effectRadius(BlurRadius.sigmaPx(100f) / 8f), 0.001f)
+    assertEquals((40f / 8f - 0.5f) / 0.57735f, BlurRadius.effectRadius(BlurRadius.sigmaPx(100f) / 8f), 0.001f)
   }
 }

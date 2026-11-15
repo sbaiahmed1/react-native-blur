@@ -4,9 +4,9 @@ package com.sbaiahmed1.reactnativeblur
 internal object BlurRadius {
   // QmBlurView clamps its downsampled radius at 2, which is amount 16 at downsample 8, so amounts below look alike.
   const val FLOOR_AMOUNT = 16f
-  // Sigma in px at the floor and at amount 100, calibrated against QmBlurView screenshots (plan 04 Task 4).
+  // Sigma in px at the floor and at amount 100, calibrated against QmBlurView screenshots of the behind source.
   const val FLOOR_SIGMA = 20f
-  const val MAX_SIGMA = 64f
+  const val MAX_SIGMA = 40f
   const val DEFAULT_AMOUNT = 10f
   private const val MAX_AMOUNT = 100f
 
