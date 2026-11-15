@@ -26,6 +26,9 @@ internal class EngineBlurView(context: Context) : BackdropHostView(context), Blu
   private val effectRadius: Float
     get() = BlurRadius.effectRadius(BlurRadius.sigmaPx(blurAmount) / downsample)
 
+  override val wantsBackdrop: Boolean
+    get() = effectRadius > 0f
+
   private fun createBlurEffect(): RenderEffect = gpuBlurEffect(effectRadius)
 
   override fun drawBackdrop(canvas: Canvas, node: RenderNode) {

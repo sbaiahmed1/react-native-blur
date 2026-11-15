@@ -20,6 +20,9 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
     get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
   internal open val nodeAtCaptureScale: Boolean
     get() = true
+  /** False while the host draws no backdrop, so its source neither records nor captures for it. */
+  internal open val wantsBackdrop: Boolean
+    get() = true
 
   private var source: BackdropSource? = null
   private var attachRunnable: Runnable? = null
@@ -29,6 +32,7 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
   private var recordedHeight = 0
   private var effectDirty = true
   private var nodeDrawn = false
+  private var lastDrawSoftware = false
 
   private var borderRadiusDp = 0f
   private var borderTopLeftRadiusDp = -1f
@@ -107,11 +111,16 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
       backdropNode.setRenderEffect(effect.create(this))
       effectDirty = false
     }
-    if (!nodeDrawn) invalidate()
+    // A software canvas never draws the node, so asking it for one more frame would loop on every vsync.
+    if (!nodeDrawn && !lastDrawSoftware) invalidate()
   }
 
   /** Draws this host's own backdrop layer into a nested host's backdrop. False before the node has content. */
   internal fun drawOwnBackdrop(canvas: Canvas): Boolean {
+    if (!wantsBackdrop) {
+      drawSoftwareFallback(canvas)
+      return true
+    }
     val backdropNode = node ?: return false
     if (!backdropNode.hasDisplayList()) return false
     drawBackdrop(canvas, backdropNode)
@@ -159,6 +168,7 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
   }
 
   private fun drawContent(canvas: Canvas) {
+    lastDrawSoftware = !canvas.isHardwareAccelerated
     val backdropNode = node
     if (
       engineEnabled && canvas.isHardwareAccelerated && backdropNode != null && recordedKey != null &&

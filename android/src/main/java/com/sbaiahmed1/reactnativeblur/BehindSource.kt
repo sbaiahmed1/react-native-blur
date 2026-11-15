@@ -65,7 +65,7 @@ internal class BehindSource private constructor(
   override fun onPreDraw(): Boolean {
     frame++
     // A host scrolled off screen records again on the pre-draw of the frame that shows it.
-    for (host in hosts) if (host.isBackdropVisible && host.getGlobalVisibleRect(visibleRect)) host.onBackdropFrame()
+    for (host in hosts) if (host.wantsBackdrop && host.isBackdropVisible && host.getGlobalVisibleRect(visibleRect)) host.onBackdropFrame()
     return true
   }
 
