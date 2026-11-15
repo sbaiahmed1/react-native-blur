@@ -39,6 +39,9 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
     private set
   protected var baseRadiusPx = 0f
     private set
+  private val cornerPath = Path()
+  private var cornerPathWidth = -1
+  private var cornerPathHeight = -1
 
   internal val isBackdropVisible: Boolean
     get() = isAttachedToWindow && isShown && windowVisibility == VISIBLE && width > 0 && height > 0
@@ -109,12 +112,45 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
 
   override fun draw(canvas: Canvas) {
     if (SoftwareSource.isCapturing(this)) return
+    val save = clipCorners(canvas)
     super.draw(canvas)
+    if (save >= 0) canvas.restoreToCount(save)
   }
 
   override fun dispatchDraw(canvas: Canvas) {
     // A ViewGroup that paints nothing itself skips draw() and comes here directly, so the check is repeated.
     if (SoftwareSource.isCapturing(this)) return
+    val save = clipCorners(canvas)
+    drawContent(canvas)
+    if (save >= 0) canvas.restoreToCount(save)
+  }
+
+  // A path outline clips only from API 33, so non-uniform corners also clip on the canvas.
+  private fun clipCorners(canvas: Canvas): Int {
+    if (cornerRadii.isUniform) return -1
+    if (cornerPathWidth != width || cornerPathHeight != height) {
+      cornerPath.rewind()
+      addCornerPath(cornerPath, width, height)
+      cornerPathWidth = width
+      cornerPathHeight = height
+    }
+    val save = canvas.save()
+    canvas.clipPath(cornerPath)
+    return save
+  }
+
+  private fun addCornerPath(path: Path, w: Int, h: Int) {
+    val radii = cornerRadii
+    val corners = floatArrayOf(
+      radii.topLeft, radii.topLeft,
+      radii.topRight, radii.topRight,
+      radii.bottomRight, radii.bottomRight,
+      radii.bottomLeft, radii.bottomLeft
+    )
+    path.addRoundRect(0f, 0f, w.toFloat(), h.toFloat(), corners, Path.Direction.CW)
+  }
+
+  private fun drawContent(canvas: Canvas) {
     val backdropNode = node
     if (
       engineEnabled && canvas.isHardwareAccelerated && backdropNode != null && recorded != null &&
@@ -164,6 +200,7 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
       density
     )
     cornerRadii = radii
+    cornerPathWidth = -1
     baseRadiusPx = borderRadiusDp * density
     outlineProvider = if (radii.isUniform) {
       object : ViewOutlineProvider() {
@@ -175,13 +212,7 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
       object : ViewOutlineProvider() {
         override fun getOutline(view: View, outline: Outline) {
           val path = Path()
-          val corners = floatArrayOf(
-            radii.topLeft, radii.topLeft,
-            radii.topRight, radii.topRight,
-            radii.bottomRight, radii.bottomRight,
-            radii.bottomLeft, radii.bottomLeft
-          )
-          path.addRoundRect(0f, 0f, view.width.toFloat(), view.height.toFloat(), corners, Path.Direction.CW)
+          addCornerPath(path, view.width, view.height)
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             outline.setPath(path)
           } else {
