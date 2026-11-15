@@ -41,6 +41,9 @@ android {
     // Ship keep rules into the AAR so a consumer app's R8 does not strip the
     // QmBlurView fields we access by reflection (see consumer-rules.pro).
     consumerProguardFiles "consumer-rules.pro"
+    // Opt-in: ReactNativeBlur_platformBackdrop=true in the app's gradle.properties uses Android's own backdrop blur on SDK 37.2+.
+    def platformBackdrop = "true".equalsIgnoreCase(String.valueOf(project.findProperty("ReactNativeBlur_platformBackdrop")))
+    buildConfigField "boolean", "PLATFORM_BACKDROP", String.valueOf(platformBackdrop)
   }
 
   buildFeatures {
