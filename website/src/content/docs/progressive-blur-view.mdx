@@ -88,11 +88,12 @@ The three backends aim for the same look but get there differently:
 
 ## Android backend notes
 
-On Android 12 and later, the blur reads the views drawn behind it and blurs them on the GPU. On Android 11 and earlier, QmBlurView captures the view tree around it into a downsampled bitmap and blurs it on the CPU. The capture covers the nearest `react-native-screens` Screen, or the React root when there is none. Three practical consequences:
+On Android 12 and later, the blur reads the views drawn behind it and blurs them on the GPU. On Android 11 and earlier, QmBlurView captures the view tree around it into a downsampled bitmap and blurs it on the CPU. The capture covers the nearest `react-native-screens` Screen, or the React root when there is none.
 
 - **`blurRounds` only changes Android 11 and earlier.** Each iteration adds a CPU blur pass. Lowering it trades quality for less work, so measure on target devices.
 - **Foreground content stays out of the blur on Android 12 and later.** This component's children render sharp above the masked blur on every version. On Android 11 and earlier, other foreground siblings inside the capture root can still produce a blurred halo. If necessary, move those siblings outside the capture root (e.g. a portal above the navigator).
 - **Blur and glass views show each other on Android 12 and later.** Where two of them overlap, the top one shows the one below it, with its text and tint.
+- **The blur falls back to a screen capture if the library cannot read the views behind it.** The library then logs a warning tagged `RNBackdrop`. Other foreground siblings show as a halo, as on Android 11 and earlier, and overlapping blur and glass views leave each other out.
 
 ## Direction values
 
