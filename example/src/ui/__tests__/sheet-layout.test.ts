@@ -1,4 +1,13 @@
-import { MAX_SHEET_WIDTH, sheetLayout } from '../sheet-layout';
+import { MAX_SHEET_WIDTH, SHEET_CHROME, sheetLayout } from '../sheet-layout';
+
+it('keeps the sheet and its Done button inside a short window', () => {
+  const layout = sheetLayout(844, 390);
+  expect(layout.tileHeight + SHEET_CHROME).toBeLessThanOrEqual(390);
+  expect(sheetLayout(390, 844).tileHeight).toBeCloseTo(
+    sheetLayout(390).tileHeight,
+    5
+  );
+});
 
 it('keeps the phone layout: the sheet spans the window minus its inset', () => {
   const layout = sheetLayout(390);
