@@ -61,11 +61,13 @@ On react-native-web, `BlurView` renders a `backdrop-filter: blur() saturate(180%
 
 ## Android behavior
 
-On Android, the blur captures the view tree around it, scoped to the nearest `react-native-screens` Screen and falling back to the React root, into a downsampled bitmap. On Android 12 and later the GPU blurs that capture, and one capture serves every blur on the screen. On Android 11 and earlier QmBlurView blurs it on the CPU. Three things follow:
+On Android 12 and later, a blur view blurs the views drawn behind it on the GPU. On Android 11 and earlier, QmBlurView captures the view tree around the blur into a downsampled bitmap and blurs it on the CPU. The capture covers the nearest `react-native-screens` Screen, or the React root when there is none. In practice:
 
-- **Capture and blur both cost work.** Captures use a downsampled bitmap. On Android 11 and earlier each `blurRounds` pass adds a CPU blur pass, and lowering it trades quality for less work. Measure on target devices to see whether the capture or the blur is the bottleneck.
-- **Content drawn on top of the blur is captured too.** iOS samples only what is *behind* the effect view, but the Android capture includes anything rendered above the blur inside the capture root, which shows up as a blurred halo under the crisp original. If the halo shows in a design, move that content outside the capture root (e.g. a portal above the navigator).
-- **Blur and glass views do not show each other.** On Android 12 and later, the blur and glass views on a screen share one capture that leaves all of them out. Where two of them overlap, the top one shows what is behind the other, without its text or tint. A view placed inside another blur view is the exception: it sees the outer view's tint and children.
+- **Content drawn on top of a blur view stays out of it on Android 12 and later**, as on iOS. On Android 11 and earlier the capture includes anything rendered above the blur inside the capture root, which shows up as a blurred halo under the crisp original. If the halo shows in a design, move that content outside the capture root (e.g. a portal above the navigator).
+- **Blur and glass views show each other on Android 12 and later.** Where two of them overlap, the top one shows the one below it, with its text and tint.
+- **`blurRounds` only changes Android 11 and earlier.** Each pass adds a CPU blur pass, and lowering it trades quality for less work. Measure on target devices.
+- **In-app screenshots show the tint without the blur on Android 12 and later.** A screenshot that draws your views into a bitmap gets the blur view's tint only. System screenshots show the blur.
+- **The blur falls back to a screen capture if the library cannot read the views behind it.** The library then logs a warning tagged `RNBackdrop`. Content drawn on top shows as a halo, and overlapping blur and glass views leave each other out.
 
 ## Props
 
