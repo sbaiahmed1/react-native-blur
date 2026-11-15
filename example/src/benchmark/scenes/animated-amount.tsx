@@ -40,6 +40,7 @@ export default function AnimatedAmount({ params, running }: SceneProps) {
       <View style={styles.center} pointerEvents="box-none">
         <AnimatedBlurView
           blurType="light"
+          blurRounds={params.rounds}
           animatedProps={animatedProps}
           style={styles.box}
         />
