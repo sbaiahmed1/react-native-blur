@@ -60,12 +60,12 @@ internal class SoftwareSource private constructor(
   private var behindInvalidator: BehindWindowInvalidator? = null
   private var releaseListener: View.OnAttachStateChangeListener? = null
   private var failureLogged = false
-  private var trailingPosted = false
+  private val trailing = TrailingDeadline()
   private val location = IntArray(2)
   private val rootLocation = IntArray(2)
   private val bitmapPaint = Paint(Paint.FILTER_BITMAP_FLAG)
   private val trailingFrame = Runnable {
-    trailingPosted = false
+    trailing.clear()
     hosts.firstOrNull { it.isBackdropVisible }?.invalidate()
   }
 
@@ -97,7 +97,7 @@ internal class SoftwareSource private constructor(
     behindInvalidator?.remove()
     behindInvalidator = null
     listenerRoot.removeCallbacks(trailingFrame)
-    trailingPosted = false
+    trailing.clear()
     if (!listenerRoot.isAttachedToWindow) {
       release()
       return
@@ -214,7 +214,7 @@ internal class SoftwareSource private constructor(
       val moved = laneHosts.any { hostBounds[it] != lane.capturedBounds[it] }
       val remaining = lane.config.remainingMs(now, moved)
       if (remaining > 0) {
-        postTrailingFrame(remaining)
+        postTrailingFrame(now, remaining)
         continue
       }
       var success = true
@@ -227,7 +227,7 @@ internal class SoftwareSource private constructor(
       }
       lane.config.onCaptureResult(now, success)
       // A still screen draws no more frames, so the retry asks for one.
-      lane.config.retryDelayMs(now)?.let { postTrailingFrame(it) }
+      lane.config.retryDelayMs(now)?.let { postTrailingFrame(now, it) }
       if (success) for (host in laneHosts) hostBounds[host]?.let { lane.capturedBounds[host] = it }
     }
   }
@@ -264,9 +264,9 @@ internal class SoftwareSource private constructor(
     return true
   }
 
-  private fun postTrailingFrame(delayMs: Long) {
-    if (trailingPosted) return
-    trailingPosted = true
+  private fun postTrailingFrame(nowMs: Long, delayMs: Long) {
+    if (!trailing.request(nowMs, delayMs)) return
+    listenerRoot.removeCallbacks(trailingFrame)
     listenerRoot.postDelayed(trailingFrame, delayMs)
   }
 
