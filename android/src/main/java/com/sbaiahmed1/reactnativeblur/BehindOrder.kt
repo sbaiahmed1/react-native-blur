@@ -8,6 +8,21 @@ internal object BehindOrder {
   /** The path index of a child that left its parent's list but is still drawn, after every other child. */
   const val DISAPPEARING = -1
 
+  /** Fills positions[childIndex] with the child's position in dispatchDraw, or index order when [orderOf] throws or is not a permutation. */
+  inline fun fillDispatchPositions(positions: IntArray, count: Int, orderOf: (Int) -> Int) {
+    positions.fill(-1, 0, count)
+    try {
+      for (position in 0 until count) {
+        val index = orderOf(position)
+        // androidx ViewPager throws here when no page transformer set an order.
+        if (index !in 0 until count || positions[index] != -1) throw IllegalStateException("not a permutation")
+        positions[index] = position
+      }
+    } catch (e: RuntimeException) {
+      for (index in 0 until count) positions[index] = index
+    }
+  }
+
   /** Indices into [children] painted before children[pathIndex], in paint order. */
   fun behind(children: List<Child>, pathIndex: Int): List<Int> {
     val path = if (pathIndex == DISAPPEARING) null else children[pathIndex]

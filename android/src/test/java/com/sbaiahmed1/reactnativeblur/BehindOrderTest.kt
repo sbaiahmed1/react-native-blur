@@ -6,7 +6,19 @@ import org.junit.Test
 class BehindOrderTest {
   private fun flat(n: Int) = List(n) { BehindOrder.Child(it, 0f, true) }
 
+  private fun positions(count: Int, orderOf: (Int) -> Int) =
+    IntArray(count).also { BehindOrder.fillDispatchPositions(it, count, orderOf) }.toList()
+
   @Test fun indexOrderWhenFlat() = assertEquals(listOf(0, 1), BehindOrder.behind(flat(4), 2))
+
+  @Test fun dispatchPositionsFollowTheDrawingOrder() = assertEquals(listOf(2, 1, 0), positions(3) { 2 - it })
+
+  @Test fun indexOrderWhenTheDrawingOrderThrows() =
+    assertEquals(listOf(0, 1, 2), positions(3) { throw NullPointerException("no ordered children") })
+
+  @Test fun indexOrderWhenTheDrawingOrderIsOutOfRange() = assertEquals(listOf(0, 1, 2), positions(3) { it + 1 })
+
+  @Test fun indexOrderWhenTheDrawingOrderRepeatsAChild() = assertEquals(listOf(0, 1, 2), positions(3) { 0 })
 
   @Test fun firstChildHasNothingBehind() = assertEquals(emptyList<Int>(), BehindOrder.behind(flat(3), 0))
 
