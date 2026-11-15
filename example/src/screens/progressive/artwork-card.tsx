@@ -21,24 +21,26 @@ export function ArtworkCard() {
         blurAmount={40}
         reducedTransparencyFallbackColor="#1C1C1E"
         style={styles.fade}
-      />
-      <View style={styles.meta}>
-        <View style={styles.grow}>
-          <Text style={[t.font.title, styles.white]}>Violet Hour</Text>
-          <Text style={[t.font.label, styles.dim]}>June Park</Text>
+      >
+        {/* A child, so the Android capture leaves the title out and draws no blurred copy under it. */}
+        <View style={styles.meta}>
+          <View style={styles.grow}>
+            <Text style={[t.font.title, styles.white]}>Violet Hour</Text>
+            <Text style={[t.font.label, styles.dim]}>June Park</Text>
+          </View>
+          <View style={styles.play}>
+            <SymbolView
+              name={{
+                ios: 'play.fill',
+                android: 'play_arrow',
+                web: 'play_arrow',
+              }}
+              size={18}
+              tintColor="#0B0B0F"
+            />
+          </View>
         </View>
-        <View style={styles.play}>
-          <SymbolView
-            name={{
-              ios: 'play.fill',
-              android: 'play_arrow',
-              web: 'play_arrow',
-            }}
-            size={18}
-            tintColor="#0B0B0F"
-          />
-        </View>
-      </View>
+      </ProgressiveBlurView>
     </View>
   );
 }
