@@ -112,6 +112,16 @@ it('fails and writes no result when the dump has no frame summary', () => {
   expect(labelFiles()).toEqual([]);
 });
 
+it("leaves another run's temp file alone", () => {
+  const dir = path.join(RESULTS, `${FAKE_SHA}-dirty`);
+  fs.mkdirSync(dir, { recursive: true });
+  const other = path.join(dir, 'blur-list-count-3.json.tmp');
+  fs.writeFileSync(other, 'other run');
+  const result = run(stubBin({ debuggable: false }));
+  expect(result.status).toBe(0);
+  expect(fs.readFileSync(other, 'utf8')).toBe('other run');
+});
+
 it('refuses an unknown scene and writes no result', () => {
   const result = run(stubBin({ debuggable: false }), ['blur-lsit']);
   expect(result.status).not.toBe(0);
