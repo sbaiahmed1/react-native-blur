@@ -19,16 +19,25 @@ import { useTheme } from './theme';
 
 const BACKDROPS = ['shapes', 'bands', 'text'] as const;
 
-type WebClipboard = {
+type WebWindow = {
   navigator?: { clipboard?: { writeText(text: string): Promise<void> } };
+  prompt?: (message: string, value: string) => string | null;
 };
 
 async function shareCode(code: string) {
-  if (Platform.OS === 'web') {
-    await (globalThis as WebClipboard).navigator?.clipboard?.writeText(code);
+  if (Platform.OS !== 'web') {
+    await Share.share({ message: code });
     return;
   }
-  await Share.share({ message: code });
+  const web = globalThis as WebWindow;
+  const clipboard = web.navigator?.clipboard;
+  try {
+    if (!clipboard) throw new Error('No clipboard');
+    await clipboard.writeText(code);
+  } catch {
+    // An http origin has no clipboard and a refused write rejects, so the code opens in a prompt to copy by hand.
+    web.prompt?.('Copy the code', code);
+  }
 }
 
 function CodeBlock({ code }: { code: string }) {
