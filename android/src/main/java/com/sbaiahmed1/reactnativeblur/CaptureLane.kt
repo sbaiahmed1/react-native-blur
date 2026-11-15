@@ -20,8 +20,11 @@ internal class CaptureLane(
     return if (bounds.width <= 0 || bounds.height <= 0) null else bounds
   }
 
+  // Rounded up, so a root whose size is not a multiple of downsample keeps its last partial row and column.
   fun bitmapSize(region: Bounds): Pair<Int, Int> =
-    (region.width / downsample).coerceAtLeast(1) to (region.height / downsample).coerceAtLeast(1)
+    ceilDiv(region.width).coerceAtLeast(1) to ceilDiv(region.height).coerceAtLeast(1)
+
+  private fun ceilDiv(px: Int): Int = (px + downsample - 1) / downsample
 
   fun isDue(nowMs: Long, anyHostMoved: Boolean): Boolean = remainingMs(nowMs, anyHostMoved) == 0L
 

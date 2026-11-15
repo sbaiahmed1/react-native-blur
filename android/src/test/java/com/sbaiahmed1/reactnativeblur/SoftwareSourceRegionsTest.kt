@@ -39,6 +39,11 @@ class SoftwareSourceRegionsTest {
     assertNull(blurLane(FULL).regionBounds(Bounds(0, 0, 0, 0), Bounds(0, 0, 100, 100)))
   }
 
+  @Test fun bitmapCoversAPartialLastRowAndColumn() {
+    assertEquals(136 to 293, blurLane().bitmapSize(Bounds(0, 0, 1084, 2340)))
+    assertEquals(362 to 780, glassLane().bitmapSize(Bounds(0, 0, 1084, 2340)))
+  }
+
   @Test fun regionNeverZero() {
     assertEquals(1 to 1, blurLane().bitmapSize(Bounds(0, 0, 5, 5)))
   }
