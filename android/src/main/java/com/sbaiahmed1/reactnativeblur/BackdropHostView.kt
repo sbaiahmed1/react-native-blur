@@ -110,6 +110,14 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
     if (!nodeDrawn) invalidate()
   }
 
+  /** Draws this host's own backdrop layer into a nested host's backdrop. False before the node has content. */
+  internal fun drawOwnBackdrop(canvas: Canvas): Boolean {
+    val backdropNode = node ?: return false
+    if (!backdropNode.hasDisplayList()) return false
+    drawBackdrop(canvas, backdropNode)
+    return true
+  }
+
   override fun draw(canvas: Canvas) {
     if (SoftwareSource.isCapturing(this)) return
     val save = clipCorners(canvas)
