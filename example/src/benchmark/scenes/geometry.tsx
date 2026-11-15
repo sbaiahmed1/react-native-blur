@@ -56,6 +56,7 @@ export default function Geometry({ params, running }: SceneProps) {
         <BlurView
           blurType="light"
           blurAmount={params.amount}
+          blurRounds={params.rounds}
           style={styles.scaledCard}
         />
         <LiquidGlassView glassType="clear" style={styles.scaledCard} />
@@ -65,6 +66,7 @@ export default function Geometry({ params, running }: SceneProps) {
         <BlurView
           blurType="light"
           blurAmount={params.amount}
+          blurRounds={params.rounds}
           style={styles.layerCard}
         />
         <LiquidGlassView glassType="regular" style={styles.layerCard} />
@@ -73,6 +75,7 @@ export default function Geometry({ params, running }: SceneProps) {
       <ProgressiveBlurView
         blurType="light"
         blurAmount={params.amount}
+        blurRounds={params.rounds}
         direction="blurredTopClearBottom"
         style={styles.progressive}
       />
@@ -80,6 +83,7 @@ export default function Geometry({ params, running }: SceneProps) {
       <BlurView
         blurType="light"
         blurAmount={params.amount}
+        blurRounds={params.rounds}
         style={[styles.resizing, { height: RESIZE_STEPS[step] }]}
       />
     </View>
