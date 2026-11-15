@@ -26,6 +26,9 @@ const DIRECTION_LABELS = {
   blurredCenterClearTopAndBottom: 'Center',
 };
 
+// The center direction clamps startOffset to 0.3, so the slider stops there.
+const CENTER_MAX_OFFSET = 0.3;
+
 const DEFAULTS = {
   direction: 'blurredTopClearBottom',
   startOffset: 0,
@@ -41,6 +44,14 @@ export default function ProgressivePlayground() {
   const [startOffset, setStartOffset] = useState(0.2);
   const [blurAmount, setBlurAmount] = useState(40);
   const [blurType, setBlurType] = useState<BlurType>('regular');
+  const offsetMax =
+    direction === 'blurredCenterClearTopAndBottom' ? CENTER_MAX_OFFSET : 1;
+  const changeDirection = (next: ProgressiveBlurDirection) => {
+    setDirection(next);
+    if (next === 'blurredCenterClearTopAndBottom') {
+      setStartOffset((offset) => Math.min(offset, CENTER_MAX_OFFSET));
+    }
+  };
 
   return (
     <Playground
@@ -65,14 +76,14 @@ export default function ProgressivePlayground() {
           value={direction}
           options={DIRECTIONS}
           labels={DIRECTION_LABELS}
-          onChange={setDirection}
+          onChange={changeDirection}
         />,
         <Slider
           key="offset"
           label="startOffset"
           value={startOffset}
           min={0}
-          max={1}
+          max={offsetMax}
           step={0.05}
           onChange={setStartOffset}
         />,
