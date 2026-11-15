@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SymbolView } from 'expo-symbols';
 import { LiquidGlassView } from '@sbaiahmed1/react-native-blur';
 
+import { NATIVE_GLASS } from '@/ui/glass-support';
 import { MaterialCard, Section } from '@/ui/screen';
 import { SHAPES, useTheme } from '@/ui/theme';
 import { useReduceTransparency } from '@/ui/use-reduce-transparency';
@@ -56,6 +57,8 @@ function ButtonsOverMedia() {
             <LiquidGlassView
               key={i}
               glassType="clear"
+              // The blur fallback is pale over bright art, so a dark tint keeps the white icons above 3:1.
+              glassTintColor={NATIVE_GLASS ? undefined : '#000000'}
               reducedTransparencyFallbackColor={t.colors.surface}
               style={styles.control}
             >
