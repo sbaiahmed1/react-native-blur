@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.annotation.RequiresApi
 import com.facebook.react.uimanager.ReactOverflowView
+import com.facebook.react.views.view.ReactViewGroup
 import kotlin.math.ceil
 
 /** Records each host's backdrop from the RenderNodes of the views painted behind it, without running any view's draw code. */
@@ -36,6 +37,7 @@ internal class BehindSource private constructor(
   private val step = Matrix()
   private val hostRects = ArrayList<RectF>()
   private val childRect = RectF()
+  private val paintBounds = FloatArray(4)
   private val visibleRect = Rect()
   private val location = IntArray(2)
   private val decorLocation = IntArray(2)
@@ -158,7 +160,15 @@ internal class BehindSource private constructor(
   // clip its children, the React Native default of overflow: visible, can paint descendants outside its own bounds.
   private fun paintsInto(view: View, depth: Int, target: RectF): Boolean {
     val toTarget = overflowMatrix(depth)
-    childRect.set(0f, 0f, view.width.toFloat(), view.height.toFloat())
+    // React Native views draw overflowing children, which Fabric reports as the view's overflow inset. That settles most
+    // siblings at once, and the walk below still finds what it misses, such as natively animated transforms.
+    val inset = (view as? ReactViewGroup)?.overflowInset
+    if (inset == null) {
+      childRect.set(0f, 0f, view.width.toFloat(), view.height.toFloat())
+    } else {
+      OverflowBounds.write(view.width, view.height, inset.left, inset.top, inset.right, inset.bottom, paintBounds)
+      childRect.set(paintBounds[0], paintBounds[1], paintBounds[2], paintBounds[3])
+    }
     toTarget.mapRect(childRect)
     if (RectF.intersects(childRect, target)) return true
     val group = view as? ViewGroup ?: return false
