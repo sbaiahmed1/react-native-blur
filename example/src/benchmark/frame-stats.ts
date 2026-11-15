@@ -9,6 +9,8 @@ export type FrameSummary = {
 };
 
 const JANK_FACTOR = 1.5;
+// The derived interval never goes past 60 Hz, so a run that is slow on every frame still counts as jank.
+const MAX_REFRESH_MS = 1000 / 60;
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
@@ -37,7 +39,7 @@ export function summarizeFrames(
     };
   }
   const sorted = [...deltasMs].sort((a, b) => a - b);
-  const refresh = refreshMs ?? percentile(sorted, 10);
+  const refresh = refreshMs ?? Math.min(percentile(sorted, 10), MAX_REFRESH_MS);
   const janky = deltasMs.filter((d) => d > JANK_FACTOR * refresh).length;
   return {
     frames,
