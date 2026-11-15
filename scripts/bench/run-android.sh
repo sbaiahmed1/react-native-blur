@@ -48,7 +48,12 @@ adb shell dumpsys gfxinfo "$PKG" </dev/null |
     process.stdin.on("data", (chunk) => (input += chunk));
     process.stdin.on("end", () => {
       const [scene, query] = process.argv.slice(1);
-      console.log(JSON.stringify({ scene, query, ...JSON.parse(input) }));
+      const stats = JSON.parse(input);
+      if (stats.totalFrames === null) {
+        console.error("run-android.sh: dumpsys gfxinfo printed no frame summary.");
+        process.exit(1);
+      }
+      console.log(JSON.stringify({ scene, query, ...stats }));
     });
   ' "$SCENE" "$QUERY" >"$OUT.tmp"
 mv "$OUT.tmp" "$OUT"
