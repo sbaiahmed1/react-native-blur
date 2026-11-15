@@ -2,6 +2,7 @@ package com.sbaiahmed1.reactnativeblur
 
 import android.graphics.Matrix
 import android.graphics.RecordingCanvas
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.RenderNode
 import android.os.Build
@@ -27,12 +28,14 @@ internal class BehindSource private constructor(
 
   private val path = ArrayList<View>()
   private val children = ArrayList<BehindOrder.Child>()
+  private val candidates = ArrayList<View>()
   private var positions = IntArray(16)
   private val hostToRoot = Matrix()
   private val rootToHost = Matrix()
   private val step = Matrix()
   private val hostRects = ArrayList<RectF>()
   private val childRect = RectF()
+  private val visibleRect = Rect()
   private val location = IntArray(2)
   private val decorLocation = IntArray(2)
   private val overflowMatrices = ArrayList<Matrix>()
@@ -58,7 +61,8 @@ internal class BehindSource private constructor(
 
   override fun onPreDraw(): Boolean {
     frame++
-    for (host in hosts) if (host.isBackdropVisible) host.onBackdropFrame()
+    // A host scrolled off screen records again on the pre-draw of the frame that shows it.
+    for (host in hosts) if (host.isBackdropVisible && host.getGlobalVisibleRect(visibleRect)) host.onBackdropFrame()
     return true
   }
 
@@ -175,14 +179,12 @@ internal class BehindSource private constructor(
       parent.background?.draw(canvas)
       if (parent is BackdropHostView) parent.drawOwnBackdrop(canvas)
       canvas.translate(-parent.scrollX.toFloat(), -parent.scrollY.toFloat())
-      fillChildren(parent)
-      val behind = BehindOrder.behind(children, parent.indexOfChild(pathChild))
+      val pathIndex = fillCandidates(parent, pathChild, i - 1)
+      val behind = BehindOrder.behind(children, pathIndex)
       if (behind.isNotEmpty()) {
         canvas.enableZ()
         for (index in behind) {
-          val child = parent.getChildAt(index)
-          if (!overlapsHost(child, i - 1)) continue
-          val childNode = RenderNodeAccess.nodeOf(child) ?: continue
+          val childNode = RenderNodeAccess.nodeOf(candidates[index]) ?: continue
           if (childNode.hasDisplayList()) canvas.drawRenderNode(childNode)
         }
         canvas.disableZ()
@@ -202,15 +204,23 @@ internal class BehindSource private constructor(
     canvas.restoreToCount(save)
   }
 
-  private fun fillChildren(parent: ViewGroup) {
+  // Fills children and candidates with the path child and the siblings that overlap the host, and returns the path's index there.
+  private fun fillCandidates(parent: ViewGroup, pathChild: View, level: Int): Int {
     val count = parent.childCount
     if (positions.size < count) positions = IntArray(count * 2)
     for (position in 0 until count) positions[parent.getChildDrawingOrder(position)] = position
     children.clear()
+    candidates.clear()
+    var pathIndex = BehindOrder.DISAPPEARING
     for (index in 0 until count) {
       val child = parent.getChildAt(index)
+      val isPath = child === pathChild
+      if (!isPath && !overlapsHost(child, level)) continue
+      if (isPath) pathIndex = children.size
+      candidates.add(child)
       children.add(BehindOrder.Child(positions[index], child.z, child.visibility == View.VISIBLE || child.animation != null))
     }
+    return pathIndex
   }
 
   companion object {
