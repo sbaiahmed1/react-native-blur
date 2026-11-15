@@ -28,6 +28,9 @@ internal class EngineProgressiveBlurView(context: Context) : BackdropHostView(co
   private val effectRadius: Float
     get() = BlurRadius.effectRadius(BlurRadius.sigmaPx(ProgressiveMask.effectiveAmount(blurAmount, direction)) / downsample)
 
+  override val wantsBackdrop: Boolean
+    get() = effectRadius > 0f
+
   private fun createBlurEffect(): RenderEffect = gpuBlurEffect(effectRadius)
 
   override fun drawBackdrop(canvas: Canvas, node: RenderNode) {

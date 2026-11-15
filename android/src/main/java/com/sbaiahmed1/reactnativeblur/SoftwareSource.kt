@@ -111,7 +111,7 @@ internal class SoftwareSource private constructor(
   }
 
   override fun onPreDraw(): Boolean {
-    val visible = hosts.filter { it.isBackdropVisible }
+    val visible = hosts.filter { it.isBackdropVisible && it.wantsBackdrop }
     if (visible.isEmpty()) return true
     updateNested()
     for (host in visible) hostBounds[host] = currentBounds(host)
