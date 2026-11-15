@@ -42,7 +42,6 @@ internal class SoftwareSource private constructor(
 
   private class Lane(val config: CaptureLane) {
     val regions = HashMap<Any, Region>()
-    val kept = ArrayList<Region>()
     val capturedBounds = HashMap<BackdropHostView, CaptureLane.Bounds>()
   }
 
@@ -82,8 +81,7 @@ internal class SoftwareSource private constructor(
     hostBounds.remove(host)
     for (lane in lanes.values) {
       lane.capturedBounds.remove(host)
-      // Only a HOST lane reuses a region by its bounds, a FULL lane drops a nested host's region.
-      lane.regions.remove(host)?.let { if (lane.config.mode == CaptureLane.Mode.HOST) lane.kept.add(it) }
+      lane.regions.remove(host)
     }
     nestedHosts.remove(host)
     if (hosts.isNotEmpty()) return
@@ -117,7 +115,6 @@ internal class SoftwareSource private constructor(
     if (visible.isEmpty()) return true
     updateNested()
     for (host in visible) hostBounds[host] = currentBounds(host)
-    adoptKeptRegions(visible)
 
     val now = SystemClock.uptimeMillis()
     val pending = animationRoots.any { CaptureAnimationGuard.hasPendingViewAnimation(it) }
@@ -191,9 +188,7 @@ internal class SoftwareSource private constructor(
     nestedHosts.clear()
     for (host in hosts) if (hasHostAncestor(host)) nestedHosts.add(host)
     // A host that left its outer host reads the root again, so its own region goes.
-    for (lane in lanes.values) {
-      if (lane.config.mode == CaptureLane.Mode.FULL) lane.regions.keys.retainAll { it === ROOT_KEY || it in nestedHosts }
-    }
+    for (lane in lanes.values) lane.regions.keys.retainAll { it === ROOT_KEY || it in nestedHosts }
   }
 
   private fun hasHostAncestor(host: View): Boolean {
@@ -203,17 +198,6 @@ internal class SoftwareSource private constructor(
       parent = parent.parent
     }
     return false
-  }
-
-  private fun adoptKeptRegions(visible: List<BackdropHostView>) {
-    for (host in visible) {
-      val lane = lanes[host.downsample] ?: continue
-      if (lane.config.mode != CaptureLane.Mode.HOST || lane.regions.containsKey(host) || lane.kept.isEmpty()) continue
-      val bounds = hostBounds[host] ?: continue
-      val kept = lane.kept.firstOrNull { it.bitmapBounds == bounds } ?: continue
-      lane.kept.remove(kept)
-      lane.regions[host] = kept
-    }
   }
 
   private fun captureDueLanes(visible: List<BackdropHostView>, now: Long) {
@@ -306,7 +290,7 @@ internal class SoftwareSource private constructor(
 
   private fun release() {
     for (lane in lanes.values) {
-      for (region in lane.regions.values + lane.kept) region.bitmap?.recycle()
+      for (region in lane.regions.values) region.bitmap?.recycle()
     }
     lanes.clear()
     if (sources[key] === this) sources.remove(key)
@@ -314,9 +298,6 @@ internal class SoftwareSource private constructor(
 
   companion object {
     private const val TAG = "RNSoftwareSource"
-    // Task 2 ruling, see the plan 04 ledger.
-    private val BLUR_LANE_MODE = CaptureLane.Mode.FULL
-    private val GLASS_LANE_MODE = CaptureLane.Mode.FULL
     private const val GLASS_MOTION_INTERVAL_MS = 33L
     private const val GLASS_IDLE_INTERVAL_MS = 100L
     private val ROOT_KEY = Any()
@@ -327,9 +308,9 @@ internal class SoftwareSource private constructor(
 
     private fun laneFor(downsample: Int): CaptureLane =
       if (downsample == BackdropScale.GLASS) {
-        CaptureLane(downsample, GLASS_LANE_MODE, GLASS_MOTION_INTERVAL_MS, GLASS_IDLE_INTERVAL_MS)
+        CaptureLane(downsample, GLASS_MOTION_INTERVAL_MS, GLASS_IDLE_INTERVAL_MS)
       } else {
-        CaptureLane(downsample, BLUR_LANE_MODE, 0L, 0L)
+        CaptureLane(downsample, 0L, 0L)
       }
 
     /** The shared source for [host]'s capture root: a Screen or React root, a Modal's two windows, else the activity window. */
