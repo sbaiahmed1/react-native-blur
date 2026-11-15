@@ -27,6 +27,7 @@ RUNS=(
   "recycle"
   "overlap"
   "nested"
+  "halo"
 )
 
 for run in "${RUNS[@]}"; do

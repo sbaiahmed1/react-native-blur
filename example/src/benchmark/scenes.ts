@@ -6,6 +6,7 @@ import BaselineList from './scenes/baseline-list';
 import BlurInScroll from './scenes/blur-in-scroll';
 import BlurList from './scenes/blur-list';
 import GlassList from './scenes/glass-list';
+import Halo from './scenes/halo';
 import IdleCursor from './scenes/idle-cursor';
 import ModalIdle from './scenes/modal-idle';
 import ModalLive from './scenes/modal-live';
@@ -140,6 +141,13 @@ export const SCENES: readonly SceneDef[] = [
     note: 'A BlurView card holding a red block, a BlurView badge and a glass button over it.',
     defaults: {},
     Component: Nested,
+  },
+  {
+    id: 'halo',
+    title: 'Halo',
+    note: 'A raised button over a blur tab bar (#132).',
+    defaults: {},
+    Component: Halo,
   },
 ];
 

@@ -10,13 +10,16 @@ export default function BenchmarkLayout() {
       {/* Set at push time, so `animation=fade` drives the push itself. */}
       <Stack.Screen
         name="detail"
-        options={({ route }) => ({
-          animation:
-            (route.params as { animation?: string } | undefined)?.animation ===
-            'fade'
-              ? 'fade'
-              : 'default',
-        })}
+        options={({ route }) => {
+          const animation = (route.params as { animation?: string } | undefined)
+            ?.animation;
+          return {
+            animation:
+              animation === 'fade' || animation === 'fade_from_bottom'
+                ? animation
+                : 'default',
+          };
+        }}
       />
     </Stack>
   );
