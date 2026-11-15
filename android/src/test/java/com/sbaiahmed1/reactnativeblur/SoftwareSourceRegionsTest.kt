@@ -85,4 +85,31 @@ class SoftwareSourceRegionsTest {
     lane.onCaptureResult(500, true)
     assertTrue(lane.isDue(534, true))
   }
+
+  @Test fun fullLaneCapturesTheRootOnce() {
+    assertEquals(listOf<String?>(null), blurLane().captureTargets(listOf("header", "card"), emptySet()))
+  }
+
+  @Test fun nestedHostCapturesAloneBesideTheRoot() {
+    assertEquals(listOf(null, "badge"), blurLane().captureTargets(listOf("card", "badge"), setOf("badge")))
+  }
+
+  @Test fun onlyNestedHostsSkipTheRoot() {
+    assertEquals(listOf<String?>("glass"), glassLane().captureTargets(listOf("glass"), setOf("glass")))
+  }
+
+  @Test fun hostLaneCapturesEachHost() {
+    assertEquals(listOf<String?>("a", "b"), blurLane(HOST).captureTargets(listOf("a", "b"), emptySet()))
+  }
+
+  @Test fun hostCapturingAloneInAFullLaneGetsItsOwnBounds() {
+    assertEquals(bar, blurLane(FULL).regionBounds(screen, bar, alone = true))
+    assertEquals(screen, blurLane(FULL).regionBounds(screen, bar, alone = false))
+  }
+
+  @Test fun nestedHostReadsItsOwnRegion() {
+    assertTrue(blurLane().sharesRoot(nested = false))
+    assertFalse(blurLane().sharesRoot(nested = true))
+    assertFalse(blurLane(HOST).sharesRoot(nested = false))
+  }
 }

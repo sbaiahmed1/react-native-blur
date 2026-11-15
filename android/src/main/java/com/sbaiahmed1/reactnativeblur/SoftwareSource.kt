@@ -47,6 +47,7 @@ internal class SoftwareSource private constructor(
   }
 
   private val hosts = LinkedHashSet<BackdropHostView>()
+  private val nestedHosts = HashSet<BackdropHostView>()
   private val lanes = HashMap<Int, Lane>()
   private val hostBounds = HashMap<BackdropHostView, CaptureLane.Bounds>()
   private val deferral = AnimationDeferral()
@@ -81,8 +82,10 @@ internal class SoftwareSource private constructor(
     hostBounds.remove(host)
     for (lane in lanes.values) {
       lane.capturedBounds.remove(host)
-      lane.regions.remove(host)?.let { lane.kept.add(it) }
+      // Only a HOST lane reuses a region by its bounds, a FULL lane drops a nested host's region.
+      lane.regions.remove(host)?.let { if (lane.config.mode == CaptureLane.Mode.HOST) lane.kept.add(it) }
     }
+    nestedHosts.remove(host)
     if (hosts.isNotEmpty()) return
 
     observer?.let { if (it.isAlive) it.removeOnPreDrawListener(this) }
@@ -112,6 +115,7 @@ internal class SoftwareSource private constructor(
   override fun onPreDraw(): Boolean {
     val visible = hosts.filter { it.isBackdropVisible }
     if (visible.isEmpty()) return true
+    updateNested()
     for (host in visible) hostBounds[host] = currentBounds(host)
     adoptKeptRegions(visible)
 
@@ -180,7 +184,25 @@ internal class SoftwareSource private constructor(
   }
 
   private fun regionOf(lane: Lane, host: BackdropHostView): Region? =
-    if (lane.config.mode == CaptureLane.Mode.FULL) lane.regions[ROOT_KEY] else lane.regions[host]
+    if (lane.config.sharesRoot(host in nestedHosts)) lane.regions[ROOT_KEY] else lane.regions[host]
+
+  private fun updateNested() {
+    nestedHosts.clear()
+    for (host in hosts) if (hasHostAncestor(host)) nestedHosts.add(host)
+    // A host that left its outer host reads the root again, so its own region goes.
+    for (lane in lanes.values) {
+      if (lane.config.mode == CaptureLane.Mode.FULL) lane.regions.keys.retainAll { it === ROOT_KEY || it in nestedHosts }
+    }
+  }
+
+  private fun hasHostAncestor(host: View): Boolean {
+    var parent = host.parent
+    while (parent is View && parent !== root) {
+      if (parent is BackdropHostView && parent in hosts) return true
+      parent = parent.parent
+    }
+    return false
+  }
 
   private fun adoptKeptRegions(visible: List<BackdropHostView>) {
     for (host in visible) {
@@ -205,18 +227,12 @@ internal class SoftwareSource private constructor(
         continue
       }
       var success = true
-      if (lane.config.mode == CaptureLane.Mode.FULL) {
-        val bounds = lane.config.regionBounds(rootBounds, rootBounds) ?: continue
-        val region = lane.regions.getOrPut(ROOT_KEY) { Region(bounds) }
+      for (target in lane.config.captureTargets(laneHosts, nestedHosts)) {
+        val area = if (target == null) rootBounds else hostBounds[target] ?: continue
+        val bounds = lane.config.regionBounds(rootBounds, area, alone = target != null) ?: continue
+        val region = lane.regions.getOrPut(target ?: ROOT_KEY) { Region(bounds) }
         region.bounds = bounds
-        success = capture(lane.config, region, null)
-      } else {
-        for (host in laneHosts) {
-          val bounds = lane.config.regionBounds(rootBounds, hostBounds[host] ?: continue) ?: continue
-          val region = lane.regions.getOrPut(host) { Region(bounds) }
-          region.bounds = bounds
-          if (!capture(lane.config, region, host)) success = false
-        }
+        if (!capture(lane.config, region, target)) success = false
       }
       lane.config.onCaptureResult(now, success)
       if (success) for (host in laneHosts) hostBounds[host]?.let { lane.capturedBounds[host] = it }
