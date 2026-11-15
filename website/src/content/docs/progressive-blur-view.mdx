@@ -88,11 +88,11 @@ The three backends aim for the same look but get there differently:
 
 ## Android backend notes
 
-On Android, the blur works by capturing the surrounding view tree — scoped to the nearest `react-native-screens` Screen, falling back to the React root — into a downsampled bitmap and blurring it. Three practical consequences:
+On Android 12 and later, the blur reads the views drawn behind it and blurs them on the GPU. On Android 11 and earlier, QmBlurView captures the view tree around it into a downsampled bitmap and blurs it on the CPU. The capture covers the nearest `react-native-screens` Screen, or the React root when there is none. Three practical consequences:
 
-- **Capture and blur both cost work.** Captures use a downsampled bitmap, and each `blurRounds` iteration adds a native blur pass. Lowering it trades quality for less blur work; measure on target devices to determine whether capture or blur is the bottleneck.
-- **Other foreground content can be captured too.** Android captures the surrounding view tree rather than only pixels behind the effect. This component's children live inside the native view and are excluded with its subtree; they render sharp above the masked blur. Other foreground siblings inside the capture root can still produce a blurred halo. If necessary, move those siblings outside the capture root (e.g. a portal above the navigator).
-- **Blur and glass views do not show each other.** On Android 12 and later, overlapping blur and glass views on one screen leave each other out of their backdrop. A view placed inside another one is the exception: it sees the outer view's tint and children.
+- **`blurRounds` only changes Android 11 and earlier.** Each iteration adds a CPU blur pass. Lowering it trades quality for less work, so measure on target devices.
+- **Foreground content stays out of the blur on Android 12 and later.** This component's children render sharp above the masked blur on every version. On Android 11 and earlier, other foreground siblings inside the capture root can still produce a blurred halo. If necessary, move those siblings outside the capture root (e.g. a portal above the navigator).
+- **Blur and glass views show each other on Android 12 and later.** Where two of them overlap, the top one shows the one below it, with its text and tint.
 
 ## Direction values
 
