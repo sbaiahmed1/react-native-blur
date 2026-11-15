@@ -198,10 +198,8 @@ internal class BehindSource private constructor(
       val behind = BehindOrder.behind(children, pathIndex)
       if (behind.isNotEmpty()) {
         canvas.enableZ()
-        for (index in behind) {
-          val childNode = RenderNodeAccess.nodeOf(candidates[index]) ?: continue
-          if (childNode.hasDisplayList()) canvas.drawRenderNode(childNode)
-        }
+        // No display list check: a child attached this frame records after pre-draw, and the reference picks it up at sync.
+        for (index in behind) RenderNodeAccess.nodeOf(candidates[index])?.let { canvas.drawRenderNode(it) }
         canvas.disableZ()
       }
       canvas.concat(nodeTransform(pathChild))
@@ -210,7 +208,6 @@ internal class BehindSource private constructor(
 
   private fun drawDecor(canvas: RecordingCanvas, decor: View) {
     val decorNode = RenderNodeAccess.nodeOf(decor) ?: return
-    if (!decorNode.hasDisplayList()) return
     decor.getLocationOnScreen(decorLocation)
     root.getLocationOnScreen(location)
     val save = canvas.save()
