@@ -31,14 +31,17 @@ function parseGfxinfo(text) {
     return match ? Number(match[1]) : null;
   };
   const janky = findFirst(lines, PATTERNS.janky);
+  const totalFrames = value('totalFrames');
+  // Android prints 4950ms percentiles for an empty histogram, which are not measurements.
+  const percentile = (key) => (totalFrames === 0 ? null : value(key));
   return {
-    totalFrames: value('totalFrames'),
+    totalFrames,
     jankyFrames: janky ? Number(janky[1]) : null,
     jankyPct: janky ? Number(janky[2]) : null,
-    p50: value('p50'),
-    p90: value('p90'),
-    p95: value('p95'),
-    p99: value('p99'),
+    p50: percentile('p50'),
+    p90: percentile('p90'),
+    p95: percentile('p95'),
+    p99: percentile('p99'),
   };
 }
 
