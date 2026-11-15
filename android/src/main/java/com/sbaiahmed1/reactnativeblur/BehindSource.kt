@@ -22,6 +22,7 @@ internal class BehindSource private constructor(
 ) : BackdropSource, ViewTreeObserver.OnPreDrawListener {
 
   private val hosts = LinkedHashSet<BackdropHostView>()
+  private val glassLayers = HashMap<BackdropHostView, RenderNode>()
   private var observer: ViewTreeObserver? = null
   private var behindInvalidator: BehindWindowInvalidator? = null
   private var frame = 0L
@@ -51,7 +52,9 @@ internal class BehindSource private constructor(
   }
 
   override fun removeHost(host: BackdropHostView) {
-    if (!hosts.remove(host) || hosts.isNotEmpty()) return
+    if (!hosts.remove(host)) return
+    glassLayers.remove(host)?.discardDisplayList()
+    if (hosts.isNotEmpty()) return
     observer?.let { if (it.isAlive) it.removeOnPreDrawListener(this) }
     observer = null
     behindInvalidator?.remove()
@@ -72,30 +75,41 @@ internal class BehindSource private constructor(
   override fun recordInto(node: RenderNode, host: BackdropHostView): Boolean {
     if (!buildPath(host) || !hostToRoot.invert(rootToHost)) return false
     val downsample = host.downsample.toFloat()
-    val canvas: RecordingCanvas
     if (host.nodeAtCaptureScale) {
-      val width = ceil(host.width / downsample).toInt().coerceAtLeast(1)
-      val height = ceil(host.height / downsample).toInt().coerceAtLeast(1)
-      node.setPosition(0, 0, width, height)
-      node.setPivotX(0f)
-      node.setPivotY(0f)
-      node.setScaleX(downsample)
-      node.setScaleY(downsample)
-      canvas = node.beginRecording(width, height)
-      canvas.scale(1f / downsample, 1f / downsample)
-    } else {
-      node.setPosition(0, 0, host.width, host.height)
-      node.setScaleX(1f)
-      node.setScaleY(1f)
-      canvas = node.beginRecording(host.width, host.height)
+      recordScaled(node, host, downsample)
+      return true
     }
+    // Glass reads view px, so the content renders into a layer at capture scale and is drawn back at view scale.
+    val layer = glassLayers.getOrPut(host) { RenderNode("RNBackdropContent").also { it.setUseCompositingLayer(true, null) } }
+    recordScaled(layer, host, downsample)
+    node.setPosition(0, 0, host.width, host.height)
+    node.setScaleX(1f)
+    node.setScaleY(1f)
+    val canvas = node.beginRecording(host.width, host.height)
     try {
+      canvas.drawRenderNode(layer)
+    } finally {
+      node.endRecording()
+    }
+    return true
+  }
+
+  private fun recordScaled(node: RenderNode, host: View, downsample: Float) {
+    val width = ceil(host.width / downsample).toInt().coerceAtLeast(1)
+    val height = ceil(host.height / downsample).toInt().coerceAtLeast(1)
+    node.setPosition(0, 0, width, height)
+    node.setPivotX(0f)
+    node.setPivotY(0f)
+    node.setScaleX(downsample)
+    node.setScaleY(downsample)
+    val canvas = node.beginRecording(width, height)
+    try {
+      canvas.scale(1f / downsample, 1f / downsample)
       canvas.concat(rootToHost)
       drawBehind(canvas)
     } finally {
       node.endRecording()
     }
-    return true
   }
 
   // Fills path with root..host, hostToRoot, and the host's bounds in each parent's content space for culling.
