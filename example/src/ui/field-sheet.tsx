@@ -1,6 +1,7 @@
 import {
   Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -55,66 +56,85 @@ export function FieldSheet({
         reducedTransparencyFallbackColor={t.colors.surface}
         style={[
           styles.sheet,
-          { left, width: sheetWidth, paddingBottom: insets.bottom + PADDING },
+          {
+            left,
+            width: sheetWidth,
+            maxHeight: height - insets.top - 2 * INSET,
+          },
         ]}
       >
-        <View style={styles.header}>
-          <Text
-            style={[t.font.title, { color: t.colors.text }]}
-            accessibilityRole="header"
-          >
-            Backdrop
-          </Text>
-          <Pressable accessibilityRole="button" onPress={onClose} hitSlop={12}>
-            <Text style={[t.font.headline, { color: t.colors.accent }]}>
-              Done
+        {/* Sized to its content, so it only scrolls in a window too short for the sheet. */}
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: insets.bottom + PADDING },
+          ]}
+        >
+          <View style={styles.header}>
+            <Text
+              style={[t.font.title, { color: t.colors.text }]}
+              accessibilityRole="header"
+            >
+              Backdrop
             </Text>
-          </Pressable>
-        </View>
-        <Text style={[t.font.footnote, { color: t.colors.text }]}>
-          Drawn behind every screen, so each effect sits over sharp color.
-        </Text>
-        <View style={styles.tiles}>
-          {FIELDS.map((name) => {
-            const selected = name === field;
-            return (
-              <Pressable
-                key={name}
-                accessibilityRole="button"
-                accessibilityLabel={`${FIELD_LABELS[name]} backdrop`}
-                accessibilityState={{ selected }}
-                onPress={() => setField(name)}
-                style={styles.tile}
-              >
-                <View
-                  accessibilityElementsHidden
-                  importantForAccessibility="no-hide-descendants"
-                  style={[
-                    styles.preview,
-                    selected && styles.picked,
-                    {
-                      width: tileWidth,
-                      height: tileHeight,
-                      backgroundColor: t.colors.bg,
-                      borderColor: selected ? t.colors.accent : t.colors.border,
-                    },
-                  ]}
+            <Pressable
+              accessibilityRole="button"
+              onPress={onClose}
+              hitSlop={12}
+            >
+              <Text style={[t.font.headline, { color: t.colors.accent }]}>
+                Done
+              </Text>
+            </Pressable>
+          </View>
+          <Text style={[t.font.footnote, { color: t.colors.text }]}>
+            Drawn behind every screen, so each effect sits over sharp color.
+          </Text>
+          <View style={styles.tiles}>
+            {FIELDS.map((name) => {
+              const selected = name === field;
+              return (
+                <Pressable
+                  key={name}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${FIELD_LABELS[name]} backdrop`}
+                  accessibilityState={{ selected }}
+                  onPress={() => setField(name)}
+                  style={styles.tile}
                 >
-                  <Field name={name} width={tileWidth} height={tileHeight} />
-                </View>
-                <Text
-                  style={[
-                    t.font.footnote,
-                    selected && styles.bold,
-                    { color: selected ? t.colors.accent : t.colors.text },
-                  ]}
-                >
-                  {FIELD_LABELS[name]}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+                  <View
+                    accessibilityElementsHidden
+                    importantForAccessibility="no-hide-descendants"
+                    style={[
+                      styles.preview,
+                      selected && styles.picked,
+                      {
+                        width: tileWidth,
+                        height: tileHeight,
+                        backgroundColor: t.colors.bg,
+                        borderColor: selected
+                          ? t.colors.accent
+                          : t.colors.border,
+                      },
+                    ]}
+                  >
+                    <Field name={name} width={tileWidth} height={tileHeight} />
+                  </View>
+                  <Text
+                    style={[
+                      t.font.footnote,
+                      selected && styles.bold,
+                      { color: selected ? t.colors.accent : t.colors.text },
+                    ]}
+                  >
+                    {FIELD_LABELS[name]}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </ScrollView>
       </BlurView>
     </Modal>
   );
@@ -126,10 +146,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: INSET,
     borderRadius: 36,
-    padding: PADDING,
-    gap: 12,
     overflow: 'hidden',
   },
+  scroll: { flexGrow: 0 },
+  content: { padding: PADDING, gap: 12 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
