@@ -45,8 +45,9 @@ if [ -z "$(adb shell pidof "$PKG" </dev/null 2>/dev/null || true)" ]; then
   echo "run-android.sh: $PKG is not running after the window. It crashed or was killed." >&2
   exit 1
 fi
-# Written to a temp file and moved on success, so a failed run leaves no partial JSON.
-trap 'rm -f "$OUT.tmp"' EXIT
+# Written to its own temp file and moved on success, so a failed or parallel run leaves no partial JSON.
+TMP=$(mktemp "$OUT_DIR/.${SCENE}.XXXXXX")
+trap 'rm -f "$TMP"' EXIT
 adb shell dumpsys gfxinfo "$PKG" </dev/null |
   node "$ROOT/scripts/bench/parse-gfxinfo.js" |
   node -e '
@@ -61,7 +62,7 @@ adb shell dumpsys gfxinfo "$PKG" </dev/null |
       }
       console.log(JSON.stringify({ scene, query, ...stats }));
     });
-  ' "$SCENE" "$QUERY" >"$OUT.tmp"
-mv "$OUT.tmp" "$OUT"
+  ' "$SCENE" "$QUERY" >"$TMP"
+mv "$TMP" "$OUT"
 
 echo "$OUT"
