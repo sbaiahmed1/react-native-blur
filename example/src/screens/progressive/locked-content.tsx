@@ -16,7 +16,13 @@ export function LockedContent() {
   const [unlocked, setUnlocked] = useState(false);
   return (
     <Section title="Locked content">
-      <View style={[styles.card, { backgroundColor: t.colors.surface }]}>
+      <View
+        style={[
+          styles.card,
+          !unlocked && styles.cardLocked,
+          { backgroundColor: t.colors.surface },
+        ]}
+      >
         <View style={styles.article}>
           <Text style={[t.font.title, { color: t.colors.text }]}>
             Morning at the harbor
@@ -43,7 +49,11 @@ export function LockedContent() {
         <Pressable
           accessibilityRole="button"
           onPress={() => setUnlocked((u) => !u)}
-          style={[styles.button, { backgroundColor: t.colors.text }]}
+          style={[
+            styles.button,
+            unlocked ? styles.buttonOpen : styles.buttonLocked,
+            { backgroundColor: t.colors.text },
+          ]}
         >
           <Text style={[t.font.headline, { color: t.colors.bg }]}>
             {unlocked ? 'Lock again' : 'Subscribe to keep reading'}
@@ -55,17 +65,17 @@ export function LockedContent() {
 }
 
 const styles = StyleSheet.create({
-  card: { height: 300, borderRadius: 24, overflow: 'hidden' },
+  card: { borderRadius: 24, overflow: 'hidden' },
+  // Unlocked, the card grows with the article and the button moves below it.
+  cardLocked: { height: 300 },
   article: { padding: 20, gap: 10 },
   fade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '62%' },
   button: {
-    position: 'absolute',
-    left: 20,
-    right: 20,
-    bottom: 20,
     minHeight: 48,
     borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  buttonLocked: { position: 'absolute', left: 20, right: 20, bottom: 20 },
+  buttonOpen: { marginHorizontal: 20, marginBottom: 20 },
 });
