@@ -15,6 +15,12 @@ it('returns the defaults for an empty query', () => {
   expect(parseBenchParams({}, D)).toEqual(D);
 });
 
+it('accepts fade_from_bottom', () => {
+  expect(parseBenchParams({ animation: 'fade_from_bottom' }, D).animation).toBe(
+    'fade_from_bottom'
+  );
+});
+
 it('parses every param', () => {
   expect(
     parseBenchParams(

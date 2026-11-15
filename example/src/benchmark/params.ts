@@ -5,7 +5,7 @@ export type BenchParams = {
   rounds: number;
   images: boolean;
   autoplay: boolean;
-  animation: 'default' | 'fade';
+  animation: 'default' | 'fade' | 'fade_from_bottom';
   warmup: number;
 };
 
@@ -73,7 +73,9 @@ export function parseBenchParams(
     images: parseFlag(first(raw.images), defaults.images),
     autoplay: parseFlag(first(raw.autoplay), defaults.autoplay),
     animation:
-      animation === 'default' || animation === 'fade'
+      animation === 'default' ||
+      animation === 'fade' ||
+      animation === 'fade_from_bottom'
         ? animation
         : defaults.animation,
     warmup: parseNumber(
