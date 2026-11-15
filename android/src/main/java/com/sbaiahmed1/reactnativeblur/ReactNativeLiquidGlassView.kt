@@ -43,7 +43,7 @@ class ReactNativeLiquidGlassView(context: Context) : BackdropHostView(context) {
   private var liquidShader: RuntimeShader? = null
   private var shaderFailed = false
 
-  override val downsample: Int = SoftwareSource.GLASS_DOWNSAMPLE
+  override val downsample: Int = BackdropScale.GLASS
   override val engineEnabled: Boolean
     get() = isSupported
   // The shader's geometry uniforms are in view px.

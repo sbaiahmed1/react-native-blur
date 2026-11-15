@@ -10,7 +10,7 @@ import android.view.View
 import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 
-/** Base of the engine views: joins the shared [SoftwareSource], owns the backdrop node and its effect, clips to the corners. */
+/** Base of the engine views: joins its [BackdropSource], owns the backdrop node and its effect, clips to the corners. */
 abstract class BackdropHostView(context: Context) : FrameLayout(context) {
   internal abstract val downsample: Int
   internal abstract val effect: BackdropEffect
@@ -21,10 +21,10 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
   internal open val nodeAtCaptureScale: Boolean
     get() = true
 
-  private var source: SoftwareSource? = null
+  private var source: BackdropSource? = null
   private var attachRunnable: Runnable? = null
   private var node: RenderNode? = null
-  private var recorded: SoftwareSource.Snapshot? = null
+  private var recordedKey: Any? = null
   private var recordedWidth = 0
   private var recordedHeight = 0
   private var effectDirty = true
@@ -57,7 +57,7 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
     // The parent chain up to the Screen is not settled at attach on a re-attach during navigation.
     val runnable = Runnable {
       attachRunnable = null
-      source = SoftwareSource.forHost(this)?.also { it.addHost(this) }
+      source = BackdropSources.resolve(this)?.also { it.addHost(this) }
     }
     attachRunnable = runnable
     post(runnable)
@@ -73,7 +73,7 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
     attachRunnable = null
     source?.removeHost(this)
     source = null
-    recorded = null
+    recordedKey = null
     nodeDrawn = false
     if (engineEnabled) node?.discardDisplayList()
   }
@@ -89,16 +89,16 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
     markEffectDirty()
   }
 
-  /** Called by the source on every pre-draw after its capture: re-records the node when the capture, the offset or the size changed. */
+  /** Called by the source on every pre-draw: re-records the node when the source's content key or the size changed. */
   internal fun onBackdropFrame() {
     val currentSource = source ?: return
     if (width <= 0 || height <= 0 || Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
-    val snapshot = currentSource.snapshotOf(this) ?: return
+    val key = currentSource.contentKey(this) ?: return
     val backdropNode = node ?: RenderNode("RNBackdrop").also { node = it }
-    val rerecord = snapshot != recorded || width != recordedWidth || height != recordedHeight
+    val rerecord = key != recordedKey || width != recordedWidth || height != recordedHeight
     if (rerecord) {
       if (!currentSource.recordInto(backdropNode, this)) return
-      recorded = snapshot
+      recordedKey = key
       recordedWidth = width
       recordedHeight = height
     }
@@ -153,7 +153,7 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
   private fun drawContent(canvas: Canvas) {
     val backdropNode = node
     if (
-      engineEnabled && canvas.isHardwareAccelerated && backdropNode != null && recorded != null &&
+      engineEnabled && canvas.isHardwareAccelerated && backdropNode != null && recordedKey != null &&
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && backdropNode.hasDisplayList()
     ) {
       drawBackdrop(canvas, backdropNode)

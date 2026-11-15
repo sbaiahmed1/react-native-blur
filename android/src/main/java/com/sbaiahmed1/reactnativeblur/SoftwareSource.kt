@@ -147,14 +147,15 @@ internal class SoftwareSource private constructor(
     return Snapshot(bitmap, region.generation, bounds.left - captured.left, bounds.top - captured.top, lane.config.downsample)
   }
 
+  override fun contentKey(host: BackdropHostView): Any? = snapshotOf(host)
+
   @RequiresApi(Build.VERSION_CODES.Q)
-  override fun recordInto(node: RenderNode, host: View): Boolean {
-    val backdropHost = host as? BackdropHostView ?: return false
-    val snapshot = snapshotOf(backdropHost) ?: return false
+  override fun recordInto(node: RenderNode, host: BackdropHostView): Boolean {
+    val snapshot = snapshotOf(host) ?: return false
     val downsample = snapshot.downsample.toFloat()
     val left = -snapshot.offsetX / downsample
     val top = -snapshot.offsetY / downsample
-    if (backdropHost.nodeAtCaptureScale) {
+    if (host.nodeAtCaptureScale) {
       val width = ceil(host.width / downsample).toInt().coerceAtLeast(1)
       val height = ceil(host.height / downsample).toInt().coerceAtLeast(1)
       node.setPosition(0, 0, width, height)
@@ -316,8 +317,6 @@ internal class SoftwareSource private constructor(
     // Task 2 ruling, see the plan 04 ledger.
     private val BLUR_LANE_MODE = CaptureLane.Mode.FULL
     private val GLASS_LANE_MODE = CaptureLane.Mode.FULL
-    const val BLUR_DOWNSAMPLE = 8
-    const val GLASS_DOWNSAMPLE = 3
     private const val GLASS_MOTION_INTERVAL_MS = 33L
     private const val GLASS_IDLE_INTERVAL_MS = 100L
     private val ROOT_KEY = Any()
@@ -327,7 +326,7 @@ internal class SoftwareSource private constructor(
     private var capturingHost: View? = null
 
     private fun laneFor(downsample: Int): CaptureLane =
-      if (downsample == GLASS_DOWNSAMPLE) {
+      if (downsample == BackdropScale.GLASS) {
         CaptureLane(downsample, GLASS_LANE_MODE, GLASS_MOTION_INTERVAL_MS, GLASS_IDLE_INTERVAL_MS)
       } else {
         CaptureLane(downsample, BLUR_LANE_MODE, 0L, 0L)

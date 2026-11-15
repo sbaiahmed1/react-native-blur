@@ -22,7 +22,7 @@ internal class EngineProgressiveBlurView(context: Context) : BackdropHostView(co
     xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
   }
 
-  override val downsample: Int = SoftwareSource.BLUR_DOWNSAMPLE
+  override val downsample: Int = BackdropScale.BLUR
   override val effect = BackdropEffect { createBlurEffect() }
 
   private val effectRadius: Float
