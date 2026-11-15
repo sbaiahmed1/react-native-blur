@@ -14,11 +14,22 @@ internal class CaptureLane(
   private var lastCaptureMs = NEVER
   private var lastFailureMs = NEVER
 
-  /** The area a capture draws for [host]: the whole root in FULL mode, the host in HOST mode. Null when it is empty. */
-  fun regionBounds(root: Bounds, host: Bounds): Bounds? {
-    val bounds = if (mode == Mode.FULL) root else host
+  /** The area a capture draws for [host]: the whole root in FULL mode, the host in HOST mode or when it captures [alone]. Null when it is empty. */
+  fun regionBounds(root: Bounds, host: Bounds, alone: Boolean = false): Bounds? {
+    val bounds = if (mode == Mode.FULL && !alone) root else host
     return if (bounds.width <= 0 || bounds.height <= 0) null else bounds
   }
+
+  /** What one frame captures: the shared root (null) when a host reads it, then each host that captures alone. */
+  fun <H : Any> captureTargets(hosts: List<H>, nested: Set<H>): List<H?> =
+    if (mode == Mode.HOST) hosts
+    else buildList {
+      if (hosts.any { it !in nested }) add(null)
+      for (host in hosts) if (host in nested) add(host)
+    }
+
+  /** True when a host reads the shared root capture. A host inside another host captures alone, so the outer one stays in its backdrop. */
+  fun sharesRoot(nested: Boolean): Boolean = mode == Mode.FULL && !nested
 
   // Rounded up, so a root whose size is not a multiple of downsample keeps its last partial row and column.
   fun bitmapSize(region: Bounds): Pair<Int, Int> =
