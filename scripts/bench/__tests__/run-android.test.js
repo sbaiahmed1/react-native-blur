@@ -112,6 +112,13 @@ it('fails and writes no result when the dump has no frame summary', () => {
   expect(labelFiles()).toEqual([]);
 });
 
+it('refuses an unknown scene and writes no result', () => {
+  const result = run(stubBin({ debuggable: false }), ['blur-lsit']);
+  expect(result.status).not.toBe(0);
+  expect(result.stderr).toMatch(/unknown scene/i);
+  expect(labelFiles()).toEqual([]);
+});
+
 it('warns when the label folder already holds results', () => {
   const dir = path.join(RESULTS, FAKE_SHA);
   fs.mkdirSync(dir, { recursive: true });
