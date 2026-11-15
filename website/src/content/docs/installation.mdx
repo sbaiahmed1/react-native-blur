@@ -9,11 +9,11 @@ order: 1
 | Platform | Minimum version |
 | --- | --- |
 | iOS | 13.0+ |
-| Xcode | 16 minimum; 26.0+ for liquid glass support |
+| Xcode | 16 minimum, 26.0+ for liquid glass support |
 | React Native | 0.80+ (New Architecture required) |
 | Android | API 24+ (Android 7.0) |
 | Android Gradle Plugin | 8.9.1+ |
-| Web | react-native-web (any modern browser; blur needs [`backdrop-filter`](https://caniuse.com/css-backdrop-filter) support) |
+| Web | react-native-web (any modern browser, blur needs [`backdrop-filter`](https://caniuse.com/css-backdrop-filter) support) |
 
 > This library ships Fabric components only and does not support the legacy (Paper) architecture. Use React Native 0.80+ with the New Architecture enabled.
 
@@ -52,13 +52,52 @@ The library depends on [QmBlurView](https://github.com/QmDeve/QmBlurView) (`com.
 
 On Android 12 and later, the blur reads the views drawn behind it and the GPU blurs them with `RenderEffect`. On Android 11 and earlier, QmBlurView captures the view tree around the blur into a downsampled bitmap, views drawn above it included. It blurs that bitmap on the CPU, and `blurRounds` sets how many passes it runs. Liquid glass (Android 13+) reads the views behind it the same way and feeds them to the AndroidLiquidGlassView AGSL shader, which runs refraction, dispersion, blur and tint on the GPU. The library's own widgets bind backdrops through live `RenderNode` references, which form render-tree cycles inside a React Native hierarchy, so only its shader is used.
 
+### Android's own blur on Android 17 QPR2
+
+On Android 17 QPR2 (SDK 37.2) and later, Android can blur what's behind each blur and glass view by itself. On an Android 17 QPR2 emulator, the app's main thread then spends 0.01-0.03 ms per frame on blur views instead of 0.13-0.48 ms. Its cost on the GPU isn't measured on an Android 17 QPR2 phone yet. It's off by default. Turn it on in `android/gradle.properties` and rebuild the app:
+
+```properties title="android/gradle.properties"
+ReactNativeBlur_platformBackdrop=true
+```
+
+An Expo app without an `android` folder sets the same line with a config plugin:
+
+```js title="plugins/with-platform-backdrop.js"
+const { withGradleProperties } = require('expo/config-plugins');
+
+const KEY = 'ReactNativeBlur_platformBackdrop';
+
+module.exports = (config) =>
+  withGradleProperties(config, (config) => {
+    config.modResults = config.modResults.filter(
+      (item) => !(item.type === 'property' && item.key === KEY)
+    );
+    config.modResults.push({ type: 'property', key: KEY, value: 'true' });
+    return config;
+  });
+```
+
+Then list it in `app.json`:
+
+```json title="app.json"
+{
+  "expo": {
+    "plugins": ["./plugins/with-platform-backdrop.js"]
+  }
+}
+```
+
+Views inside a `Modal` and every earlier Android version keep the default blur. With the option on, a blur's edges also show the content just past the view, as iOS does. Glass looks slightly sharper, and a `backgroundColor` on the view itself shows as a tint under the blur.
+
+To see which blur each view uses, run `adb shell setprop log.tag.RNBackdrop DEBUG`, restart the app and read `adb logcat -s RNBackdrop`. Each view logs `uses PLATFORM` for Android's own blur. `uses BEHIND` and `uses SOFTWARE` mean the default blur. If Android refuses the call, every view goes back to the default blur and `RNBackdrop` logs a warning.
+
 ## Web setup
 
 No configuration is needed: in an Expo Web or react-native-web project (Metro, webpack, or Vite), the package automatically resolves its web implementations, which render the effects with CSS `backdrop-filter`.
 
-- **Browser support:** `backdrop-filter` is available in Chrome 76+, Edge 79+, Safari 9+ (via `-webkit-`), and Firefox 103+ — see [Can I Use](https://caniuse.com/css-backdrop-filter) for current coverage. In browsers without it (and while server-side rendering), components gracefully degrade to their semi-transparent tint without blur.
+- **Browser support:** `backdrop-filter` is available in Chrome 76+, Edge 79+, Safari 9+ (via `-webkit-`), and Firefox 103+. See [Can I Use](https://caniuse.com/css-backdrop-filter) for current coverage. In browsers without it (and while server-side rendering), components gracefully degrade to their semi-transparent tint without blur.
 - **Server-side rendering:** fully supported, including Expo Router static output (`web.output: "static"`).
-- Native-only props (`blurRounds`, `reducedTransparencyFallbackColor`, `ignoreSafeArea`, `isInteractive`, `spacing`) are accepted and ignored on web; each component's page lists its web behavior.
+- Native-only props (`blurRounds`, `reducedTransparencyFallbackColor`, `ignoreSafeArea`, `isInteractive`, `spacing`) are accepted and ignored on web. Each component's page lists its web behavior.
 
 ## Next steps
 
