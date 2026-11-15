@@ -28,9 +28,12 @@ export function FieldSheet({
 }) {
   const t = useTheme();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const { field, setField } = useField();
-  const { sheetWidth, left, tileWidth, tileHeight } = sheetLayout(width);
+  const { sheetWidth, left, tileWidth, tileHeight } = sheetLayout(
+    width,
+    height
+  );
   return (
     <Modal
       visible={visible}
