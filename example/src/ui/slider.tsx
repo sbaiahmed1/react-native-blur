@@ -1,5 +1,12 @@
 import { useCallback, useEffect } from 'react';
-import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
+import {
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  type LayoutChangeEvent,
+  type ViewProps,
+} from 'react-native';
 import {
   GestureDetector,
   useExclusiveGestures,
@@ -90,6 +97,18 @@ export function Slider({
     onChange(Number(next.toFixed(places)));
   };
 
+  const onKeyDown: ViewProps['onKeyDown'] = (e) => {
+    const key = e.nativeEvent.key;
+    if (key === 'ArrowRight' || key === 'ArrowUp') nudge(1);
+    else if (key === 'ArrowLeft' || key === 'ArrowDown') nudge(-1);
+    else if (key === 'Home') onChange(min);
+    else if (key === 'End') onChange(max);
+    else return;
+    e.preventDefault();
+  };
+  // React Native Web drops accessibility actions, so the web slider takes arrow keys, Home and End.
+  const webKeys = Platform.OS === 'web' ? { focusable: true, onKeyDown } : null;
+
   return (
     <View style={cell.column}>
       <View style={cell.header}>
@@ -114,6 +133,7 @@ export function Slider({
           onAccessibilityAction={(e) =>
             nudge(e.nativeEvent.actionName === 'increment' ? 1 : -1)
           }
+          {...webKeys}
         >
           <View style={[styles.track, { backgroundColor: t.colors.chip }]} />
           <Animated.View
