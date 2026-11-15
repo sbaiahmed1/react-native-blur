@@ -77,6 +77,21 @@ class SoftwareSourceRegionsTest {
     assertTrue(lane.isDue(534, true))
   }
 
+  @Test fun failedCaptureAsksForARetryFrame() {
+    val lane = blurLane()
+    lane.onCaptureResult(100, false)
+    assertEquals(500L, lane.retryDelayMs(100))
+    assertEquals(200L, lane.retryDelayMs(400))
+  }
+
+  @Test fun noRetryFrameWithoutAFailure() {
+    val lane = blurLane()
+    assertNull(lane.retryDelayMs(0))
+    lane.onCaptureResult(0, false)
+    lane.onCaptureResult(500, true)
+    assertNull(lane.retryDelayMs(500))
+  }
+
   @Test fun fullLaneCapturesTheRootOnce() {
     assertEquals(listOf<String?>(null), blurLane().captureTargets(listOf("header", "card"), emptySet()))
   }

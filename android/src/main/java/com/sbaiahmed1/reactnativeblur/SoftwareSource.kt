@@ -32,9 +32,15 @@ internal class SoftwareSource private constructor(
     val downsample: Int
   )
 
+  private class Buffer(val bitmap: Bitmap) {
+    val canvas = Canvas(bitmap)
+  }
+
   private class Region(var bounds: CaptureLane.Bounds) {
-    var bitmap: Bitmap? = null
-    var canvas: Canvas? = null
+    // A capture draws into the spare buffer, so a failed one leaves the published capture as it was.
+    val buffers = SwapBuffer({ w, h -> Buffer(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)) }) { it.bitmap.width to it.bitmap.height }
+    val bitmap: Bitmap?
+      get() = buffers.published?.bitmap
     // The bounds the bitmap holds, which lag behind bounds until a capture succeeds.
     var bitmapBounds: CaptureLane.Bounds? = null
     var generation = 0L
@@ -220,19 +226,17 @@ internal class SoftwareSource private constructor(
         if (!capture(lane.config, region, target)) success = false
       }
       lane.config.onCaptureResult(now, success)
+      // A still screen draws no more frames, so the retry asks for one.
+      lane.config.retryDelayMs(now)?.let { postTrailingFrame(it) }
       if (success) for (host in laneHosts) hostBounds[host]?.let { lane.capturedBounds[host] = it }
     }
   }
 
   private fun capture(config: CaptureLane, region: Region, host: BackdropHostView?): Boolean {
     val (width, height) = config.bitmapSize(region.bounds)
-    val current = region.bitmap
-    val currentCanvas = region.canvas
-    val resized = current == null || currentCanvas == null || current.width != width || current.height != height
-    // A resize draws into a new bitmap, so hosts keep the previous capture if this one fails.
-    val target = if (resized) Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888) else current!!
-    val canvas = if (resized) Canvas(target) else currentCanvas!!
-    target.eraseColor(0)
+    val target = region.buffers.spare(width, height)
+    val canvas = target.canvas
+    target.bitmap.eraseColor(0)
     val save = canvas.save()
     canvas.scale(1f / config.downsample, 1f / config.downsample)
     canvas.translate(-region.bounds.left.toFloat(), -region.bounds.top.toFloat())
@@ -253,10 +257,7 @@ internal class SoftwareSource private constructor(
       canvas.restoreToCount(save)
     }
     if (!captured) return false
-    if (resized) {
-      region.bitmap = target
-      region.canvas = canvas
-    }
+    region.buffers.publish()
     region.bitmapBounds = region.bounds
     region.generation++
     failureLogged = false
@@ -290,7 +291,7 @@ internal class SoftwareSource private constructor(
 
   private fun release() {
     for (lane in lanes.values) {
-      for (region in lane.regions.values) region.bitmap?.recycle()
+      for (region in lane.regions.values) for (buffer in region.buffers.all()) buffer.bitmap.recycle()
     }
     lanes.clear()
     if (sources[key] === this) sources.remove(key)

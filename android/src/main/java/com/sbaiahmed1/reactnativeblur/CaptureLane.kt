@@ -46,6 +46,10 @@ internal class CaptureLane(
     return (lastCaptureMs + interval - nowMs).coerceAtLeast(0L)
   }
 
+  /** The delay of the frame that retries a failed capture, or null when no failure is waiting. */
+  fun retryDelayMs(nowMs: Long): Long? =
+    if (lastFailureMs == NEVER) null else (lastFailureMs + FAILED_CAPTURE_RETRY_MS - nowMs).coerceAtLeast(0L)
+
   fun onCaptureResult(nowMs: Long, success: Boolean) {
     if (success) {
       lastCaptureMs = nowMs
