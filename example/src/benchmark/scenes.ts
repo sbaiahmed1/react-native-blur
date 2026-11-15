@@ -9,6 +9,7 @@ import GlassList from './scenes/glass-list';
 import IdleCursor from './scenes/idle-cursor';
 import ModalIdle from './scenes/modal-idle';
 import ModalLive from './scenes/modal-live';
+import Nested from './scenes/nested';
 import Overlap from './scenes/overlap';
 import ProgressiveBars from './scenes/progressive-bars';
 import Recycle from './scenes/recycle';
@@ -132,6 +133,13 @@ export const SCENES: readonly SceneDef[] = [
     note: 'A BlurView header over a feed of BlurView cards with text.',
     defaults: {},
     Component: Overlap,
+  },
+  {
+    id: 'nested',
+    title: 'Nested',
+    note: 'A BlurView card holding a red block, a BlurView badge and a glass button over it.',
+    defaults: {},
+    Component: Nested,
   },
 ];
 

@@ -26,6 +26,7 @@ RUNS=(
   "root-overlay"
   "recycle"
   "overlap"
+  "nested"
 )
 
 for run in "${RUNS[@]}"; do
