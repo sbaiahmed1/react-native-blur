@@ -141,7 +141,7 @@ internal class BehindSource private constructor(
     hostToRoot.reset()
     for (i in path.size - 1 downTo 1) {
       val parent = path[i - 1]
-      hostToRoot.postConcat(nodeTransform(path[i]))
+      hostToRoot.postConcat(ViewMatrices.node(path[i], step))
       hostRects[i - 1].set(0f, 0f, host.width.toFloat(), host.height.toFloat())
       hostToRoot.mapRect(hostRects[i - 1])
       hostToRoot.postTranslate(-parent.scrollX.toFloat(), -parent.scrollY.toFloat())
@@ -152,7 +152,7 @@ internal class BehindSource private constructor(
   // Only a sibling that paints over part of the host can reach its pixels, and skipping the rest keeps hwui's walk linear while hosts do not overlap each other.
   private fun overlapsHost(child: View, level: Int): Boolean {
     overflowBudget = OVERFLOW_VIEW_BUDGET
-    overflowMatrix(0).set(nodeTransform(child))
+    overflowMatrix(0).set(ViewMatrices.node(child, step))
     return paintsInto(child, 0, hostRects[level])
   }
 
@@ -179,7 +179,7 @@ internal class BehindSource private constructor(
       val descendant = group.getChildAt(index)
       if (descendant.visibility != View.VISIBLE && descendant.animation == null) continue
       val toDescendant = overflowMatrix(depth + 1)
-      toDescendant.set(nodeTransform(descendant))
+      toDescendant.set(ViewMatrices.node(descendant, step))
       toDescendant.postTranslate(-group.scrollX.toFloat(), -group.scrollY.toFloat())
       toDescendant.postConcat(toTarget)
       if (paintsInto(descendant, depth + 1, target)) return true
@@ -199,15 +199,6 @@ internal class BehindSource private constructor(
     return overflowMatrices[depth]
   }
 
-  // hwui's node transform: the position, the legacy animation matrix set by the last draw, then the view's own matrix.
-  private fun nodeTransform(view: View): Matrix {
-    step.setTranslate(view.left.toFloat(), view.top.toFloat())
-    view.animationMatrix?.let { step.preConcat(it) }
-    val own = view.matrix
-    if (!own.isIdentity) step.preConcat(own)
-    return step
-  }
-
   private fun drawBehind(canvas: RecordingCanvas) {
     behindDecor?.let { drawDecor(canvas, it) }
     for (i in 1 until path.size) {
@@ -224,7 +215,7 @@ internal class BehindSource private constructor(
         for (index in behind) RenderNodeAccess.nodeOf(candidates[index])?.let { canvas.drawRenderNode(it) }
         canvas.disableZ()
       }
-      canvas.concat(nodeTransform(pathChild))
+      canvas.concat(ViewMatrices.node(pathChild, step))
     }
   }
 

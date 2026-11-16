@@ -35,6 +35,14 @@ class SoftwareSourceRegionsTest {
     assertEquals(362 to 780, glassLane().bitmapSize(Bounds(0, 0, 1084, 2340)))
   }
 
+  @Test fun transformedHostBoundsRoundOutward() {
+    assertEquals(Bounds(10, 20, 101, 51), Bounds.enclosing(10.4f, 20.6f, 110.2f, 70.1f))
+  }
+
+  @Test fun scaledHostBoundsCoverTheScaledSize() {
+    assertEquals(Bounds(-50, 0, 200, 100), Bounds.enclosing(-50f, 0f, 150f, 100f))
+  }
+
   @Test fun regionNeverZero() {
     assertEquals(1 to 1, blurLane().bitmapSize(Bounds(0, 0, 5, 5)))
   }
