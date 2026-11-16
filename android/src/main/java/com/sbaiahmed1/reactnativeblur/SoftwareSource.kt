@@ -2,7 +2,9 @@ package com.sbaiahmed1.reactnativeblur
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.RenderNode
 import android.os.Build
 import android.os.SystemClock
@@ -27,10 +29,19 @@ internal class SoftwareSource private constructor(
   internal data class Snapshot(
     val bitmap: Bitmap,
     val generation: Long,
-    val offsetX: Int,
-    val offsetY: Int,
-    val downsample: Int
+    // Where the bitmap starts in capture px.
+    val left: Int,
+    val top: Int,
+    val downsample: Int,
+    // Bumped whenever the host's transform to the capture changes.
+    val transform: Long
   )
+
+  private class Placement {
+    // Maps host px to capture px: the root's space, or the screen for a window root.
+    val hostToCapture = Matrix()
+    var version = 0L
+  }
 
   private class Buffer(val bitmap: Bitmap) {
     val canvas = Canvas(bitmap)
@@ -58,6 +69,11 @@ internal class SoftwareSource private constructor(
   private val nestedHosts = HashSet<BackdropHostView>()
   private val lanes = HashMap<Int, Lane>()
   private val hostBounds = HashMap<BackdropHostView, CaptureLane.Bounds>()
+  private val placements = HashMap<BackdropHostView, Placement>()
+  private val scratch = Matrix()
+  private val step = Matrix()
+  private val captureToHost = Matrix()
+  private val mapped = RectF()
   private val deferral = AnimationDeferral()
   private var observer: ViewTreeObserver? = null
   private var behindInvalidator: BehindWindowInvalidator? = null
@@ -88,6 +104,7 @@ internal class SoftwareSource private constructor(
   override fun removeHost(host: BackdropHostView) {
     if (!hosts.remove(host)) return
     hostBounds.remove(host)
+    placements.remove(host)
     for (lane in lanes.values) {
       lane.capturedBounds.remove(host)
       lane.regions.remove(host)
@@ -123,7 +140,7 @@ internal class SoftwareSource private constructor(
     val visible = hosts.filter { it.isBackdropVisible && it.wantsBackdrop }
     if (visible.isEmpty()) return true
     updateNested()
-    for (host in visible) hostBounds[host] = currentBounds(host)
+    for (host in visible) hostBounds[host] = place(host)
 
     val now = SystemClock.uptimeMillis()
     val pending = animationRoots.any { CaptureAnimationGuard.hasPendingViewAnimation(it) }
@@ -149,8 +166,9 @@ internal class SoftwareSource private constructor(
     val region = regionOf(lane, host) ?: return null
     val bitmap = region.bitmap ?: return null
     val captured = region.bitmapBounds ?: return null
-    val bounds = hostBounds[host] ?: currentBounds(host)
-    return Snapshot(bitmap, region.generation, bounds.left - captured.left, bounds.top - captured.top, lane.config.downsample)
+    if (host !in placements) hostBounds[host] = place(host)
+    val placement = placements[host] ?: return null
+    return Snapshot(bitmap, region.generation, captured.left, captured.top, lane.config.downsample, placement.version)
   }
 
   override fun contentKey(host: BackdropHostView): Any? = snapshotOf(host)
@@ -158,9 +176,9 @@ internal class SoftwareSource private constructor(
   @RequiresApi(Build.VERSION_CODES.Q)
   override fun recordInto(node: RenderNode, host: BackdropHostView): Boolean {
     val snapshot = snapshotOf(host) ?: return false
+    val placement = placements[host] ?: return false
+    if (!placement.hostToCapture.invert(captureToHost)) return false
     val downsample = snapshot.downsample.toFloat()
-    val left = -snapshot.offsetX / downsample
-    val top = -snapshot.offsetY / downsample
     if (host.nodeAtCaptureScale) {
       val width = ceil(host.width / downsample).toInt().coerceAtLeast(1)
       val height = ceil(host.height / downsample).toInt().coerceAtLeast(1)
@@ -171,7 +189,8 @@ internal class SoftwareSource private constructor(
       node.setScaleY(downsample)
       val canvas = node.beginRecording(width, height)
       try {
-        canvas.drawBitmap(snapshot.bitmap, left, top, bitmapPaint)
+        canvas.scale(1f / downsample, 1f / downsample)
+        drawSnapshot(canvas, snapshot)
       } finally {
         node.endRecording()
       }
@@ -181,13 +200,21 @@ internal class SoftwareSource private constructor(
       node.setScaleY(1f)
       val canvas = node.beginRecording(host.width, host.height)
       try {
-        canvas.scale(downsample, downsample)
-        canvas.drawBitmap(snapshot.bitmap, left, top, bitmapPaint)
+        drawSnapshot(canvas, snapshot)
       } finally {
         node.endRecording()
       }
     }
     return true
+  }
+
+  // Draws the capture in host px: back through the host's transform, then up from the downsampled bitmap.
+  private fun drawSnapshot(canvas: Canvas, snapshot: Snapshot) {
+    val downsample = snapshot.downsample.toFloat()
+    canvas.concat(captureToHost)
+    canvas.translate(snapshot.left.toFloat(), snapshot.top.toFloat())
+    canvas.scale(downsample, downsample)
+    canvas.drawBitmap(snapshot.bitmap, 0f, 0f, bitmapPaint)
   }
 
   private fun regionOf(lane: Lane, host: BackdropHostView): Region? =
@@ -282,14 +309,32 @@ internal class SoftwareSource private constructor(
     return CaptureLane.Bounds(0, 0, root.width, root.height)
   }
 
-  private fun currentBounds(host: View): CaptureLane.Bounds {
-    if (activityDecor != null) {
-      host.getLocationOnScreen(location)
-      return CaptureLane.Bounds(location[0], location[1], host.width, host.height)
+  // Updates the host's transform to the capture and returns the capture px it covers.
+  private fun place(host: BackdropHostView): CaptureLane.Bounds {
+    val placement = placements.getOrPut(host) { Placement() }
+    hostToCapture(host, scratch)
+    if (scratch != placement.hostToCapture) {
+      placement.hostToCapture.set(scratch)
+      placement.version++
     }
+    mapped.set(0f, 0f, host.width.toFloat(), host.height.toFloat())
+    scratch.mapRect(mapped)
+    return CaptureLane.Bounds.enclosing(mapped.left, mapped.top, mapped.right, mapped.bottom)
+  }
+
+  private fun hostToCapture(host: View, out: Matrix) {
+    if (activityDecor != null) {
+      val windowRoot = host.rootView
+      ViewMatrices.toAncestor(host, windowRoot, out, step)
+      windowRoot.getLocationOnScreen(location)
+      out.postTranslate(location[0].toFloat(), location[1].toFloat())
+      return
+    }
+    if (ViewMatrices.toAncestor(host, root, out, step)) return
+    // A host that left the root this frame keeps its window offset.
     root.getLocationInWindow(rootLocation)
     host.getLocationInWindow(location)
-    return CaptureLane.Bounds(location[0] - rootLocation[0], location[1] - rootLocation[1], host.width, host.height)
+    out.setTranslate((location[0] - rootLocation[0]).toFloat(), (location[1] - rootLocation[1]).toFloat())
   }
 
   private fun release() {

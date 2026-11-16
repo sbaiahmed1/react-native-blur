@@ -1,12 +1,24 @@
 package com.sbaiahmed1.reactnativeblur
 
+import kotlin.math.ceil
+import kotlin.math.floor
+
 /** Region shape, cadence and failure backoff of one capture lane, the hosts that share a downsample factor. */
 internal class CaptureLane(
   val downsample: Int,
   private val minIntervalMs: Long,
   private val idleIntervalMs: Long
 ) {
-  data class Bounds(val left: Int, val top: Int, val width: Int, val height: Int)
+  data class Bounds(val left: Int, val top: Int, val width: Int, val height: Int) {
+    companion object {
+      /** The smallest pixel bounds that hold a rect a transform mapped to fractional px. */
+      fun enclosing(left: Float, top: Float, right: Float, bottom: Float): Bounds {
+        val l = floor(left).toInt()
+        val t = floor(top).toInt()
+        return Bounds(l, t, ceil(right).toInt() - l, ceil(bottom).toInt() - t)
+      }
+    }
+  }
 
   private var lastCaptureMs = NEVER
   private var lastFailureMs = NEVER
