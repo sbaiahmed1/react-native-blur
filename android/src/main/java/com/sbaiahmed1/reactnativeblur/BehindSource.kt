@@ -34,6 +34,9 @@ internal class BehindSource private constructor(
   private val childRect = RectF()
   private val location = IntArray(2)
   private val decorLocation = IntArray(2)
+  // Set while recording when a view that belongs in the backdrop has no display list yet.
+  private var missingDisplayList = false
+  private val retries = HashMap<BackdropHostView, Int>()
 
   override fun addHost(host: BackdropHostView) {
     if (!hosts.add(host)) return
@@ -45,6 +48,7 @@ internal class BehindSource private constructor(
   }
 
   override fun removeHost(host: BackdropHostView) {
+    retries.remove(host)
     if (!hosts.remove(host) || hosts.isNotEmpty()) return
     observer?.let { if (it.isAlive) it.removeOnPreDrawListener(this) }
     observer = null
@@ -82,13 +86,28 @@ internal class BehindSource private constructor(
       node.setScaleY(1f)
       canvas = node.beginRecording(host.width, host.height)
     }
+    missingDisplayList = false
     try {
       canvas.concat(rootToHost)
       drawBehind(canvas)
     } finally {
       node.endRecording()
     }
+    scheduleRetry(host)
     return true
+  }
+
+  // hwui builds a new view's display list after pre-draw, so a sibling added behind a host can miss this recording.
+  // Nothing else asks for a frame once the scene is idle, so ask for one, a few times at most per gap.
+  private fun scheduleRetry(host: BackdropHostView) {
+    if (!missingDisplayList) {
+      retries.remove(host)
+      return
+    }
+    val attempt = (retries[host] ?: 0) + 1
+    if (attempt > MAX_RETRIES) return
+    retries[host] = attempt
+    host.postInvalidateOnAnimation()
   }
 
   // Fills path with root..host, hostToRoot, and the host's bounds in each parent's content space for culling.
@@ -147,7 +166,7 @@ internal class BehindSource private constructor(
           val child = parent.getChildAt(index)
           if (!overlapsHost(child, i - 1)) continue
           val childNode = RenderNodeAccess.nodeOf(child) ?: continue
-          if (childNode.hasDisplayList()) canvas.drawRenderNode(childNode)
+          if (childNode.hasDisplayList()) canvas.drawRenderNode(childNode) else missingDisplayList = true
         }
         canvas.disableZ()
       }
@@ -157,7 +176,10 @@ internal class BehindSource private constructor(
 
   private fun drawDecor(canvas: RecordingCanvas, decor: View) {
     val decorNode = RenderNodeAccess.nodeOf(decor) ?: return
-    if (!decorNode.hasDisplayList()) return
+    if (!decorNode.hasDisplayList()) {
+      missingDisplayList = true
+      return
+    }
     decor.getLocationOnScreen(decorLocation)
     root.getLocationOnScreen(location)
     val save = canvas.save()
@@ -179,6 +201,9 @@ internal class BehindSource private constructor(
 
   companion object {
     private val sources = HashMap<View, BehindSource>()
+
+    // Follow-up frames requested while a view in the backdrop still has no display list.
+    private const val MAX_RETRIES = 8
 
     /** The shared source of [host]'s window, which also draws the activity behind a Modal's window. */
     fun forHost(host: BackdropHostView): BehindSource {
