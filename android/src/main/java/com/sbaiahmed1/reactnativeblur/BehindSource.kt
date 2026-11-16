@@ -220,7 +220,7 @@ internal class BehindSource private constructor(
   private fun fillCandidates(parent: ViewGroup, pathChild: View, level: Int): Int {
     val count = parent.childCount
     if (positions.size < count) positions = IntArray(count * 2)
-    BehindOrder.fillDispatchPositions(positions, count) { parent.getChildDrawingOrder(it) }
+    BehindOrder.fillDispatchPositions(positions, count, ChildDrawingOrder.isEnabled(parent)) { parent.getChildDrawingOrder(it) }
     children.clear()
     candidates.clear()
     var pathIndex = BehindOrder.DISAPPEARING

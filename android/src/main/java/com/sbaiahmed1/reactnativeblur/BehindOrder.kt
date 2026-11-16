@@ -8,8 +8,15 @@ internal object BehindOrder {
   /** The path index of a child that left its parent's list but is still drawn, after every other child. */
   const val DISAPPEARING = -1
 
-  /** Fills positions[childIndex] with the child's position in dispatchDraw, or index order when [orderOf] throws or is not a permutation. */
-  inline fun fillDispatchPositions(positions: IntArray, count: Int, orderOf: (Int) -> Int) {
+  /**
+   * Fills positions[childIndex] with the child's position in dispatchDraw: index order when [customOrder] is off, as
+   * dispatchDraw does, or when [orderOf] throws or is not a permutation.
+   */
+  inline fun fillDispatchPositions(positions: IntArray, count: Int, customOrder: Boolean, orderOf: (Int) -> Int) {
+    if (!customOrder) {
+      for (index in 0 until count) positions[index] = index
+      return
+    }
     positions.fill(-1, 0, count)
     try {
       for (position in 0 until count) {
