@@ -317,18 +317,20 @@ internal class SoftwareSource private constructor(
         CaptureLane(downsample, 0L, 0L)
       }
 
-    /** The shared source for [host]'s capture root: a Screen or React root, a Modal's two windows, else the activity window. */
+    /** The shared source for [host]'s capture root: a Modal's two windows, else a Screen or React root, else the activity window. */
     fun forHost(host: BackdropHostView): SoftwareSource? {
-      CaptureRoots.resolve(host)?.let { root ->
-        return sources.getOrPut(root) { SoftwareSource(root, root, root, listOf(root), null) }
+      val decor = CaptureRoots.activityDecor(host)
+      val window = WindowCaptureRoot.forHost(host, decor)
+      val root = CaptureRoots.resolve(host)
+      return when (CaptureRoots.softwareRoot(window != null, root != null, decor != null)) {
+        SoftwareRoot.WINDOW -> {
+          val dialogRoot = host.rootView
+          sources.getOrPut(dialogRoot) { SoftwareSource(dialogRoot, window!!, dialogRoot, window.layers, decor) }
+        }
+        SoftwareRoot.ANCESTOR -> sources.getOrPut(root!!) { SoftwareSource(root, root, root, listOf(root), null) }
+        SoftwareRoot.ACTIVITY -> sources.getOrPut(decor!!) { SoftwareSource(decor, decor, decor, listOf(decor), null) }
+        null -> null
       }
-      val decor = CaptureRoots.activityDecor(host) ?: return null
-      val windowRoot = WindowCaptureRoot.forHost(host, decor)
-      if (windowRoot != null) {
-        val dialogRoot = host.rootView
-        return sources.getOrPut(dialogRoot) { SoftwareSource(dialogRoot, windowRoot, dialogRoot, windowRoot.layers, decor) }
-      }
-      return sources.getOrPut(decor) { SoftwareSource(decor, decor, decor, listOf(decor), null) }
     }
 
     /** True while a capture that [host] must stay out of is drawing. */
