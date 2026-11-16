@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import com.facebook.react.ReactRootView
 import com.facebook.react.bridge.ReactContext
 
+internal enum class SoftwareRoot { WINDOW, ANCESTOR, ACTIVITY }
+
 /** Resolves the ancestor a blur or glass view captures as its backdrop. */
 internal object CaptureRoots {
   // Matched by name because react-native-screens is not a dependency. consumer-rules.pro keeps these names under R8.
@@ -25,6 +27,14 @@ internal object CaptureRoots {
   fun findReactRoot(view: View): ViewGroup? = findAncestor(view) { it is ReactRootView }
 
   fun resolve(view: View): ViewGroup? = findScreenAncestor(view) ?: findReactRoot(view)
+
+  /** The root a software capture uses. A Modal's window comes first, so a Screen inside the Modal still sees the activity behind it. */
+  fun softwareRoot(otherWindow: Boolean, ancestorRoot: Boolean, activity: Boolean): SoftwareRoot? = when {
+    otherWindow -> SoftwareRoot.WINDOW
+    ancestorRoot -> SoftwareRoot.ANCESTOR
+    activity -> SoftwareRoot.ACTIVITY
+    else -> null
+  }
 
   /** The decor view of the activity that hosts [view], which a Modal's own window never contains. */
   fun activityDecor(view: View): View? {
