@@ -13,6 +13,18 @@ class BackdropSourcesTest {
       BackdropSources.kind(platform = true, activityWindow = true, nodeAccess = { throw AssertionError("the field was read") })
     )
 
+  @Test fun behindUnderAnOpenLayer() =
+    assertEquals(
+      SourceKind.BEHIND,
+      BackdropSources.kind(platform = true, activityWindow = true, nodeAccess = { true }, openLayer = true)
+    )
+
+  @Test fun softwareUnderAnOpenLayerWithoutTheField() =
+    assertEquals(
+      SourceKind.SOFTWARE,
+      BackdropSources.kind(platform = true, activityWindow = true, nodeAccess = { false }, openLayer = true)
+    )
+
   @Test fun behindInAnotherWindow() =
     assertEquals(SourceKind.BEHIND, BackdropSources.kind(platform = true, activityWindow = false, nodeAccess = { true }))
 
