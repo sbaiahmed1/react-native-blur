@@ -23,14 +23,22 @@ internal object BehindOrder {
     }
   }
 
-  /** Indices into [children] painted before children[pathIndex], in paint order. */
-  fun behind(children: List<Child>, pathIndex: Int): List<Int> {
+  /**
+   * Indices into [children] painted before children[pathIndex], in paint order. A [DISAPPEARING] path child is drawn after
+   * every live child but still inside the Z sort, so [disappearingZ], its getZ(), decides against an elevated sibling.
+   */
+  fun behind(children: List<Child>, pathIndex: Int, disappearingZ: Float = 0f): List<Int> {
     val path = if (pathIndex == DISAPPEARING) null else children[pathIndex]
     val result = ArrayList<Int>()
     for (index in children.indices) {
       val child = children[index]
       if (index == pathIndex || !child.drawn) continue
-      if (path == null || child.z < path.z || (child.z == path.z && child.dispatchPosition < path.dispatchPosition)) result.add(index)
+      val paintsBefore = if (path == null) {
+        child.z <= disappearingZ
+      } else {
+        child.z < path.z || (child.z == path.z && child.dispatchPosition < path.dispatchPosition)
+      }
+      if (paintsBefore) result.add(index)
     }
     result.sortWith(compareBy({ children[it].z }, { children[it].dispatchPosition }))
     return result

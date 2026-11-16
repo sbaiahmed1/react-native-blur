@@ -195,7 +195,7 @@ internal class BehindSource private constructor(
       if (parent is BackdropHostView) parent.drawOwnBackdrop(canvas)
       canvas.translate(-parent.scrollX.toFloat(), -parent.scrollY.toFloat())
       val pathIndex = fillCandidates(parent, pathChild, i - 1)
-      val behind = BehindOrder.behind(children, pathIndex)
+      val behind = BehindOrder.behind(children, pathIndex, pathChild.z)
       if (behind.isNotEmpty()) {
         canvas.enableZ()
         // No display list check: a child attached this frame records after pre-draw, and the reference picks it up at sync.

@@ -52,6 +52,16 @@ class BehindOrderTest {
     assertEquals(listOf(1, 0), BehindOrder.behind(children, BehindOrder.DISAPPEARING))
   }
 
+  @Test fun elevatedSiblingStaysAboveADisappearingPath() {
+    val children = listOf(BehindOrder.Child(0, 0f, true), BehindOrder.Child(1, 8f, true))
+    assertEquals(listOf(0), BehindOrder.behind(children, BehindOrder.DISAPPEARING, disappearingZ = 0f))
+  }
+
+  @Test fun elevatedDisappearingPathSeesLowerSiblings() {
+    val children = listOf(BehindOrder.Child(0, 8f, true), BehindOrder.Child(1, 0f, true), BehindOrder.Child(2, 12f, true))
+    assertEquals(listOf(1, 0), BehindOrder.behind(children, BehindOrder.DISAPPEARING, disappearingZ = 8f))
+  }
+
   @Test fun undrawnChildrenAreLeftOut() {
     val children = listOf(BehindOrder.Child(0, 0f, false), BehindOrder.Child(1, 0f, true), BehindOrder.Child(2, 0f, true))
     assertEquals(listOf(1), BehindOrder.behind(children, 2))
