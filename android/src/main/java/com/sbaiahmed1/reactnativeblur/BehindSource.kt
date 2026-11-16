@@ -65,8 +65,20 @@ internal class BehindSource private constructor(
   override fun onPreDraw(): Boolean {
     frame++
     // A host scrolled off screen records again on the pre-draw of the frame that shows it.
-    for (host in hosts) if (host.wantsBackdrop && host.isBackdropVisible && host.getGlobalVisibleRect(visibleRect)) host.onBackdropFrame()
+    for (host in hosts) if (host.wantsBackdrop && host.isBackdropVisible && isOnScreen(host)) host.onBackdropFrame()
     return true
+  }
+
+  // getGlobalVisibleRect leaves out legacy view animations, which can draw a host laid out off screen on screen, so a host
+  // under one always counts as on screen.
+  private fun isOnScreen(host: View): Boolean {
+    var view: View? = host
+    while (view != null) {
+      if (view.animation != null || view.animationMatrix != null) return true
+      if (view === root) break
+      view = view.parent as? View
+    }
+    return host.getGlobalVisibleRect(visibleRect)
   }
 
   // A new key on every pre-draw, so a visible host re-records once per frame.
