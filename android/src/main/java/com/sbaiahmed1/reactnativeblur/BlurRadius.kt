@@ -2,7 +2,7 @@ package com.sbaiahmed1.reactnativeblur
 
 /** Maps blurAmount to a Gaussian blur that matches QmBlurView at downsample 8 and 5 rounds. */
 internal object BlurRadius {
-  // QmBlurView clamps its downsampled radius at 2, which is amount 16 at downsample 8, so amounts below look alike.
+  // QmBlurView clamps its downsampled radius at 2, which is amount 16 at downsample 8. Below it the sigma ramps to 0.
   const val FLOOR_AMOUNT = 16f
   // Sigma in px at the floor and at amount 100, calibrated against QmBlurView screenshots of the behind source.
   const val FLOOR_SIGMA = 20f
@@ -10,11 +10,12 @@ internal object BlurRadius {
   const val DEFAULT_AMOUNT = 10f
   private const val MAX_AMOUNT = 100f
 
-  /** Sigma in px, linear from the floor to amount 100. An amount of 0 or less gives no blur. */
+  /** Sigma in px, linear from 0 at amount 0 to the floor, then linear to amount 100. An amount of 0 or less gives no blur. */
   fun sigmaPx(amount: Float): Float {
     val value = if (amount.isNaN() || amount.isInfinite()) DEFAULT_AMOUNT else amount
     if (value <= 0f) return 0f
-    val clamped = value.coerceIn(FLOOR_AMOUNT, MAX_AMOUNT)
+    if (value < FLOOR_AMOUNT) return FLOOR_SIGMA * value / FLOOR_AMOUNT
+    val clamped = value.coerceAtMost(MAX_AMOUNT)
     return FLOOR_SIGMA + (clamped - FLOOR_AMOUNT) * (MAX_SIGMA - FLOOR_SIGMA) / (MAX_AMOUNT - FLOOR_AMOUNT)
   }
 

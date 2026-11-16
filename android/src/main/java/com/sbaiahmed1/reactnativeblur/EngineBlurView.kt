@@ -32,7 +32,7 @@ internal class EngineBlurView(context: Context) : BackdropHostView(context), Blu
   private fun createBlurEffect(): RenderEffect = gpuBlurEffect(effectRadius)
 
   override fun drawBackdrop(canvas: Canvas, node: RenderNode) {
-    // At amount 0 legacy QmBlurView draws no backdrop either, only the overlay.
+    // Below half a node px of blur the backdrop would only show its downsampled pixels, so only the overlay draws.
     if (effectRadius > 0f) canvas.drawRenderNode(node)
     drawOverlay(canvas)
   }
