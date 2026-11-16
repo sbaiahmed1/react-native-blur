@@ -71,6 +71,12 @@ private let _helperTypes: [NSObject.Type] = [
 }
 
 private let _swiftHeaderSelectors: [Selector] = [
+  #selector(AdvancedBlurView.beginBatchUpdate),
+  #selector(AdvancedBlurView.endBatchUpdate),
+  #selector(ProgressiveBlurView.beginBatchUpdate),
+  #selector(ProgressiveBlurView.endBatchUpdate),
+  #selector(VibrancyEffectView.beginBatchUpdate),
+  #selector(VibrancyEffectView.endBatchUpdate),
   #selector(LiquidGlassContainerView.beginBatchUpdate),
   #selector(LiquidGlassContainerView.endBatchUpdate),
   #selector(LiquidGlassContainerView.setBorderRadii(topLeft:topRight:bottomLeft:bottomRight:)),
