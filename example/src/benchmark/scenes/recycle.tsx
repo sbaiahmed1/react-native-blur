@@ -7,7 +7,7 @@ import type { SceneProps } from '../scenes';
 
 const SWAP_MS = 1000;
 
-// Swaps while the scene has focus and keeps going after the recorder stops, so B7 stays observable.
+// Swaps while the scene has focus and keeps going after the recorder stops, so a recycled view that keeps old props stays visible.
 export default function Recycle(_props: SceneProps) {
   const [showA, setShowA] = useState(true);
 
