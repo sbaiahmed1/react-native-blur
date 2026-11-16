@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.annotation.RequiresApi
+import com.facebook.react.uimanager.ReactOverflowView
 import kotlin.math.ceil
 
 /** Records each host's backdrop from the RenderNodes of the views painted behind it, without running any view's draw code. */
@@ -34,6 +35,9 @@ internal class BehindSource private constructor(
   private val childRect = RectF()
   private val location = IntArray(2)
   private val decorLocation = IntArray(2)
+  private val overflowMatrices = ArrayList<Matrix>()
+  private var overflowBudget = 0
+
   // Set while recording when a view that belongs in the backdrop has no display list yet.
   private var missingDisplayList = false
   private val retries = HashMap<BackdropHostView, Int>()
@@ -133,13 +137,46 @@ internal class BehindSource private constructor(
     return true
   }
 
-  // Only a sibling that covers part of the host can reach its pixels, and skipping the rest keeps hwui's walk linear.
+  // Only a sibling that paints over part of the host can reach its pixels, and skipping the rest keeps hwui's walk linear.
   private fun overlapsHost(child: View, level: Int): Boolean {
-    childRect.set(0f, 0f, child.width.toFloat(), child.height.toFloat())
-    val own = child.matrix
-    if (!own.isIdentity) own.mapRect(childRect)
-    childRect.offset(child.left.toFloat(), child.top.toFloat())
-    return RectF.intersects(childRect, hostRects[level])
+    overflowBudget = OVERFLOW_VIEW_BUDGET
+    overflowMatrix(0).set(nodeTransform(child))
+    return paintsInto(child, 0, hostRects[level])
+  }
+
+  // Whether [view], mapped into the culling space by overflowMatrix(depth), can paint into [target]. A view that does not
+  // clip its children, the React Native default of overflow: visible, can paint descendants outside its own bounds.
+  private fun paintsInto(view: View, depth: Int, target: RectF): Boolean {
+    val toTarget = overflowMatrix(depth)
+    childRect.set(0f, 0f, view.width.toFloat(), view.height.toFloat())
+    toTarget.mapRect(childRect)
+    if (RectF.intersects(childRect, target)) return true
+    val group = view as? ViewGroup ?: return false
+    if (clipsChildren(group)) return false
+    // Too many descendants to check every frame: keeping the sibling is always correct, it only costs drawing it.
+    if (--overflowBudget < 0) return true
+    for (index in 0 until group.childCount) {
+      val descendant = group.getChildAt(index)
+      if (descendant.visibility != View.VISIBLE && descendant.animation == null) continue
+      val toDescendant = overflowMatrix(depth + 1)
+      toDescendant.set(nodeTransform(descendant))
+      toDescendant.postTranslate(-group.scrollX.toFloat(), -group.scrollY.toFloat())
+      toDescendant.postConcat(toTarget)
+      if (paintsInto(descendant, depth + 1, target)) return true
+    }
+    return false
+  }
+
+  private fun clipsChildren(group: ViewGroup): Boolean {
+    if (group.clipChildren || group.clipToOutline || group.clipBounds != null) return true
+    // React Native views keep clipChildren off and clip overflow: hidden and scroll in their own dispatchDraw.
+    val overflow = (group as? ReactOverflowView)?.overflow
+    return overflow == "hidden" || overflow == "scroll"
+  }
+
+  private fun overflowMatrix(depth: Int): Matrix {
+    while (overflowMatrices.size <= depth) overflowMatrices.add(Matrix())
+    return overflowMatrices[depth]
   }
 
   // hwui's node transform without the legacy animation matrix, which no public API returns.
@@ -201,6 +238,9 @@ internal class BehindSource private constructor(
 
   companion object {
     private val sources = HashMap<View, BehindSource>()
+
+    // View groups opened to look for a sibling's overflow before keeping it without looking further.
+    private const val OVERFLOW_VIEW_BUDGET = 64
 
     // Follow-up frames requested while a view in the backdrop still has no display list.
     private const val MAX_RETRIES = 8
