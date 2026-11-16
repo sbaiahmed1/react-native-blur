@@ -10,7 +10,8 @@ class SwapBufferTest {
   private class Buffer(val width: Int, val height: Int)
 
   private var created = 0
-  private val buffers = SwapBuffer({ w, h -> created++; Buffer(w, h) }) { it.width to it.height }
+  private val released = ArrayList<Buffer>()
+  private val buffers = SwapBuffer({ w, h -> created++; Buffer(w, h) }, { released.add(it) }) { it.width to it.height }
 
   @Test fun nothingIsPublishedBeforeTheFirstDraw() {
     buffers.spare(10, 20)
@@ -46,5 +47,25 @@ class SwapBufferTest {
     val resized = buffers.spare(30, 20)
     assertNotSame(first, resized)
     assertEquals(30, resized.width)
+  }
+
+  @Test fun aReplacedSpareIsReleased() {
+    val first = buffers.spare(10, 20)
+    buffers.spare(30, 20)
+    assertEquals(listOf(first), released)
+  }
+
+  @Test fun aSpareOfTheRightSizeIsKept() {
+    buffers.spare(10, 20)
+    buffers.spare(10, 20)
+    assertEquals(emptyList<Buffer>(), released)
+  }
+
+  @Test fun thePublishedBufferIsNotReleasedOnResize() {
+    val first = buffers.spare(10, 20)
+    buffers.publish()
+    buffers.spare(30, 20)
+    assertEquals(emptyList<Buffer>(), released)
+    assertSame(first, buffers.published)
   }
 }

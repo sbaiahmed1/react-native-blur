@@ -38,7 +38,10 @@ internal class SoftwareSource private constructor(
 
   private class Region(var bounds: CaptureLane.Bounds) {
     // A capture draws into the spare buffer, so a failed one leaves the published capture as it was.
-    val buffers = SwapBuffer({ w, h -> Buffer(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)) }) { it.bitmap.width to it.bitmap.height }
+    val buffers = SwapBuffer(
+      create = { w, h -> Buffer(Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)) },
+      release = { it.bitmap.recycle() }
+    ) { it.bitmap.width to it.bitmap.height }
     val bitmap: Bitmap?
       get() = buffers.published?.bitmap
     // The bounds the bitmap holds, which lag behind bounds until a capture succeeds.
