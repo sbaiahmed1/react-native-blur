@@ -98,7 +98,7 @@ export const SCENES: readonly SceneDef[] = [
   {
     id: 'modal-idle',
     title: 'Modal idle',
-    note: 'A full-screen BlurView in a Modal, nothing moving (B2).',
+    note: 'A full-screen BlurView in a Modal with nothing moving, which should draw no frames.',
     defaults: {},
     Component: ModalIdle,
   },
@@ -119,14 +119,14 @@ export const SCENES: readonly SceneDef[] = [
   {
     id: 'root-overlay',
     title: 'Root overlay',
-    note: 'Glass and blur rendered outside every Screen (B3a).',
+    note: 'Glass and blur rendered outside every Screen, which should still blur the feed.',
     defaults: {},
     Component: RootOverlay,
   },
   {
     id: 'recycle',
     title: 'Recycle',
-    note: 'Swaps two blur and glass pairs every second (B7).',
+    note: 'Swaps a red-tinted blur and glass pair with a plain pair every second. The plain pair must not keep the red tint.',
     defaults: {},
     Component: Recycle,
   },
@@ -161,7 +161,7 @@ export const SCENES: readonly SceneDef[] = [
   {
     id: 'stacked',
     title: 'Stacked',
-    note: 'Ten BlurView cards (count) stacked over each other over a scrolling feed (B14).',
+    note: 'Ten BlurView cards (count) stacked over each other over a scrolling feed, each one blurring the cards behind it.',
     defaults: { count: 10 },
     Component: Stacked,
   },
