@@ -151,7 +151,6 @@ internal class BehindSource private constructor(
 
   // Only a sibling that paints over part of the host can reach its pixels, and skipping the rest keeps hwui's walk linear while hosts do not overlap each other.
   private fun overlapsHost(child: View, level: Int): Boolean {
-    overflowBudget = OVERFLOW_VIEW_BUDGET
     overflowMatrix(0).set(ViewMatrices.node(child, step))
     return paintsInto(child, 0, hostRects[level])
   }
@@ -236,6 +235,8 @@ internal class BehindSource private constructor(
     BehindOrder.fillDispatchPositions(positions, count, ChildDrawingOrder.isEnabled(parent)) { parent.getChildDrawingOrder(it) }
     children.clear()
     candidates.clear()
+    // One budget for the whole level, so many siblings with overflow cannot each walk their own subtrees.
+    overflowBudget = OVERFLOW_VIEW_BUDGET
     var pathIndex = BehindOrder.DISAPPEARING
     for (index in 0 until count) {
       val child = parent.getChildAt(index)
@@ -251,7 +252,7 @@ internal class BehindSource private constructor(
   companion object {
     private val sources = HashMap<View, BehindSource>()
 
-    // View groups opened to look for a sibling's overflow before keeping it without looking further.
+    // View groups opened per level to look for siblings' overflow before keeping the rest without looking further.
     private const val OVERFLOW_VIEW_BUDGET = 64
 
     /** The shared source of [host]'s window, which also draws the activity behind a Modal's window. */
