@@ -27,7 +27,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
-          ref: ${{ env.TAG }}
+          # The full ref, so a branch with the same name as the tag cannot be built instead.
+          ref: refs/tags/${{ env.TAG }}
 
       - name: Setup
         uses: ./.github/actions/setup
