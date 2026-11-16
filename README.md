@@ -88,3 +88,9 @@ MIT
 ## Credits
 
 Built with [create-react-native-library](https://github.com/callstack/react-native-builder-bob). On Android 11 and earlier, and for `BlurSwitch`, blur is powered by [QmBlurView](https://github.com/QmDeve/QmBlurView). Android liquid glass uses the [AndroidLiquidGlassView](https://github.com/QmDeve/AndroidLiquidGlassView) shader (both by QmDeve, MIT).
+
+## Powered by
+
+[![JetBrains logo.](https://resources.jetbrains.com/storage/products/company/brand/logos/jetbrains.svg)](https://jb.gg/OpenSource)
+
+Tooling provided by JetBrains.
