@@ -8,6 +8,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 __attribute__((objc_runtime_name("_TtC15ReactNativeBlur16AdvancedBlurView")))
 @interface AdvancedBlurView : UIView
+- (void)beginBatchUpdate;
+- (void)endBatchUpdate;
 @end
 
 __attribute__((objc_runtime_name("_TtC15ReactNativeBlur20LiquidGlassContainer")))
@@ -27,10 +29,14 @@ __attribute__((objc_runtime_name("_TtC15ReactNativeBlur24LiquidGlassContainerVie
 
 __attribute__((objc_runtime_name("_TtC15ReactNativeBlur19ProgressiveBlurView")))
 @interface ProgressiveBlurView : UIView
+- (void)beginBatchUpdate;
+- (void)endBatchUpdate;
 @end
 
 __attribute__((objc_runtime_name("_TtC15ReactNativeBlur18VibrancyEffectView")))
 @interface VibrancyEffectView : UIView
+- (void)beginBatchUpdate;
+- (void)endBatchUpdate;
 @end
 
 __attribute__((objc_runtime_name("_TtC15ReactNativeBlur25ReactNativeBlurViewHelper")))
