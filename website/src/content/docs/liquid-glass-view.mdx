@@ -21,7 +21,7 @@ import { glassTypeValues } from '../props-data/enums';
 - When "Reduce Transparency" is enabled on iOS 26+, the glass effect is hidden and a solid `reducedTransparencyFallbackColor` view is shown instead.
 - On iOS 26+ with native `UIGlassEffect` available, turning "Reduce Transparency" off while mounted removes the solid fallback and its clipping, restoring the configured glass effect and interaction behavior.
 
-> **⚠️ Use it wisely on Android:** liquid glass is emulated through backdrop captures and a GPU shader. Views with the same capture root share a downsampled bitmap and capture work, but each glass surface still has its own shader and rendering cost; separate roots require separate captures. Prefer a few well-placed surfaces over dozens in long lists, and profile on target devices. The shader requires **Android 13 (API 33) or newer**; older Android versions automatically fall back to `BlurView`, like iOS below 26.
+> **Use it wisely on Android:** each glass view draws its own copy of the views behind it and runs its own shader on the GPU. The cost adds up with every glass view on screen, so prefer a few well-placed ones over dozens in a long list and profile on the devices you target. Glass needs Android 13 (API 33) or newer. Older Android versions fall back to `BlurView`, as iOS below 26 does.
 
 > **Note:** non-uniform corner radii (e.g. only `borderTopLeftRadius`) clip correctly on Android, but the glass lens geometry (bevel/refraction) follows the uniform `borderRadius` value.
 
