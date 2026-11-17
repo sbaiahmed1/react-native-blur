@@ -7,7 +7,7 @@ import org.junit.Test
 class BackdropReductionTest {
   @Test fun blurRecordsAtFullSizeAndHalvesThreeTimes() = assertEquals(3, BackdropReduction.hops(BackdropScale.BLUR))
 
-  @Test fun glassScaleIsNotHalved() = assertEquals(0, BackdropReduction.hops(BackdropScale.GLASS))
+  @Test fun glassRecordsAtFullSizeAndHalvesOnce() = assertEquals(1, BackdropReduction.hops(BackdropScale.GLASS))
 
   @Test fun fullScaleIsNotHalved() = assertEquals(0, BackdropReduction.hops(1))
 
@@ -42,7 +42,7 @@ class BackdropReductionTest {
     }
   }
 
-  @Test fun unhalvedScaleRecordsAtItself() = assertEquals(BackdropScale.GLASS, BackdropReduction.recordScale(BackdropScale.GLASS))
+  @Test fun unhalvedScaleRecordsAtItself() = assertEquals(3, BackdropReduction.recordScale(3))
 
   @Test fun firstLevelCoversTheNodeAtTheRecordScale() {
     val hops = BackdropReduction.hops(8)
