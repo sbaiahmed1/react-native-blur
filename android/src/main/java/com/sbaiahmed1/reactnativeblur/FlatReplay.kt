@@ -26,6 +26,7 @@ internal class FlatReplay(private val holdsHosts: (View) -> Boolean) {
   private val recordedFlat = HashSet<View>()
   private val used = HashSet<RenderNode>()
   private val outline = Outline()
+  private val paddingBox = FloatArray(4)
   private var omitLogged = false
 
   fun beginFrame() {
@@ -109,13 +110,26 @@ internal class FlatReplay(private val holdsHosts: (View) -> Boolean) {
       // A host clips its background and children to non-uniform corners, as its own draw does.
       val save = host?.clipFlatCorners(canvas) ?: -1
       view.background?.draw(canvas)
-      if (host != null) {
-        host.drawFlat(canvas)
-      } else if (clipsOverflow(view)) {
-        canvas.clipRect(0f, 0f, view.width.toFloat(), view.height.toFloat())
-      }
+      host?.drawFlat(canvas)
+      // As in View.draw, the children and the foreground draw in the scrolled space and the background does not.
       canvas.translate(-view.scrollX.toFloat(), -view.scrollY.toFloat())
-      if (view is ViewGroup) drawChildren(canvas, view, childNode)
+      if (view is ViewGroup) {
+        val clip = canvas.save()
+        if (host == null && clipsOverflow(view)) {
+          canvas.clipRect(view.scrollX.toFloat(), view.scrollY.toFloat(), (view.scrollX + view.width).toFloat(), (view.scrollY + view.height).toFloat())
+        }
+        if (ReplayClip.paddingBox(
+            view.clipToPadding, view.scrollX, view.scrollY, view.width, view.height,
+            view.paddingLeft, view.paddingTop, view.paddingRight, view.paddingBottom, paddingBox
+          )
+        ) {
+          canvas.clipRect(paddingBox[0], paddingBox[1], paddingBox[2], paddingBox[3])
+        }
+        drawChildren(canvas, view, childNode)
+        canvas.restoreToCount(clip)
+      }
+      // View.onDrawForeground draws after the children, still in the scrolled space.
+      view.foreground?.draw(canvas)
       if (save >= 0) canvas.restoreToCount(save)
     } finally {
       node.endRecording()
