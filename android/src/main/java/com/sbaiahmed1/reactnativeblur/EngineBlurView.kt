@@ -29,6 +29,9 @@ internal class EngineBlurView(context: Context) : BackdropHostView(context), Blu
   override val wantsBackdrop: Boolean
     get() = effectRadius > 0f
 
+  override val opaqueBackdrop: Boolean
+    get() = NestedCut.isOpaqueBlur(effectRadius, hasRecordedBackdrop, isPlatformBackdrop)
+
   private fun createBlurEffect(): RenderEffect = gpuBlurEffect(effectRadius)
 
   override fun drawBackdrop(canvas: Canvas, node: RenderNode) {
