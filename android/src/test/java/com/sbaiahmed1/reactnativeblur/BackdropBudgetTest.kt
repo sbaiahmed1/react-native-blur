@@ -1,6 +1,7 @@
 package com.sbaiahmed1.reactnativeblur
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -142,6 +143,37 @@ class BackdropBudgetTest {
     assertEquals(2, budget.visits(2))
     budget.forget(2)
     assertEquals(1, budget.visits(2))
+  }
+
+  private fun headerOverCardsWithBadges(budget: BackdropBudget, cards: Int, header: Int): List<IntArray> {
+    for (card in 0 until cards) {
+      budget.plan(2 * card, IntArray(0), emptyList())
+      budget.plan(2 * card + 1, intArrayOf(2 * card), emptyList())
+    }
+    budget.plan(header, IntArray(0), (cards - 1 downTo 0).map { intArrayOf(2 * it, 2 * it + 1) })
+    return (cards - 1 downTo 0).map { intArrayOf(2 * it, 2 * it + 1) }
+  }
+
+  @Test fun payingForTheRestOfAListMatchesTheFullWalk() {
+    val budget = BackdropBudget()
+    val leaves = headerOverCardsWithBadges(budget, cards = 20, header = 40)
+    assertEquals(25, budget.visits(40))
+    assertTrue(budget.pay(40, leaves.drop(8)))
+    assertEquals(61, budget.visits(40))
+  }
+
+  @Test fun payingPastTheCapChangesNothing() {
+    val budget = BackdropBudget()
+    val leaves = headerOverCardsWithBadges(budget, cards = 400, header = 800)
+    assertFalse(budget.pay(800, leaves.drop(8)))
+    assertEquals(25, budget.visits(800))
+  }
+
+  @Test fun aPaidHostCostsItsFullWalkToTheHostsAboveIt() {
+    val budget = BackdropBudget()
+    val leaves = headerOverCardsWithBadges(budget, cards = 20, header = 40)
+    budget.pay(40, leaves.drop(8))
+    assertEquals(0, budget.plan(41, IntArray(0), listOf(intArrayOf(40))).fullLeaves)
   }
 
   @Test fun samePlanTwice() {
