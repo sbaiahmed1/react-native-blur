@@ -44,6 +44,12 @@ class AnimationDeferralTest {
     }
   }
 
+  @Test fun fastFramesDoNotTripFailSafeEarly() {
+    val deferral = AnimationDeferral()
+    for (time in 0L..992L step 16) assertEquals(SKIP, deferral.onFrame(time, true))
+    assertEquals(CAPTURE_FAIL_SAFE, deferral.onFrame(1008, true))
+  }
+
   @Test fun trippedRunCapturesUntilClear() {
     val deferral = AnimationDeferral()
     deferral.tripFromZero()
