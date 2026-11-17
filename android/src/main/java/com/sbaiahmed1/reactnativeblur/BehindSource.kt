@@ -231,7 +231,7 @@ internal class BehindSource private constructor(
     return true
   }
 
-  // A power-of-two scale records at 1/2 and halves down to the node 2x2 px at a time, which averages layers, stretches and bitmaps behind the host.
+  // A power-of-two scale records at full size and halves down to the node 2x2 px at a time, which averages layers, stretches and bitmaps behind the host.
   private fun recordScaled(node: RenderNode, host: BackdropHostView, downsample: Int) {
     val hops = BackdropReduction.hops(downsample)
     val width = BackdropReduction.nodeSize(host.width, downsample)
