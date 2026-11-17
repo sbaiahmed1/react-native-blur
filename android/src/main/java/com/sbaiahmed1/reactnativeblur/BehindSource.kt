@@ -49,7 +49,7 @@ internal class BehindSource private constructor(
 
   private val ids = HashMap<BackdropHostView, Int>()
   private var nextId = 0
-  private val budget = BackdropBudget(Int.MAX_VALUE, Int.MAX_VALUE)
+  private val budget = BackdropBudget()
   // Every view on the way from a host up to the root, with the ids of the hosts at or below it.
   private val hostsUnder = HashMap<View, BitSet>()
   private val bitSets = ArrayList<BitSet>()
@@ -71,6 +71,24 @@ internal class BehindSource private constructor(
   private val cutMatrix = Matrix()
   private val cutStep = Matrix()
   private val cutRect = RectF()
+  private val replay = FlatReplay { hostsUnder.containsKey(it) }
+  private val classify: (View) -> BackdropReference = { referenceOf(it) }
+  // The leaf of every host id the current plan reaches, for a replay that keeps some of a view's hosts.
+  private val leafOfId = HashMap<Int, Int>()
+  private val leafViews = ArrayList<View>()
+  private val plannedLeaves = ArrayList<IntArray>()
+  private val paidLeaves = ArrayList<IntArray>()
+  private var leafFull = BooleanArray(16)
+  private var leafVisible = BooleanArray(16)
+  private val hostRect = RectF()
+  private val rootRects = HashMap<View, RectF>()
+  private val rectPool = ArrayList<RectF>()
+  private var rectsUsed = 0
+  private val rootMatrix = Matrix()
+  private val rootStep = Matrix()
+  // The levels of the host ancestors in forced, in the same order.
+  private var forcedLevels = IntArray(4)
+  private var forcedCount = 0
 
   override fun addHost(host: BackdropHostView) {
     if (!hosts.add(host)) return
@@ -85,9 +103,11 @@ internal class BehindSource private constructor(
   override fun removeHost(host: BackdropHostView) {
     if (!hosts.remove(host)) return
     ids.remove(host)?.let { budget.forget(it) }
+    replay.remove(host)
     glassLayers.remove(host)?.discardDisplayList()
     reductions.remove(host)?.forEach { it.discardDisplayList() }
     if (hosts.isNotEmpty()) return
+    replay.clear()
     observer?.let { if (it.isAlive) it.removeOnPreDrawListener(this) }
     observer = null
     behindInvalidator?.remove()
@@ -112,11 +132,15 @@ internal class BehindSource private constructor(
     }
     frameVisits = 0
     frameRecordings = 0
+    replay.beginFrame()
     for (host in recordOrder) host.onBackdropFrame()
+    replay.endFrame()
     logVisits()
     paintPaths.clear()
     dispatchPositions.clear()
     leafIds.clear()
+    rootRects.clear()
+    rectsUsed = 0
     return true
   }
 
@@ -148,7 +172,7 @@ internal class BehindSource private constructor(
       val parent = child.parent as? ViewGroup ?: break
       val index = parent.indexOfChild(child)
       val position = if (index < 0) BehindOrder.DISAPPEARING else dispatchPositionsOf(parent)[index]
-      steps.add(HostPaintOrder.Step(parent, BehindOrder.Child(position, child.z, isDrawn(child))))
+      steps.add(HostPaintOrder.Step(parent, BehindOrder.Child(position, child.z, isDrawnByParent(child))))
       child = parent
     }
     steps.reverse()
@@ -163,7 +187,6 @@ internal class BehindSource private constructor(
       }
     }
 
-  private fun isDrawn(view: View): Boolean = view.visibility == View.VISIBLE || view.animation != null
 
   private fun logVisits() {
     if (frameRecordings == 0 || frameVisits == loggedVisits || !Log.isLoggable(TAG, Log.DEBUG)) return
@@ -335,19 +358,36 @@ internal class BehindSource private constructor(
     planBackdrop(host, cut, levels)
     // An opaque host ancestor covers the decor and every level above it, which then only place the canvas.
     if (cut == 0) behindDecor?.let { drawDecor(canvas, it) }
+    // Forced references past the plan are the farthest ones, so every host ancestor at or above this level draws flat.
+    val flatAncestorsFrom = if (plan.forcedKept < forcedCount) forcedLevels[plan.forcedKept] else -1
     for (level in 0 until levels) {
       val parent = path[level] as ViewGroup
       if (level >= cut) {
         parent.background?.draw(canvas)
-        if (parent is BackdropHostView) parent.drawOwnBackdrop(canvas)
+        if (parent is BackdropHostView) {
+          if (level > flatAncestorsFrom) parent.drawOwnBackdrop(canvas) else parent.drawFlat(canvas)
+        }
       }
       canvas.translate(-parent.scrollX.toFloat(), -parent.scrollY.toFloat())
       val behind = levelBehind[level]
       if (behind.isNotEmpty()) {
         val levelViews = levelCandidates[level]
+        val ranges = levelLeafRanges[level]
         canvas.enableZ()
-        // No display list check: a child attached this frame records after pre-draw, and the reference picks it up at sync.
-        for (index in behind) RenderNodeAccess.nodeOf(levelViews[index])?.let { canvas.drawRenderNode(it) }
+        for (k in behind.indices) {
+          val view = levelViews[behind[k]]
+          // No display list check: a child attached this frame records after pre-draw, and the reference picks it up at sync.
+          val start = ranges[k * 2]
+          val count = ranges[k * 2 + 1]
+          var full = 0
+          for (leaf in start until start + count) if (leafFull[leaf]) full++
+          val node = when (BackdropReference.of(full, count)) {
+            BackdropReference.NODE -> RenderNodeAccess.nodeOf(view)
+            BackdropReference.FLAT -> replay.flatProxy(view)
+            BackdropReference.REPLAY -> replay.replayProxy(view, host, classify)
+          }
+          node?.let { canvas.drawRenderNode(it) }
+        }
         canvas.disableZ()
       }
       canvas.concat(ViewMatrices.node(path[level + 1], step))
@@ -405,17 +445,22 @@ internal class BehindSource private constructor(
     return levels
   }
 
-  // Plans the host's references: its host ancestors and the hosts painted behind it, nearest first, down to [cut].
+  // Plans the host's references: its host ancestors, nearest first down to [cut], and the hosts painted behind it.
   private fun planBackdrop(host: BackdropHostView, cut: Int, levels: Int) {
-    val id = ids[host] ?: return
-    var forcedCount = 0
+    forcedCount = 0
+    leaves.clear()
+    leafViews.clear()
+    leafOfId.clear()
     for (level in levels - 1 downTo cut) {
       val parent = path[level] as? BackdropHostView ?: continue
       val parentId = ids[parent] ?: continue
-      if (forcedCount == forced.size) forced = forced.copyOf(forcedCount * 2)
+      if (forcedCount == forced.size) {
+        forced = forced.copyOf(forcedCount * 2)
+        forcedLevels = forcedLevels.copyOf(forcedCount * 2)
+      }
+      forcedLevels[forcedCount] = level
       forced[forcedCount++] = parentId
     }
-    leaves.clear()
     for (level in levels - 1 downTo cut) {
       val behind = levelBehind[level]
       if (levelLeafRanges[level].size < behind.size * 2) levelLeafRanges[level] = IntArray(behind.size * 4)
@@ -428,9 +473,79 @@ internal class BehindSource private constructor(
         ranges[k * 2 + 1] = leaves.size - start
       }
     }
-    plan = budget.plan(id, forced.copyOf(forcedCount), leaves)
-    frameVisits += plan.visits
+    val count = leaves.size
+    for (index in 0 until count) for (leafId in leaves[index]) leafOfId[leafId] = index
+    if (leafFull.size < count) {
+      leafFull = BooleanArray(count * 2)
+      leafVisible = BooleanArray(count * 2)
+    }
+    val id = ids[host]
+    if (id == null) {
+      plan = FULL_PLAN
+      leafFull.fill(true, 0, count)
+      return
+    }
+    // A leaf outside the host's rect adds no pixels to its backdrop, so leaves inside it are planned first.
+    hostRect.set(rootRect(host))
+    hostRect.inset(-host.downsample.toFloat(), -host.downsample.toFloat())
+    for (index in 0 until count) leafVisible[index] = RectF.intersects(rootRect(leafViews[index]), hostRect)
+    val order = LeafOrder.visibleFirst(leafVisible, count)
+    plannedLeaves.clear()
+    for (index in order) plannedLeaves.add(leaves[index])
+    plan = budget.plan(id, forced.copyOf(forcedCount), plannedLeaves)
+    leafFull.fill(false, 0, count)
+    for (planned in 0 until minOf(plan.fullLeaves, count)) leafFull[order[planned]] = true
+    payForWholeViews(id, cut, levels)
+    frameVisits += budget.visits(id)
     frameRecordings++
+  }
+
+  // A view whose leaves inside the host's rect are all full goes by node as before, so its flat leaves are paid instead.
+  private fun payForWholeViews(id: Int, cut: Int, levels: Int) {
+    for (level in levels - 1 downTo cut) {
+      val ranges = levelLeafRanges[level]
+      for (k in levelBehind[level].indices.reversed()) {
+        val start = ranges[k * 2]
+        val end = start + ranges[k * 2 + 1]
+        var flat = false
+        var visibleFlat = false
+        for (leaf in start until end) {
+          if (leafFull[leaf]) continue
+          flat = true
+          if (leafVisible[leaf]) visibleFlat = true
+        }
+        if (!flat || visibleFlat) continue
+        paidLeaves.clear()
+        for (leaf in start until end) if (!leafFull[leaf]) paidLeaves.add(leaves[leaf])
+        if (budget.pay(id, paidLeaves)) leafFull.fill(true, start, end)
+      }
+    }
+  }
+
+  // [view]'s bounds in the root's px, once per frame, or the whole plane when it is not under the root.
+  private fun rootRect(view: View): RectF =
+    rootRects.getOrPut(view) {
+      if (rectsUsed == rectPool.size) rectPool.add(RectF())
+      val rect = rectPool[rectsUsed++]
+      rect.set(0f, 0f, view.width.toFloat(), view.height.toFloat())
+      if (ViewMatrices.toAncestor(view, root, rootMatrix, rootStep)) rootMatrix.mapRect(rect) else rect.set(-Float.MAX_VALUE, -Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE)
+      rect
+    }
+
+  // Whether the current plan keeps every host in [view] full, none of them, or some.
+  private fun referenceOf(view: View): BackdropReference {
+    val under = hostsUnder[view] ?: return BackdropReference.NODE
+    var total = 0
+    var full = 0
+    var id = under.nextSetBit(0)
+    while (id >= 0) {
+      leafOfId[id]?.let { leaf ->
+        total++
+        if (leafFull[leaf]) full++
+      }
+      id = under.nextSetBit(id + 1)
+    }
+    return BackdropReference.of(full, total)
   }
 
   // The topmost hosts in [view]'s subtree, nearest first, each with the ids of the hosts nested in it.
@@ -438,11 +553,12 @@ internal class BehindSource private constructor(
     val under = hostsUnder[view] ?: return
     if (view is BackdropHostView) {
       out.add(leafIds.getOrPut(view) { under.stream().toArray() })
+      leafViews.add(view)
       return
     }
     val group = view as? ViewGroup ?: return
     val positions = dispatchPositionsOf(group)
-    val order = BehindOrder.paintOrder(List(group.childCount) { BehindOrder.Child(positions[it], group.getChildAt(it).z, isDrawn(group.getChildAt(it))) })
+    val order = BehindOrder.paintOrder(List(group.childCount) { BehindOrder.Child(positions[it], group.getChildAt(it).z, isDrawnByParent(group.getChildAt(it))) })
     for (k in order.indices.reversed()) collectLeaves(group.getChildAt(order[k]), out)
   }
 
@@ -484,6 +600,9 @@ internal class BehindSource private constructor(
     private const val OVERFLOW_VIEW_BUDGET = 64
 
     private const val TAG = "RNBackdrop"
+
+    // A host this source has no id for references everything in full, as before planning.
+    private val FULL_PLAN = BackdropBudget.Plan(Int.MAX_VALUE, Int.MAX_VALUE, 1)
 
     // Px a nested host may reach past its ancestor's bounds through float error and still count as inside.
     private const val EDGE_SLOP = 0.5f

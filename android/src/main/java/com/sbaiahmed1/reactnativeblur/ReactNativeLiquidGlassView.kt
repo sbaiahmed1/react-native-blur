@@ -3,6 +3,7 @@ package com.sbaiahmed1.reactnativeblur
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.RenderEffect
 import android.graphics.RenderNode
 import android.graphics.RuntimeShader
@@ -19,6 +20,7 @@ class ReactNativeLiquidGlassView(context: Context) : BackdropHostView(context) {
   private var glassType: String = "clear"
   private var glassTintColor: Int = Color.TRANSPARENT
   private var glassOpacity: Float = 1.0f
+  private val flatPaint = Paint()
   private var interactive: Boolean = true
 
   // Only touched on API 33+.
@@ -64,6 +66,15 @@ class ReactNativeLiquidGlassView(context: Context) : BackdropHostView(context) {
   }
 
   override fun drawSoftwareFallback(canvas: Canvas) = Unit
+
+  // The tint lives in the shader, so a flat glass fills it with the shader's alpha formula.
+  override fun drawFlat(canvas: Canvas) {
+    val alpha = Color.alpha(glassTintColor) / 255f * glassOpacity
+    if (alpha <= 0f) return
+    flatPaint.color = glassTintColor
+    flatPaint.alpha = Math.round(alpha.coerceAtMost(1f) * 255f)
+    canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), flatPaint)
+  }
 
   private fun createGlassEffect(): RenderEffect {
     if (!isSupported) return RenderEffect.createOffsetEffect(0f, 0f)

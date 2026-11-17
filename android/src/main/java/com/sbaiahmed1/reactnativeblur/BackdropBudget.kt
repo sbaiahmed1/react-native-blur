@@ -48,6 +48,22 @@ internal class BackdropBudget(
     return Plan(forcedKept, fullLeaves, total)
   }
 
+  /** Adds [leaves] in full to [host]'s last plan, for a view referenced by node, while it stays within [maxVisits]. */
+  fun pay(host: Int, leaves: List<IntArray>, maxVisits: Int = MAX_PAID_VISITS): Boolean {
+    var total = visits(host).toLong()
+    for (leaf in leaves) for (id in leaf) total += visits(id)
+    if (total > maxVisits) return false
+    val hostReach = reachOf.getOrPut(host) { BitSet().also { it.set(host) } }
+    for (leaf in leaves) {
+      for (id in leaf) {
+        val known = reachOf[id]
+        if (known == null) hostReach.set(id) else hostReach.or(known)
+      }
+    }
+    visitsOf[host] = total.toInt()
+    return true
+  }
+
   /** Backdrop visits one visit of [host]'s backdrop makes, itself included, or 1 for a host never planned. */
   fun visits(host: Int): Int = visitsOf[host] ?: 1
 
@@ -78,5 +94,8 @@ internal class BackdropBudget(
 
     /** Visits one backdrop may make, a backstop for very long stacks. */
     const val MAX_VISITS = 64
+
+    /** Visits one backdrop may make once it pays for views it references whole, which keeps the total linear in hosts. */
+    const val MAX_PAID_VISITS = 1024
   }
 }

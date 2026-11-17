@@ -164,6 +164,12 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
     return true
   }
 
+  /** This host's look inside a backdrop that cannot afford its own backdrop: everything but the backdrop. */
+  internal open fun drawFlat(canvas: Canvas) = drawSoftwareFallback(canvas)
+
+  /** Clips [canvas] to non-uniform corners as this host's draw does, and returns the count to restore, or -1. */
+  internal fun clipFlatCorners(canvas: Canvas): Int = clipCorners(canvas)
+
   override fun draw(canvas: Canvas) {
     if (SoftwareSource.isCapturing(this)) return
     val save = clipCorners(canvas)
