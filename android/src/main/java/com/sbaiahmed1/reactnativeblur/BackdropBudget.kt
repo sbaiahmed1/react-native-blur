@@ -8,7 +8,8 @@ import java.util.BitSet
  */
 internal class BackdropBudget(
   private val maxRedundancy: Int = MAX_REDUNDANCY,
-  private val maxVisits: Int = MAX_VISITS
+  private val maxVisits: Int = MAX_VISITS,
+  private val maxForcedVisits: Int = MAX_PAID_VISITS
 ) {
   /** [forcedKept] ancestor backdrops and [fullLeaves] leaves, nearest first, are referenced in full. */
   data class Plan(val forcedKept: Int, val fullLeaves: Int, val visits: Int)
@@ -22,7 +23,8 @@ internal class BackdropBudget(
 
   /**
    * Plans [host]'s backdrop: [forced] holds the ancestor hosts it draws, nearest first, and each of [leaves] the ids of one
-   * referenced host and the hosts nested in it, nearest first. Once one does not fit, every farther one is left out.
+   * referenced host and the hosts nested in it, nearest first. Once one does not fit, every farther one is left out. Forced
+   * ancestors only count against [maxForcedVisits]: a nested host draws them, so a paid ancestor stays whole.
    */
   fun plan(host: Int, forced: IntArray, leaves: List<IntArray>): Plan {
     reach.clear()
@@ -31,12 +33,12 @@ internal class BackdropBudget(
     var forcedKept = 0
     for (ancestor in forced) {
       single[0] = ancestor
-      if (!join(single)) break
+      if (!join(single, Int.MAX_VALUE, maxForcedVisits)) break
       forcedKept++
     }
     var fullLeaves = 0
     for (leaf in leaves) {
-      if (!join(leaf)) break
+      if (!join(leaf, maxRedundancy, maxVisits)) break
       fullLeaves++
     }
     val total = visits.toInt()
@@ -72,7 +74,7 @@ internal class BackdropBudget(
     reachOf.remove(host)
   }
 
-  private fun join(ids: IntArray): Boolean {
+  private fun join(ids: IntArray, redundancy: Int, cap: Int): Boolean {
     joined.clear()
     joined.or(reach)
     var next = visits
@@ -81,7 +83,7 @@ internal class BackdropBudget(
       val known = reachOf[id]
       if (known == null) joined.set(id) else joined.or(known)
     }
-    if (next > maxVisits || next - joined.cardinality() > maxRedundancy) return false
+    if (next > cap || next - joined.cardinality() > redundancy) return false
     visits = next
     reach.clear()
     reach.or(joined)

@@ -146,7 +146,7 @@ export const SCENES: readonly SceneDef[] = [
   {
     id: 'overlap-badges',
     title: 'Overlap badges',
-    note: 'The overlap feed with a BlurView badge in every card. The cards under the header stay blurred in its backdrop.',
+    note: 'The overlap feed with a BlurView badge in every card and in the header. The cards under the header stay blurred in its backdrop, and the header badge blurs the header.',
     defaults: {},
     Component: OverlapBadges,
   },

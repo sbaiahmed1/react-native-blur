@@ -30,6 +30,15 @@ class NestedCutTest {
   @Test fun aPlatformBackdropIsNeverOpaque() =
     assertEquals(false, NestedCut.isOpaqueBlur(effectRadius = 2f, recorded = true, platform = true))
 
+  @Test fun noCutAlwaysHolds() = assertEquals(true, NestedCut.cutHolds(cut = 0, forcedLevels = intArrayOf(4), forcedCount = 1, forcedKept = 0))
+
+  @Test fun theCutHoldsWhileItsAncestorIsKept() =
+    assertEquals(true, NestedCut.cutHolds(cut = 5, forcedLevels = intArrayOf(7, 5), forcedCount = 2, forcedKept = 2))
+
+  // Levels above the cut are skipped, so a dropped cut ancestor would leave the backdrop empty.
+  @Test fun theCutFailsWhenItsAncestorIsDropped() =
+    assertEquals(false, NestedCut.cutHolds(cut = 5, forcedLevels = intArrayOf(7, 5), forcedCount = 2, forcedKept = 1))
+
   @Test fun noOpaqueAncestorMeansLevelZero() =
     assertEquals(0, NestedCut.startLevel(listOf(ancestor(3, opaque = false), ancestor(6, containsHost = false)), windowOpaque = true))
 }
