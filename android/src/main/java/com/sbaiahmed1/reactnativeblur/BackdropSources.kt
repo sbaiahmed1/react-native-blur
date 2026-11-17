@@ -47,5 +47,5 @@ internal object BackdropSources {
 /** View px per backdrop px, per kind of host. */
 internal object BackdropScale {
   const val BLUR = 8
-  const val GLASS = 3
+  const val GLASS = 2
 }
