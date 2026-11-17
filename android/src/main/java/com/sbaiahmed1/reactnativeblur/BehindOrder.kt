@@ -50,4 +50,22 @@ internal object BehindOrder {
     result.sortWith(compareBy({ children[it].z }, { children[it].dispatchPosition }))
     return result
   }
+
+  /** Indices of every drawn child in [children], in paint order. */
+  fun paintOrder(children: List<Child>): List<Int> {
+    val result = ArrayList<Int>(children.size)
+    for (index in children.indices) if (children[index].drawn) result.add(index)
+    result.sortWith(compareBy({ children[it].z }, { children[it].dispatchPosition }))
+    return result
+  }
+
+  /** Paint order of two children of one parent: Z first, then dispatch position, with a [DISAPPEARING] child after the live ones. */
+  fun compare(a: Child, b: Child): Int {
+    val byZ = a.z.compareTo(b.z)
+    if (byZ != 0) return byZ
+    return sortPosition(a).compareTo(sortPosition(b))
+  }
+
+  private fun sortPosition(child: Child): Int =
+    if (child.dispatchPosition == DISAPPEARING) Int.MAX_VALUE else child.dispatchPosition
 }

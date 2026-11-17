@@ -68,4 +68,33 @@ class BehindOrderTest {
     val children = listOf(BehindOrder.Child(0, 0f, false), BehindOrder.Child(1, 0f, true), BehindOrder.Child(2, 0f, true))
     assertEquals(listOf(1), BehindOrder.behind(children, 2))
   }
+
+  @Test fun paintOrderMatchesBehind() {
+    val fixtures = listOf(
+      flat(4),
+      List(3) { BehindOrder.Child(2 - it, 0f, true) },
+      listOf(BehindOrder.Child(0, 4f, true), BehindOrder.Child(1, 0f, true)),
+      listOf(BehindOrder.Child(0, 8f, true), BehindOrder.Child(1, 0f, true), BehindOrder.Child(2, 0f, true)),
+      listOf(BehindOrder.Child(0, 0f, true), BehindOrder.Child(1, 0f, true), BehindOrder.Child(2, -1f, true)),
+      List(4) { BehindOrder.Child(it, 2f, true) },
+      listOf(BehindOrder.Child(0, 0f, false), BehindOrder.Child(1, 0f, true), BehindOrder.Child(2, 0f, true))
+    )
+    for (children in fixtures) {
+      val order = BehindOrder.paintOrder(children)
+      for (path in children.indices) {
+        if (!children[path].drawn) continue
+        assertEquals("$children path $path", BehindOrder.behind(children, path), order.takeWhile { it != path })
+      }
+    }
+  }
+
+  @Test fun paintOrderSkipsUndrawn() {
+    val children = listOf(BehindOrder.Child(0, 0f, true), BehindOrder.Child(1, 0f, false), BehindOrder.Child(2, 0f, true))
+    assertEquals(listOf(0, 2), BehindOrder.paintOrder(children))
+  }
+
+  @Test fun elevatedChildPaintsLast() {
+    val children = listOf(BehindOrder.Child(0, 6f, true), BehindOrder.Child(1, 0f, true), BehindOrder.Child(2, 0f, true))
+    assertEquals(listOf(1, 2, 0), BehindOrder.paintOrder(children))
+  }
 }
