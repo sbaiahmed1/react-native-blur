@@ -26,10 +26,16 @@ RUNS=(
   "root-overlay"
   "recycle"
   "overlap"
+  "overlap-badges"
   "nested"
   "halo"
   "geometry"
   "stacked count=10"
+  "stacked-zigzag count=10"
+  "stacked-wrapped count=10"
+  "stacked-badges count=6"
+  "side-by-side"
+  "stacked-modal count=10"
 )
 
 for run in "${RUNS[@]}"; do
