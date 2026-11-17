@@ -23,8 +23,9 @@ internal class BackdropBudget(
 
   /**
    * Plans [host]'s backdrop: [forced] holds the ancestor hosts it draws, nearest first, and each of [leaves] the ids of one
-   * referenced host and the hosts nested in it, nearest first. Once one does not fit, every farther one is left out. Forced
-   * ancestors only count against [maxForcedVisits]: a nested host draws them, so a paid ancestor stays whole.
+   * referenced host and the hosts nested in it, nearest first. Once one does not fit, every farther one is left out. A forced
+   * ancestor is kept while it fits [maxForcedVisits], since a nested host draws it and a paid ancestor stays whole. Its visits
+   * still count toward [maxVisits] and [maxRedundancy] for the leaves after it.
    */
   fun plan(host: Int, forced: IntArray, leaves: List<IntArray>): Plan {
     reach.clear()
