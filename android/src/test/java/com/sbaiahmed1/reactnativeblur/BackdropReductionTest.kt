@@ -5,20 +5,19 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class BackdropReductionTest {
-  @Test fun blurRecordsAtHalfScaleAndHalvesTwice() = assertEquals(2, BackdropReduction.hops(BackdropScale.BLUR))
+  @Test fun blurRecordsAtFullSizeAndHalvesThreeTimes() = assertEquals(3, BackdropReduction.hops(BackdropScale.BLUR))
 
   @Test fun glassScaleIsNotHalved() = assertEquals(0, BackdropReduction.hops(BackdropScale.GLASS))
 
-  @Test fun scalesAtOrBelowTwoAreNotHalved() {
-    assertEquals(0, BackdropReduction.hops(1))
-    assertEquals(0, BackdropReduction.hops(2))
-  }
+  @Test fun fullScaleIsNotHalved() = assertEquals(0, BackdropReduction.hops(1))
+
+  @Test fun halfScaleHalvesOnce() = assertEquals(1, BackdropReduction.hops(2))
 
   @Test fun nonPowerOfTwoScaleIsNotHalved() = assertEquals(0, BackdropReduction.hops(6))
 
   @Test fun higherPowersOfTwoHalveMoreTimes() {
-    assertEquals(1, BackdropReduction.hops(4))
-    assertEquals(3, BackdropReduction.hops(16))
+    assertEquals(2, BackdropReduction.hops(4))
+    assertEquals(4, BackdropReduction.hops(16))
   }
 
   @Test fun nodeSizeRoundsUpAndNeverReachesZero() {
@@ -36,9 +35,9 @@ class BackdropReductionTest {
     }
   }
 
-  @Test fun blurRecordsAtHalfScale() {
-    for (downsample in listOf(4, 8, 16)) {
-      assertEquals(2, BackdropReduction.recordScale(downsample))
+  @Test fun powerOfTwoScalesRecordAtFullSize() {
+    for (downsample in listOf(2, 4, 8, 16)) {
+      assertEquals(1, BackdropReduction.recordScale(downsample))
       assertEquals(downsample, BackdropReduction.recordScale(downsample) shl BackdropReduction.hops(downsample))
     }
   }
