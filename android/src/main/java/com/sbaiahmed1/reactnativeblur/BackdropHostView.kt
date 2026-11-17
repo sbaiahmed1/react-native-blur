@@ -27,6 +27,9 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
   /** False keeps this kind of host off Android's own backdrop. */
   internal open val allowsPlatformBackdrop: Boolean
     get() = true
+  /** True while the backdrop this host draws covers its whole rect, so a host nested in it can start its backdrop here. */
+  internal open val opaqueBackdrop: Boolean
+    get() = false
 
   private var source: BackdropSource? = null
   private var attachRunnable: Runnable? = null
@@ -57,6 +60,10 @@ abstract class BackdropHostView(context: Context) : FrameLayout(context) {
   /** View px per px of the backdrop node, which the effect radius divides by. */
   internal val backdropScale: Int
     get() = source?.scale(this) ?: downsample
+
+  /** True once the backdrop node holds a recording. */
+  protected val hasRecordedBackdrop: Boolean
+    get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && recordedKey != null && node?.hasDisplayList() == true
 
   /** True while Android blurs this host's backdrop itself. */
   internal val isPlatformBackdrop: Boolean

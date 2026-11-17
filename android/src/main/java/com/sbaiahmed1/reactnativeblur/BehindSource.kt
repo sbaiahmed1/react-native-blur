@@ -1,6 +1,7 @@
 package com.sbaiahmed1.reactnativeblur
 
 import android.graphics.Matrix
+import android.graphics.PixelFormat
 import android.graphics.RecordingCanvas
 import android.graphics.Rect
 import android.graphics.RectF
@@ -66,6 +67,10 @@ internal class BehindSource private constructor(
   private var frameVisits = 0
   private var frameRecordings = 0
   private var loggedVisits = -1
+  private val ancestors = ArrayList<NestedCut.Ancestor>()
+  private val cutMatrix = Matrix()
+  private val cutStep = Matrix()
+  private val cutRect = RectF()
 
   override fun addHost(host: BackdropHostView) {
     if (!hosts.add(host)) return
@@ -325,13 +330,17 @@ internal class BehindSource private constructor(
   }
 
   private fun drawBehind(canvas: RecordingCanvas, host: BackdropHostView) {
-    val levels = collectLevels()
-    planBackdrop(host, levels)
-    behindDecor?.let { drawDecor(canvas, it) }
+    val cut = cutLevel(host)
+    val levels = collectLevels(cut)
+    planBackdrop(host, cut, levels)
+    // An opaque host ancestor covers the decor and every level above it, which then only place the canvas.
+    if (cut == 0) behindDecor?.let { drawDecor(canvas, it) }
     for (level in 0 until levels) {
       val parent = path[level] as ViewGroup
-      parent.background?.draw(canvas)
-      if (parent is BackdropHostView) parent.drawOwnBackdrop(canvas)
+      if (level >= cut) {
+        parent.background?.draw(canvas)
+        if (parent is BackdropHostView) parent.drawOwnBackdrop(canvas)
+      }
       canvas.translate(-parent.scrollX.toFloat(), -parent.scrollY.toFloat())
       val behind = levelBehind[level]
       if (behind.isNotEmpty()) {
@@ -345,40 +354,69 @@ internal class BehindSource private constructor(
     }
   }
 
-  // Keeps each level's candidates and the ones painted before the path child, since fillCandidates reuses its buffers.
-  private fun collectLevels(): Int {
+  // The level of the nearest host ancestor whose opaque backdrop holds the whole host, or 0.
+  private fun cutLevel(host: BackdropHostView): Int {
+    ancestors.clear()
+    for (level in 1 until path.size - 1) {
+      val ancestor = path[level] as? BackdropHostView ?: continue
+      val opaque = ancestor.opaqueBackdrop
+      ancestors.add(NestedCut.Ancestor(level, opaque, opaque && liesInside(host, ancestor)))
+    }
+    if (ancestors.none { it.opaque && it.containsHost }) return 0
+    return NestedCut.startLevel(ancestors, isWindowOpaque(host))
+  }
+
+  private fun liesInside(host: View, ancestor: View): Boolean {
+    if (!ViewMatrices.toAncestor(host, ancestor, cutMatrix, cutStep)) return false
+    cutRect.set(0f, 0f, host.width.toFloat(), host.height.toFloat())
+    cutMatrix.mapRect(cutRect)
+    return cutRect.left >= -EDGE_SLOP && cutRect.top >= -EDGE_SLOP &&
+      cutRect.right <= ancestor.width + EDGE_SLOP && cutRect.bottom <= ancestor.height + EDGE_SLOP
+  }
+
+  @Suppress("DEPRECATION")
+  private fun isWindowOpaque(host: View): Boolean =
+    CaptureRoots.activityDecor(host)?.background?.opacity == PixelFormat.OPAQUE
+
+  // Keeps each level's candidates from [cut] down and the ones painted before the path child, since fillCandidates reuses its buffers.
+  private fun collectLevels(cut: Int): Int {
     var levels = 0
     for (i in 1 until path.size) {
       val parent = path[i - 1] as? ViewGroup ?: break
       val pathChild = path[i]
-      val pathIndex = fillCandidates(parent, pathChild, i - 1)
       if (levelCandidates.size == levels) {
         levelCandidates.add(ArrayList())
         levelBehind.add(emptyList())
         levelLeafRanges.add(IntArray(8))
       }
-      levelCandidates[levels].apply {
-        clear()
-        addAll(candidates)
+      if (levels < cut) {
+        levelCandidates[levels].clear()
+        levelBehind[levels] = emptyList()
+      } else {
+        val pathIndex = fillCandidates(parent, pathChild, i - 1)
+        levelCandidates[levels].apply {
+          clear()
+          addAll(candidates)
+        }
+        levelBehind[levels] = BehindOrder.behind(children, pathIndex, pathChild.z)
       }
-      levelBehind[levels] = BehindOrder.behind(children, pathIndex, pathChild.z)
       levels++
     }
     return levels
   }
 
-  // Plans the host's references: its host ancestors and the hosts painted behind it, nearest first.
-  private fun planBackdrop(host: BackdropHostView, levels: Int) {
+  // Plans the host's references: its host ancestors and the hosts painted behind it, nearest first, down to [cut].
+  private fun planBackdrop(host: BackdropHostView, cut: Int, levels: Int) {
     val id = ids[host] ?: return
     var forcedCount = 0
-    for (level in levels - 1 downTo 0) {
+    for (level in levels - 1 downTo cut) {
       val parent = path[level] as? BackdropHostView ?: continue
       val parentId = ids[parent] ?: continue
       if (forcedCount == forced.size) forced = forced.copyOf(forcedCount * 2)
       forced[forcedCount++] = parentId
     }
     leaves.clear()
-    for (level in levels - 1 downTo 0) {
+    for (level in levels - 1 downTo cut) {
       val behind = levelBehind[level]
       if (levelLeafRanges[level].size < behind.size * 2) levelLeafRanges[level] = IntArray(behind.size * 4)
       val ranges = levelLeafRanges[level]
@@ -446,6 +484,9 @@ internal class BehindSource private constructor(
     private const val OVERFLOW_VIEW_BUDGET = 64
 
     private const val TAG = "RNBackdrop"
+
+    // Px a nested host may reach past its ancestor's bounds through float error and still count as inside.
+    private const val EDGE_SLOP = 0.5f
 
     /** The shared source of [host]'s window, which also draws the activity behind a Modal's window. */
     fun forHost(host: BackdropHostView): BehindSource {
