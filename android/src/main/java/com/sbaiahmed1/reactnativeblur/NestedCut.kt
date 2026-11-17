@@ -8,6 +8,13 @@ internal object NestedCut {
   /** Whether a blur's backdrop covers its rect: it blurs, it has a recording, and the recording is not Android's own backdrop. */
   fun isOpaqueBlur(effectRadius: Float, recorded: Boolean, platform: Boolean): Boolean = effectRadius > 0f && recorded && !platform
 
+  /** Whether the plan kept the ancestor at [cut], given the [forcedLevels] of the forced ancestors, nearest first. */
+  fun cutHolds(cut: Int, forcedLevels: IntArray, forcedCount: Int, forcedKept: Int): Boolean {
+    if (cut == 0) return true
+    for (index in 0 until forcedCount) if (forcedLevels[index] == cut) return index < forcedKept
+    return true
+  }
+
   /** The level of the deepest opaque ancestor that contains the host, listed from the root down, or 0 for no cut. */
   fun startLevel(ancestors: List<Ancestor>, windowOpaque: Boolean): Int {
     if (!windowOpaque) return 0

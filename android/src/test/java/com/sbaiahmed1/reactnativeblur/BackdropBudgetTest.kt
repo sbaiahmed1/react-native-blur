@@ -8,7 +8,7 @@ import org.junit.Test
 class BackdropBudgetTest {
   private class Layout(val order: List<Int>, val forced: Map<Int, IntArray>, val leaves: Map<Int, List<IntArray>>)
 
-  private fun unbounded() = BackdropBudget(Int.MAX_VALUE, Int.MAX_VALUE)
+  private fun unbounded() = BackdropBudget(Int.MAX_VALUE, Int.MAX_VALUE, Int.MAX_VALUE)
 
   private fun run(layout: Layout, budget: BackdropBudget = BackdropBudget()): Pair<Int, Map<Int, BackdropBudget.Plan>> {
     val plans = LinkedHashMap<Int, BackdropBudget.Plan>()
@@ -121,17 +121,28 @@ class BackdropBudgetTest {
 
   @Test fun forcedPastTheCapIsDropped() {
     val budget = BackdropBudget()
-    for (id in 100 until 163) budget.plan(id, IntArray(0), emptyList())
-    budget.plan(1, IntArray(0), (162 downTo 100).map { intArrayOf(it) })
+    for (id in 100 until 1123) budget.plan(id, IntArray(0), emptyList())
+    val leaves = (1122 downTo 100).map { intArrayOf(it) }
+    budget.plan(1, IntArray(0), leaves)
+    budget.pay(1, leaves.drop(63))
     budget.plan(2, IntArray(0), emptyList())
-    assertEquals(64, budget.visits(1))
+    assertEquals(1024, budget.visits(1))
     assertEquals(0, budget.plan(0, intArrayOf(1, 2), emptyList()).forcedKept)
   }
 
-  @Test fun forcedPastTheRedundancyBoundDropsTheFarthest() {
-    // Every ancestor referenced: host 4's walk repeats 11 visits with all four ancestors and 8 with the nearest two.
+  @Test fun forcedAncestorsOnlyStopAtTheCap() {
+    // Every ancestor referenced: host 4's walk repeats 11 visits, which only the visit cap may stop.
     val layout = Layout((0 until 5).toList(), (1 until 5).associateWith { i -> (i - 1 downTo 0).toList().toIntArray() }, emptyMap())
-    assertEquals(2, run(layout).second[4]!!.forcedKept)
+    assertEquals(4, run(layout).second[4]!!.forcedKept)
+  }
+
+  @Test fun aBlurNestedInAPaidHeaderKeepsTheHeader() {
+    val budget = BackdropBudget()
+    val leaves = headerOverCardsWithBadges(budget, cards = 20, header = 40)
+    budget.pay(40, leaves.drop(8))
+    val plan = budget.plan(41, intArrayOf(40), emptyList())
+    assertEquals(1, plan.forcedKept)
+    assertEquals(62, plan.visits)
   }
 
   @Test fun unknownHostCountsOne() = assertEquals(2, BackdropBudget().plan(0, IntArray(0), listOf(intArrayOf(99))).visits)

@@ -40,7 +40,16 @@ export function OverlapList({
           blurAmount={params.amount}
           blurRounds={params.rounds}
           style={styles.header}
-        />
+        >
+          {badges ? (
+            <BlurView
+              blurType="dark"
+              blurAmount={params.amount}
+              blurRounds={params.rounds}
+              style={styles.headerBadge}
+            />
+          ) : null}
+        </BlurView>
       </View>
     </FeedList>
   );
@@ -70,6 +79,14 @@ const styles = StyleSheet.create({
     width: 64,
     height: 28,
     borderRadius: 14,
+  },
+  headerBadge: {
+    position: 'absolute',
+    top: 44,
+    right: 16,
+    width: 96,
+    height: 32,
+    borderRadius: 16,
   },
   header: {
     height: 120,

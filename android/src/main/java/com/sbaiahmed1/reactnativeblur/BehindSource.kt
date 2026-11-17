@@ -353,9 +353,19 @@ internal class BehindSource private constructor(
   }
 
   private fun drawBehind(canvas: RecordingCanvas, host: BackdropHostView) {
-    val cut = cutLevel(host)
-    val levels = collectLevels(cut)
+    var cut = cutLevel(host)
+    var levels = collectLevels(cut)
     planBackdrop(host, cut, levels)
+    // A cut ancestor the plan cannot keep would leave nothing above it, so the walk starts at the root instead.
+    if (!NestedCut.cutHolds(cut, forcedLevels, forcedCount, plan.forcedKept)) {
+      cut = 0
+      levels = collectLevels(cut)
+      planBackdrop(host, cut, levels)
+    }
+    ids[host]?.let {
+      frameVisits += budget.visits(it)
+      frameRecordings++
+    }
     // An opaque host ancestor covers the decor and every level above it, which then only place the canvas.
     if (cut == 0) behindDecor?.let { drawDecor(canvas, it) }
     // Forced references past the plan are the farthest ones, so every host ancestor at or above this level draws flat.
@@ -496,8 +506,6 @@ internal class BehindSource private constructor(
     leafFull.fill(false, 0, count)
     for (planned in 0 until minOf(plan.fullLeaves, count)) leafFull[order[planned]] = true
     payForWholeViews(id, cut, levels)
-    frameVisits += budget.visits(id)
-    frameRecordings++
   }
 
   // A view whose leaves inside the host's rect are all full goes by node as before, so its flat leaves are paid instead.
