@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Modal } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text } from 'react-native';
 
 import { FeedList } from '../content';
 import type { SceneProps } from '../scenes';
@@ -26,7 +26,35 @@ export default function StackedModal({ params, running, onStop }: SceneProps) {
         }}
       >
         <StackedCardLayer params={params} layout="stack" />
+        {/* The Modal takes every touch and iOS has no back button, so it closes here to reach Start. */}
+        {running ? null : (
+          <Pressable
+            testID="stacked-modal-close"
+            accessibilityRole="button"
+            onPress={() => setOpen(false)}
+            style={styles.close}
+          >
+            <Text style={styles.closeText}>Close</Text>
+          </Pressable>
+        )}
       </Modal>
     </FeedList>
   );
 }
+
+const styles = StyleSheet.create({
+  close: {
+    position: 'absolute',
+    bottom: 48,
+    alignSelf: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 24,
+    backgroundColor: '#111111',
+  },
+  closeText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+});
