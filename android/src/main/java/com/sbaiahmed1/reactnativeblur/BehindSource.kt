@@ -12,7 +12,6 @@ import android.view.ViewTreeObserver
 import androidx.annotation.RequiresApi
 import com.facebook.react.uimanager.ReactOverflowView
 import com.facebook.react.views.view.ReactViewGroup
-import kotlin.math.ceil
 
 /** Records each host's backdrop from the RenderNodes of the views painted behind it, without running any view's draw code. */
 @RequiresApi(Build.VERSION_CODES.S)
@@ -24,6 +23,7 @@ internal class BehindSource private constructor(
 
   private val hosts = LinkedHashSet<BackdropHostView>()
   private val glassLayers = HashMap<BackdropHostView, RenderNode>()
+  private val reductions = HashMap<BackdropHostView, Array<RenderNode>>()
   private var observer: ViewTreeObserver? = null
   private var behindInvalidator: BehindWindowInvalidator? = null
   private var frame = 0L
@@ -56,6 +56,7 @@ internal class BehindSource private constructor(
   override fun removeHost(host: BackdropHostView) {
     if (!hosts.remove(host)) return
     glassLayers.remove(host)?.discardDisplayList()
+    reductions.remove(host)?.forEach { it.discardDisplayList() }
     if (hosts.isNotEmpty()) return
     observer?.let { if (it.isAlive) it.removeOnPreDrawListener(this) }
     observer = null
@@ -88,7 +89,7 @@ internal class BehindSource private constructor(
 
   override fun recordInto(node: RenderNode, host: BackdropHostView): Boolean {
     if (!buildPath(host) || !hostToRoot.invert(rootToHost)) return false
-    val downsample = host.downsample.toFloat()
+    val downsample = host.downsample
     if (host.nodeAtCaptureScale) {
       recordScaled(node, host, downsample)
       return true
@@ -108,22 +109,53 @@ internal class BehindSource private constructor(
     return true
   }
 
-  private fun recordScaled(node: RenderNode, host: View, downsample: Float) {
-    val width = ceil(host.width / downsample).toInt().coerceAtLeast(1)
-    val height = ceil(host.height / downsample).toInt().coerceAtLeast(1)
+  // A power-of-two scale records at 1/2 and halves down to the node 2x2 px at a time, which averages layers, stretches and bitmaps behind the host.
+  private fun recordScaled(node: RenderNode, host: BackdropHostView, downsample: Int) {
+    val hops = BackdropReduction.hops(downsample)
+    val width = BackdropReduction.nodeSize(host.width, downsample)
+    val height = BackdropReduction.nodeSize(host.height, downsample)
     node.setPosition(0, 0, width, height)
     node.setPivotX(0f)
     node.setPivotY(0f)
-    node.setScaleX(downsample)
-    node.setScaleY(downsample)
+    node.setScaleX(downsample.toFloat())
+    node.setScaleY(downsample.toFloat())
+    if (hops == 0) {
+      record(node, width, height) { recordBehind(it, downsample) }
+      return
+    }
+    val levels = reductions.getOrPut(host) { Array(hops) { RenderNode("RNBackdropReduction").also { it.setUseCompositingLayer(true, null) } } }
+    val first = levels[0]
+    val firstWidth = BackdropReduction.levelSize(width, hops, 0)
+    val firstHeight = BackdropReduction.levelSize(height, hops, 0)
+    first.setPosition(0, 0, firstWidth, firstHeight)
+    record(first, firstWidth, firstHeight) { recordBehind(it, BackdropReduction.recordScale(downsample)) }
+    for (level in 1 until hops) {
+      val levelWidth = BackdropReduction.levelSize(width, hops, level)
+      val levelHeight = BackdropReduction.levelSize(height, hops, level)
+      levels[level].setPosition(0, 0, levelWidth, levelHeight)
+      record(levels[level], levelWidth, levelHeight) { halve(it, levels[level - 1]) }
+    }
+    record(node, width, height) { halve(it, levels[hops - 1]) }
+  }
+
+  private inline fun record(node: RenderNode, width: Int, height: Int, draw: (RecordingCanvas) -> Unit) {
     val canvas = node.beginRecording(width, height)
     try {
-      canvas.scale(1f / downsample, 1f / downsample)
-      canvas.concat(rootToHost)
-      drawBehind(canvas)
+      draw(canvas)
     } finally {
       node.endRecording()
     }
+  }
+
+  private fun recordBehind(canvas: RecordingCanvas, scale: Int) {
+    canvas.scale(1f / scale, 1f / scale)
+    canvas.concat(rootToHost)
+    drawBehind(canvas)
+  }
+
+  private fun halve(canvas: RecordingCanvas, level: RenderNode) {
+    canvas.scale(0.5f, 0.5f)
+    canvas.drawRenderNode(level)
   }
 
   // Fills path with root..host, hostToRoot, and the host's bounds in each parent's content space for culling.
