@@ -13,11 +13,17 @@ import ModalIdle from './scenes/modal-idle';
 import ModalLive from './scenes/modal-live';
 import Nested from './scenes/nested';
 import Overlap from './scenes/overlap';
+import OverlapBadges from './scenes/overlap-badges';
 import ProgressiveBars from './scenes/progressive-bars';
 import Recycle from './scenes/recycle';
 import RootOverlay from './scenes/root-overlay';
+import SideBySide from './scenes/side-by-side';
 import StackPush from './scenes/stack-push';
 import Stacked from './scenes/stacked';
+import StackedBadges from './scenes/stacked-badges';
+import StackedModal from './scenes/stacked-modal';
+import StackedWrapped from './scenes/stacked-wrapped';
+import StackedZigzag from './scenes/stacked-zigzag';
 
 /** `onStop` ends the run early, with no result, for example on Android back. */
 export type SceneProps = {
@@ -138,6 +144,13 @@ export const SCENES: readonly SceneDef[] = [
     Component: Overlap,
   },
   {
+    id: 'overlap-badges',
+    title: 'Overlap badges',
+    note: 'The overlap feed with a BlurView badge in every card. The cards under the header stay blurred in its backdrop.',
+    defaults: {},
+    Component: OverlapBadges,
+  },
+  {
     id: 'nested',
     title: 'Nested',
     note: 'A BlurView card holding a red block, a BlurView badge and a glass button over it.',
@@ -164,6 +177,41 @@ export const SCENES: readonly SceneDef[] = [
     note: 'Ten BlurView cards (count) stacked over each other over a scrolling feed, each one blurring the cards behind it.',
     defaults: { count: 10 },
     Component: Stacked,
+  },
+  {
+    id: 'stacked-zigzag',
+    title: 'Stacked zigzag',
+    note: 'Ten BlurView cards (count) in a zigzag, so each card shows a strip of the card two behind it. Past the budget, farther cards draw flat in those strips.',
+    defaults: { count: 10 },
+    Component: StackedZigzag,
+  },
+  {
+    id: 'stacked-wrapped',
+    title: 'Stacked wrapped',
+    note: 'The zigzag cards, each inside a rotated View with a border, so a backdrop has to replay the View to reach the card.',
+    defaults: { count: 10 },
+    Component: StackedWrapped,
+  },
+  {
+    id: 'stacked-badges',
+    title: 'Stacked badges',
+    note: 'Six stacked BlurView cards (count), each holding a BlurView badge. A badge must not walk the cards behind its own card.',
+    defaults: { count: 6 },
+    Component: StackedBadges,
+  },
+  {
+    id: 'side-by-side',
+    title: 'Side by side',
+    note: 'A BlurView card over two cards that sit side by side. Both stay blurred in its backdrop.',
+    defaults: {},
+    Component: SideBySide,
+  },
+  {
+    id: 'stacked-modal',
+    title: 'Stacked modal',
+    note: 'Ten stacked BlurView cards (count) in a transparent Modal over the scrolling feed, open from mount. Android back closes it.',
+    defaults: { count: 10 },
+    Component: StackedModal,
   },
 ];
 
