@@ -100,4 +100,7 @@ internal class EngineBlurView(context: Context) : BackdropHostView(context), Blu
 
   // QmBlurView's box blur passes have no meaning for a Gaussian blur.
   override fun setRounds(rounds: Int) = Unit
+
+  // The engine records its backdrop at its own scale; this only sizes QmBlurView's capture.
+  override fun setDownsample(factor: Float) = Unit
 }

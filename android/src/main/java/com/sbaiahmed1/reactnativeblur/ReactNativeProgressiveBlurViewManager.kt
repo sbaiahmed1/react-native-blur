@@ -54,6 +54,10 @@ class ReactNativeProgressiveBlurViewManager : ViewGroupManager<ViewGroup>(),
     (view as? ProgressiveBlurViewProps)?.setRounds(blurRounds)
   }
 
+  override fun setDownsampleFactor(view: ViewGroup?, downsampleFactor: Double) {
+    (view as? ProgressiveBlurViewProps)?.setDownsample(downsampleFactor.toFloat())
+  }
+
   override fun setDirection(view: ViewGroup?, direction: String?) {
     // Provide default value if direction is null or empty
     val safeDirection = if (direction.isNullOrBlank()) "blurredTopClearBottom" else direction

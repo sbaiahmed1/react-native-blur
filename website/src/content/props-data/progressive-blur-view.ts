@@ -23,6 +23,13 @@ export const progressiveBlurViewProps: PropRow[] = [
     description: 'Sets how many blur passes run on Android 11 and earlier, for a smoother blur (1-15). Android 12 and later ignore it.',
   },
   {
+    name: 'downsampleFactor',
+    type: 'number',
+    default: '8',
+    platform: 'Android',
+    description: 'How much the backdrop is scaled down before it is blurred on Android 11 and earlier (1-16). Lower values keep edges behind the blur from stepping, at a CPU and memory cost that grows with the square of the reduction. Android 12 and later ignore it.',
+  },
+  {
     name: 'direction',
     type: "'blurredTopClearBottom' | 'blurredBottomClearTop' | 'blurredCenterClearTopAndBottom' | 'blurredLeftToClearRight' | 'blurredRightToClearLeft' | 'blurredTopAndBottomClearCenter'",
     default: "'blurredTopClearBottom'",

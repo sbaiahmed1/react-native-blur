@@ -36,6 +36,7 @@ class ReactNativeBlurView : BlurViewGroup, BlurViewProps {
   private var materialSaturation = -1f
   private var materialRadius = -1f
   private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
+  private var currentDownsampleFactor = DEFAULT_DOWNSAMPLE_FACTOR
   private var borderRadius = 0f
   private var borderTopLeftRadius = -1f
   private var borderTopRightRadius = -1f
@@ -68,8 +69,12 @@ class ReactNativeBlurView : BlurViewGroup, BlurViewProps {
     private const val DEFAULT_BLUR_ROUNDS = 5
     // Capture/blur bitmap is scaled down by this factor before the root is
     // drawn into it. A higher factor shrinks the raster area quadratically,
-    // reducing both the software capture cost and the blur cost.
+    // reducing both the software capture cost and the blur cost; a lower one
+    // keeps edges behind the blur from stepping. Matches the JS wrapper and
+    // codegen default; consumers override it with the downsampleFactor prop.
     private const val DEFAULT_DOWNSAMPLE_FACTOR = 8.0f
+    private const val MIN_DOWNSAMPLE_FACTOR = 1.0f
+    private const val MAX_DOWNSAMPLE_FACTOR = 16.0f
     private const val DEBUG = false
 
     private const val MIN_BLUR_AMOUNT = 0f
@@ -108,7 +113,7 @@ class ReactNativeBlurView : BlurViewGroup, BlurViewProps {
     clipChildren = true
     clipToOutline = true
     blurRounds = currentBlurRounds
-    super.setDownsampleFactor(DEFAULT_DOWNSAMPLE_FACTOR)
+    super.setDownsampleFactor(currentDownsampleFactor)
   }
 
   override fun onAttachedToWindow() {
@@ -336,6 +341,19 @@ class ReactNativeBlurView : BlurViewGroup, BlurViewProps {
       super.setBlurRounds(blurRounds)
     } catch (e: Exception) {
       logError("Failed to set blur rounds: ${e.message}", e)
+    }
+  }
+
+  override fun setDownsample(factor: Float) {
+    val downsampleFactor = factor.coerceIn(MIN_DOWNSAMPLE_FACTOR, MAX_DOWNSAMPLE_FACTOR)
+    currentDownsampleFactor = downsampleFactor
+    logDebug("setDownsample: $factor -> $downsampleFactor")
+
+    try {
+      // QmBlurView reallocates the capture bitmap and redraws on its next pre-draw.
+      super.setDownsampleFactor(downsampleFactor)
+    } catch (e: Exception) {
+      logError("Failed to set downsample factor: ${e.message}", e)
     }
   }
 
