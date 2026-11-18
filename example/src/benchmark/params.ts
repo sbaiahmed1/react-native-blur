@@ -26,6 +26,8 @@ export const PROGRESSIVE_DIRECTIONS: readonly ProgressiveBlurDirection[] = [
   'blurredTopClearBottom',
   'blurredBottomClearTop',
   'blurredCenterClearTopAndBottom',
+  'blurredLeftToClearRight',
+  'blurredRightToClearLeft',
 ];
 
 type RawParams = Record<string, string | string[] | undefined>;
