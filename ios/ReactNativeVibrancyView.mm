@@ -5,8 +5,6 @@
 #import <react/renderer/components/ReactNativeBlurViewSpec/Props.h>
 #import <react/renderer/components/ReactNativeBlurViewSpec/RCTComponentViewHelpers.h>
 
-#import "RCTFabricComponentsPlugins.h"
-
 #if __has_include("ReactNativeBlur-Swift.h")
 #import "ReactNativeBlur-Swift.h"
 #else
@@ -93,8 +91,3 @@ using namespace facebook::react;
 }
 
 @end
-
-Class<RCTComponentViewProtocol> ReactNativeVibrancyViewCls(void)
-{
-  return ReactNativeVibrancyView.class;
-}
