@@ -48,4 +48,5 @@ internal object BackdropSources {
 internal object BackdropScale {
   const val BLUR = 8
   const val GLASS = 2
+  const val PROGRESSIVE = 2
 }

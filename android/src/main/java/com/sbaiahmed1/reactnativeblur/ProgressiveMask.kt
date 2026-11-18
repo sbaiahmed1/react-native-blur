@@ -27,6 +27,12 @@ internal object ProgressiveMask {
     else -> "topToBottom"
   }
 
+  /** [color] at each of [alphas], so a gradient draws the masked overlay without an offscreen layer. */
+  fun overlayColors(color: Int, alphas: FloatArray): IntArray {
+    val alpha = (color ushr 24) and 0xFF
+    return IntArray(alphas.size) { (Math.round(alpha * alphas[it]) shl 24) or (color and 0xFFFFFF) }
+  }
+
   fun effectiveAmount(amount: Float, direction: String): Float =
     if (direction == "center") amount * CENTER_AMOUNT_SCALE else amount
 

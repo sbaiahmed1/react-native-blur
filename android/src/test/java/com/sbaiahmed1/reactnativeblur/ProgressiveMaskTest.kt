@@ -55,6 +55,11 @@ class ProgressiveMaskTest {
     assertArrayEquals(floatArrayOf(0f, 0f, 1f, 1f, 0f, 0f), spec.alphas, 0f)
   }
 
+  @Test fun overlayColorsScaleTheAlphaByte() {
+    val colors = ProgressiveMask.overlayColors(0x23FFFFFF, floatArrayOf(0f, 0.5f, 1f))
+    assertArrayEquals(intArrayOf(0x00FFFFFF, 0x12FFFFFF, 0x23FFFFFF), colors)
+  }
+
   @Test fun centerScalesAmount() {
     assertEquals(14f, ProgressiveMask.effectiveAmount(40f, "center"), 0.0001f)
     assertEquals(40f, ProgressiveMask.effectiveAmount(40f, "topToBottom"), 0f)
