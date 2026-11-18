@@ -14,6 +14,8 @@ import android.widget.FrameLayout
 /** Base of the engine views: joins its [BackdropSource], owns the backdrop node and its effect, clips to the corners. */
 abstract class BackdropHostView(context: Context) : FrameLayout(context) {
   internal abstract val downsample: Int
+  /** True when a software capture of this host may skip frames, as glass does. */
+  internal open val throttlesSoftwareCapture: Boolean get() = false
   internal abstract val effect: BackdropEffect
   protected abstract fun drawBackdrop(canvas: Canvas, node: RenderNode)
   protected abstract fun drawSoftwareFallback(canvas: Canvas)

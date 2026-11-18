@@ -67,7 +67,7 @@ internal class SoftwareSource private constructor(
 
   private val hosts = LinkedHashSet<BackdropHostView>()
   private val nestedHosts = HashSet<BackdropHostView>()
-  private val lanes = HashMap<Int, Lane>()
+  private val lanes = HashMap<LaneKey, Lane>()
   private val hostBounds = HashMap<BackdropHostView, CaptureLane.Bounds>()
   private val placements = HashMap<BackdropHostView, Placement>()
   private val scratch = Matrix()
@@ -97,7 +97,7 @@ internal class SoftwareSource private constructor(
       observer = listenerRoot.viewTreeObserver.also { it.addOnPreDrawListener(this) }
       if (activityDecor != null) behindInvalidator = BehindWindowInvalidator.install(activityDecor, listenerRoot)
     }
-    lanes.getOrPut(host.downsample) { Lane(laneFor(host.downsample)) }
+    lanes.getOrPut(laneKey(host)) { Lane(laneFor(laneKey(host))) }
     host.postInvalidateOnAnimation()
   }
 
@@ -162,7 +162,7 @@ internal class SoftwareSource private constructor(
 
   /** The current capture for [host], with its offset in the capture in px. Null before the first capture. */
   internal fun snapshotOf(host: BackdropHostView): Snapshot? {
-    val lane = lanes[host.downsample] ?: return null
+    val lane = lanes[laneKey(host)] ?: return null
     val region = regionOf(lane, host) ?: return null
     val bitmap = region.bitmap ?: return null
     val captured = region.bitmapBounds ?: return null
@@ -238,8 +238,8 @@ internal class SoftwareSource private constructor(
 
   private fun captureDueLanes(visible: List<BackdropHostView>, now: Long) {
     val rootBounds = rootBounds()
-    for ((downsample, lane) in lanes) {
-      val laneHosts = visible.filter { it.downsample == downsample }
+    for ((key, lane) in lanes) {
+      val laneHosts = visible.filter { laneKey(it) == key }
       if (laneHosts.isEmpty()) continue
       val moved = laneHosts.any { hostBounds[it] != lane.capturedBounds[it] }
       val remaining = lane.config.remainingMs(now, moved)
@@ -355,12 +355,14 @@ internal class SoftwareSource private constructor(
     private var capturingSource: SoftwareSource? = null
     private var capturingHost: View? = null
 
-    private fun laneFor(downsample: Int): CaptureLane =
-      if (downsample == BackdropScale.GLASS) {
-        CaptureLane(downsample, GLASS_MOTION_INTERVAL_MS, GLASS_IDLE_INTERVAL_MS)
+    internal fun laneFor(key: LaneKey): CaptureLane =
+      if (key.throttled) {
+        CaptureLane(key.downsample, GLASS_MOTION_INTERVAL_MS, GLASS_IDLE_INTERVAL_MS)
       } else {
-        CaptureLane(downsample, 0L, 0L)
+        CaptureLane(key.downsample, 0L, 0L)
       }
+
+    private fun laneKey(host: BackdropHostView) = LaneKey(host.downsample, host.throttlesSoftwareCapture)
 
     /** The shared source for [host]'s capture root: a Modal's two windows, else a Screen or React root, else the activity window. */
     fun forHost(host: BackdropHostView): SoftwareSource? {
