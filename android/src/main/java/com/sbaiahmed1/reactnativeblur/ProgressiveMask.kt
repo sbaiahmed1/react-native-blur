@@ -22,6 +22,7 @@ internal object ProgressiveMask {
     "blurredcentercleartopandbottom", "center" -> "center"
     "blurredlefttoclearright", "lefttoright", "left" -> "leftToRight"
     "blurredrighttoclearleft", "righttoleft", "right" -> "rightToLeft"
+    "blurredtopandbottomclearcenter", "edges" -> "edges"
     else -> "topToBottom"
   }
 
@@ -38,6 +39,14 @@ internal object ProgressiveMask {
         0f, 0f, 0f, height,
         floatArrayOf(0f, 0f, 1f, 1f, 0f, 0f),
         floatArrayOf(0f, startEdge, 0.2f + startEdge, 0.8f - startEdge, 1f - startEdge, 1f)
+      )
+    }
+    if (direction == "edges") {
+      val inset = startOffset.coerceIn(0f, 0.3f)
+      return MaskSpec(
+        0f, 0f, 0f, height,
+        floatArrayOf(1f, 1f, 0f, 0f, 1f, 1f),
+        floatArrayOf(0f, inset, 0.2f + inset, 0.8f - inset, 1f - inset, 1f)
       )
     }
     if (startOffset >= 1f) return MaskSpec(0f, 0f, 0f, height, floatArrayOf(1f, 1f), floatArrayOf(0f, 1f))

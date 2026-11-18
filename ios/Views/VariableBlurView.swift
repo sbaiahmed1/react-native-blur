@@ -11,6 +11,7 @@ public enum VariableBlurDirection: String {
   case blurredCenterClearTopAndBottom
   case blurredLeftToClearRight
   case blurredRightToClearLeft
+  case blurredTopAndBottomClearCenter
 
   init(fromString string: String) {
     switch string.lowercased() {
@@ -22,6 +23,8 @@ public enum VariableBlurDirection: String {
       self = .blurredLeftToClearRight
     case "blurredrighttoclearleft", "righttoleft", "right":
       self = .blurredRightToClearLeft
+    case "blurredtopandbottomclearcenter", "edges":
+      self = .blurredTopAndBottomClearCenter
     default:
       self = .blurredTopClearBottom
     }
@@ -182,11 +185,12 @@ open class VariableBlurView: UIVisualEffectView {
     direction: VariableBlurDirection
   ) -> CGImage {
     switch direction {
-    case .blurredCenterClearTopAndBottom:
+    case .blurredCenterClearTopAndBottom, .blurredTopAndBottomClearCenter:
       return makeCenterGradientImage(
         width: width,
         height: height,
-        edgeOffset: startOffset
+        edgeOffset: startOffset,
+        blurredEdges: direction == .blurredTopAndBottomClearCenter
       )
     case .blurredTopClearBottom, .blurredBottomClearTop, .blurredLeftToClearRight, .blurredRightToClearLeft:
       return makeEdgeGradientImage(
@@ -277,30 +281,33 @@ open class VariableBlurView: UIVisualEffectView {
   private func makeCenterGradientImage(
     width: CGFloat = 100,
     height: CGFloat = 100,
-    edgeOffset: CGFloat
+    edgeOffset: CGFloat,
+    blurredEdges: Bool = false
   ) -> CGImage {
     // Same geometry as the Android backend: a clear inset of `edgeOffset` at
     // each edge, an eased 20% fade band, and a solid plateau between
     // [offset + 0.2, 0.8 - offset]. The clamp also matches Android's — at 0.3
     // the plateau collapses to the center line. (Previously iOS ramped to a
     // point-peak at the center with no plateau.)
-    let startEdge = max(min(edgeOffset, 0.3), 0.01)
+    // With blurredEdges the mask is mirrored: a blurred plateau of `edgeOffset` at each edge, clear in the middle.
+    let startEdge = max(min(edgeOffset, 0.3), blurredEdges ? 0 : 0.01)
+    let outer: CGFloat = blurredEdges ? 1 : 0
     let steps = 8
 
     var locations: [CGFloat] = [0]
-    var alphas: [CGFloat] = [0]
+    var alphas: [CGFloat] = [outer]
     for k in 0...steps {
       let t = CGFloat(k) / CGFloat(steps)
       locations.append(startEdge + 0.2 * t)
-      alphas.append(t * t * t)
+      alphas.append(blurredEdges ? pow(1 - t, 3) : t * t * t)
     }
     for k in 0...steps {
       let t = CGFloat(k) / CGFloat(steps)
       locations.append((0.8 - startEdge) + 0.2 * t)
-      alphas.append(pow(1 - t, 3))
+      alphas.append(blurredEdges ? t * t * t : pow(1 - t, 3))
     }
     locations.append(1)
-    alphas.append(0)
+    alphas.append(outer)
 
     let colorSpace = CGColorSpaceCreateDeviceRGB()
     var components: [CGFloat] = []

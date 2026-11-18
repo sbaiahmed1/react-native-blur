@@ -108,6 +108,22 @@ class ProgressiveBandsTest {
     }
   }
 
+  @Test fun edgesStops() {
+    val edges = bands(100f, direction = "edges", offset = 0.1f)
+    assertLine(edges[0].mask, 0f, 0f, 0f, 1200f)
+    assertArrayEquals(floatArrayOf(0f, 0.1f, 0.14126f, 0.85874f, 0.9f, 1f), edges[0].mask.positions, 0.001f)
+    assertArrayEquals(floatArrayOf(1f, 1f, 0f, 0f, 1f, 1f), edges[0].mask.alphas, 0.0001f)
+    assertArrayEquals(floatArrayOf(0f, 0.14126f, 0.174f, 0.826f, 0.85874f, 1f), edges[1].mask.positions, 0.001f)
+    for (offset in floatArrayOf(0f, 0.3f, 1f)) {
+      val list = bands(100f, direction = "edges", offset = offset)
+      assertTrue("offset $offset is not solid", list.size > 1)
+      for (band in list) {
+        val p = band.mask.positions
+        for (i in 1 until p.size) assertTrue("offset $offset: ${p.toList()}", p[i] >= p[i - 1] && p[i] <= 1f)
+      }
+    }
+  }
+
   @Test fun leftAndRightRunAlongX() {
     assertLine(bands(100f, direction = "leftToRight")[1].mask, 540f, 0f, 0f, 0f)
     assertLine(bands(100f, direction = "rightToLeft")[1].mask, 0f, 0f, 540f, 0f)
