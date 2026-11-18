@@ -27,7 +27,9 @@ export type BlurType =
 export type ProgressiveBlurDirection =
   | 'blurredTopClearBottom'
   | 'blurredBottomClearTop'
-  | 'blurredCenterClearTopAndBottom';
+  | 'blurredCenterClearTopAndBottom'
+  | 'blurredLeftToClearRight'
+  | 'blurredRightToClearLeft';
 
 export interface NativeProps extends ViewProps {
   blurAmount?: CodegenTypes.WithDefault<CodegenTypes.Double, 20.0>;

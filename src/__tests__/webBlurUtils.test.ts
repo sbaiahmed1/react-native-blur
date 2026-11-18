@@ -92,6 +92,15 @@ describe('getProgressiveLayers', () => {
     );
   });
 
+  it('runs the gradient along x for the left and right directions', () => {
+    expect(
+      getProgressiveLayers('blurredLeftToClearRight', 0, 20)[4]?.maskImage
+    ).toBe('linear-gradient(to right, black 0%, black 0%, transparent 20%)');
+    expect(
+      getProgressiveLayers('blurredRightToClearLeft', 0, 20)[4]?.maskImage
+    ).toBe('linear-gradient(to left, black 0%, black 0%, transparent 20%)');
+  });
+
   it('mirrors the bands around the center for blurredCenterClearTopAndBottom', () => {
     const layers = getProgressiveLayers(
       'blurredCenterClearTopAndBottom',
@@ -143,6 +152,12 @@ describe('getProgressiveTintGradient', () => {
     ).toBe(
       'linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.5) 30%, transparent 100%)'
     );
+    expect(
+      getProgressiveTintGradient('blurredLeftToClearRight', 0, 'red')
+    ).toBe('linear-gradient(to right, red 0%, red 0%, transparent 100%)');
+    expect(
+      getProgressiveTintGradient('blurredRightToClearLeft', 0, 'red')
+    ).toBe('linear-gradient(to left, red 0%, red 0%, transparent 100%)');
   });
 
   it('peaks at the center for blurredCenterClearTopAndBottom', () => {

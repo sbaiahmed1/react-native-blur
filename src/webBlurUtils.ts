@@ -150,6 +150,20 @@ export interface ProgressiveLayer {
 
 const pct = (value: number): string => `${cssNumber(value)}%`;
 
+/** The gradient axis of an edge direction, pointing from the blurred edge to the clear one. */
+const axisFor = (direction: ProgressiveBlurDirection): string => {
+  switch (direction) {
+    case 'blurredBottomClearTop':
+      return 'to top';
+    case 'blurredLeftToClearRight':
+      return 'to right';
+    case 'blurredRightToClearLeft':
+      return 'to left';
+    default:
+      return 'to bottom';
+  }
+};
+
 const maskForLayer = (
   direction: ProgressiveBlurDirection,
   startOffset: number,
@@ -177,7 +191,7 @@ const maskForLayer = (
   // Band edges measured from the blurred edge (0%).
   const boundary = (j: number) =>
     startOffset * 100 + ((1 - startOffset) * 100 * j) / n;
-  const axis = direction === 'blurredBottomClearTop' ? 'to top' : 'to bottom';
+  const axis = axisFor(direction);
   const solidEnd = boundary(n - layer);
   const fadeEnd = boundary(n - layer + 1);
   return `linear-gradient(${axis}, black 0%, black ${pct(solidEnd)}, transparent ${pct(fadeEnd)})`;
@@ -232,7 +246,7 @@ export function getProgressiveTintGradient(
     );
   }
 
-  const axis = direction === 'blurredBottomClearTop' ? 'to top' : 'to bottom';
+  const axis = axisFor(direction);
   return `linear-gradient(${axis}, ${tint} 0%, ${tint} ${pct(s * 100)}, transparent 100%)`;
 }
 

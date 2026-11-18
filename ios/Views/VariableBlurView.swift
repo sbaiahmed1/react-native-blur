@@ -9,6 +9,8 @@ public enum VariableBlurDirection: String {
   case blurredTopClearBottom
   case blurredBottomClearTop
   case blurredCenterClearTopAndBottom
+  case blurredLeftToClearRight
+  case blurredRightToClearLeft
 
   init(fromString string: String) {
     switch string.lowercased() {
@@ -16,6 +18,10 @@ public enum VariableBlurDirection: String {
       self = .blurredBottomClearTop
     case "blurredcentercleartopandbottom", "center":
       self = .blurredCenterClearTopAndBottom
+    case "blurredlefttoclearright", "lefttoright", "left":
+      self = .blurredLeftToClearRight
+    case "blurredrighttoclearleft", "righttoleft", "right":
+      self = .blurredRightToClearLeft
     default:
       self = .blurredTopClearBottom
     }
@@ -182,7 +188,7 @@ open class VariableBlurView: UIVisualEffectView {
         height: height,
         edgeOffset: startOffset
       )
-    case .blurredTopClearBottom, .blurredBottomClearTop:
+    case .blurredTopClearBottom, .blurredBottomClearTop, .blurredLeftToClearRight, .blurredRightToClearLeft:
       return makeEdgeGradientImage(
         width: width,
         height: height,
@@ -210,12 +216,13 @@ open class VariableBlurView: UIVisualEffectView {
     let fade = 1 - offset
     let steps = 12
 
-    // Gradient locations run bottom (0) to top (1) of the rendered mask.
+    // Gradient locations run bottom (0) to top (1) of the rendered mask, or left (0) to right (1).
     var locations: [CGFloat] = []
     var alphas: [CGFloat] = []
+    let horizontal = direction == .blurredLeftToClearRight || direction == .blurredRightToClearLeft
 
-    if case .blurredBottomClearTop = direction {
-      // Plateau at the bottom, easing to clear at the top edge.
+    if direction == .blurredBottomClearTop || direction == .blurredLeftToClearRight {
+      // Plateau at location 0, easing to clear at the far edge.
       locations.append(0)
       alphas.append(1)
       for k in 0...steps {
@@ -224,7 +231,7 @@ open class VariableBlurView: UIVisualEffectView {
         alphas.append(pow(1 - t, 3))
       }
     } else {
-      // Clear at the bottom edge, easing up into the plateau at the top.
+      // Clear at location 0, easing up into the plateau at the far edge.
       for k in 0...steps {
         let t = CGFloat(k) / CGFloat(steps)
         locations.append(fade * t)
@@ -260,7 +267,7 @@ open class VariableBlurView: UIVisualEffectView {
     context.drawLinearGradient(
       gradient,
       start: CGPoint(x: 0, y: 0),
-      end: CGPoint(x: 0, y: height),
+      end: horizontal ? CGPoint(x: width, y: 0) : CGPoint(x: 0, y: height),
       options: [.drawsBeforeStartLocation, .drawsAfterEndLocation]
     )
 
