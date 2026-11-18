@@ -16,13 +16,11 @@ let unusedRootEntries = try! FileManager.default.contentsOfDirectory(atPath: Con
     .sorted()
 
 let reactNativeSettings: [CSetting] = [
-    .define("RCT_NEW_ARCH_ENABLED", to: "1"),
     .define("DEBUG", .when(configuration: .debug)),
     .define("NDEBUG", .when(configuration: .release)),
 ]
 
 let reactNativeCxxSettings: [CXXSetting] = [
-    .define("RCT_NEW_ARCH_ENABLED", to: "1"),
     .define("DEBUG", .when(configuration: .debug)),
     .define("NDEBUG", .when(configuration: .release)),
     .headerSearchPath("spm-headers"),
