@@ -23,6 +23,8 @@ class ProgressiveMaskTest {
     assertEquals("center", ProgressiveMask.normalizeDirection("center"))
     assertEquals("leftToRight", ProgressiveMask.normalizeDirection("blurredLeftToClearRight"))
     assertEquals("rightToLeft", ProgressiveMask.normalizeDirection("right"))
+    assertEquals("edges", ProgressiveMask.normalizeDirection("blurredTopAndBottomClearCenter"))
+    assertEquals("edges", ProgressiveMask.normalizeDirection("edges"))
     assertEquals("topToBottom", ProgressiveMask.normalizeDirection("x"))
   }
 
@@ -53,6 +55,15 @@ class ProgressiveMaskTest {
     assertLine(spec, 0f, 0f, 0f, 400f)
     assertArrayEquals(floatArrayOf(0f, 0.1f, 0.3f, 0.7f, 0.9f, 1f), spec.positions, 0.0001f)
     assertArrayEquals(floatArrayOf(0f, 0f, 1f, 1f, 0f, 0f), spec.alphas, 0f)
+  }
+
+  @Test fun edgesStops() {
+    val spec = ProgressiveMask.spec("edges", 0.1f, 100f, 400f)
+    assertLine(spec, 0f, 0f, 0f, 400f)
+    assertArrayEquals(floatArrayOf(0f, 0.1f, 0.3f, 0.7f, 0.9f, 1f), spec.positions, 0.0001f)
+    assertArrayEquals(floatArrayOf(1f, 1f, 0f, 0f, 1f, 1f), spec.alphas, 0f)
+    assertArrayEquals(floatArrayOf(0f, 0.3f, 0.5f, 0.5f, 0.7f, 1f), ProgressiveMask.spec("edges", 1f, 100f, 400f).positions, 0.0001f)
+    assertArrayEquals(floatArrayOf(0f, 0f, 0.2f, 0.8f, 1f, 1f), ProgressiveMask.spec("edges", 0f, 100f, 400f).positions, 0.0001f)
   }
 
   @Test fun overlayColorsScaleTheAlphaByte() {

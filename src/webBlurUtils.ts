@@ -188,6 +188,17 @@ const maskForLayer = (
     );
   }
 
+  if (direction === 'blurredTopAndBottomClearCenter') {
+    // The center mask mirrored: a blurred plateau of `startOffset` at each edge, a 20% fade, then clear.
+    const inset = Math.min(startOffset, 0.3) * 100;
+    const solidEnd = inset + (20 * (n - layer)) / n;
+    const fadeEnd = inset + (20 * (n - layer + 1)) / n;
+    return (
+      `linear-gradient(to bottom, black 0%, black ${pct(solidEnd)}, transparent ${pct(fadeEnd)}, ` +
+      `transparent ${pct(100 - fadeEnd)}, black ${pct(100 - solidEnd)}, black 100%)`
+    );
+  }
+
   // Band edges measured from the blurred edge (0%).
   const boundary = (j: number) =>
     startOffset * 100 + ((1 - startOffset) * 100 * j) / n;
@@ -243,6 +254,14 @@ export function getProgressiveTintGradient(
     return (
       `linear-gradient(to bottom, transparent ${pct(inset)}, ${tint} ${pct(inset + 20)}, ` +
       `${tint} ${pct(80 - inset)}, transparent ${pct(100 - inset)})`
+    );
+  }
+
+  if (direction === 'blurredTopAndBottomClearCenter') {
+    const inset = Math.min(s, 0.3) * 100;
+    return (
+      `linear-gradient(to bottom, ${tint} ${pct(inset)}, transparent ${pct(inset + 20)}, ` +
+      `transparent ${pct(80 - inset)}, ${tint} ${pct(100 - inset)})`
     );
   }
 

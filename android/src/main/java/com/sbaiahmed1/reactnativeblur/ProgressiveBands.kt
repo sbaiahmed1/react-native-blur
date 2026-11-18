@@ -19,7 +19,8 @@ internal object ProgressiveBands {
     val sigma = BlurRadius.sigmaPx(amount)
     val line = ProgressiveMask.spec(direction, startOffset, width, height)
     val center = direction == "center"
-    val solid = !center && startOffset >= 1f
+    val edges = direction == "edges"
+    val solid = !center && !edges && startOffset >= 1f
     val out = ArrayList<Band>(COUNT)
     for (k in 0 until if (solid) 1 else COUNT) {
       val nodeSigma = sigma / (1 shl k) / scale
@@ -28,6 +29,7 @@ internal object ProgressiveBands {
       val stops = when {
         solid -> floatArrayOf(0f, 1f) to floatArrayOf(w, w)
         center -> centerStops(k, startOffset, w)
+        edges -> edgesStops(k, startOffset, w)
         else -> edgeStops(k, w)
       }
       val mask = MaskSpec(line.x0 / scale, line.y0 / scale, line.x1 / scale, line.y1 / scale, stops.second, stops.first)
@@ -49,5 +51,13 @@ internal object ProgressiveBands {
     val from = (inset + CENTER_FADE * opaqueFrom(k + 1)).coerceAtMost(0.5f)
     val full = (inset + CENTER_FADE * opaqueFrom(k)).coerceAtMost(0.5f)
     return floatArrayOf(0f, from, full, 1f - full, 1f - from, 1f) to floatArrayOf(0f, 0f, w, w, 0f, 0f)
+  }
+
+  // The center stops mirrored: each band is full from both edges inward and fades out toward the middle.
+  private fun edgesStops(k: Int, startOffset: Float, w: Float): Pair<FloatArray, FloatArray> {
+    val inset = startOffset.coerceIn(0f, 0.3f)
+    val full = (inset + CENTER_FADE * (1f - opaqueFrom(k))).coerceAtMost(0.5f)
+    val clear = (inset + CENTER_FADE * (1f - opaqueFrom(k + 1))).coerceAtMost(0.5f)
+    return floatArrayOf(0f, full, clear, 1f - clear, 1f - full, 1f) to floatArrayOf(w, w, 0f, 0f, w, w)
   }
 }

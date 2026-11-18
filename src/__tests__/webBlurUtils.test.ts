@@ -115,6 +115,26 @@ describe('getProgressiveLayers', () => {
     );
   });
 
+  it('blurs both edges and clears the center for blurredTopAndBottomClearCenter', () => {
+    const layers = getProgressiveLayers(
+      'blurredTopAndBottomClearCenter',
+      0,
+      20
+    );
+    expect(layers[4]?.maskImage).toBe(
+      'linear-gradient(to bottom, black 0%, black 0%, transparent 4%, transparent 96%, black 100%, black 100%)'
+    );
+    expect(layers[0]?.maskImage).toBe(
+      'linear-gradient(to bottom, black 0%, black 16%, transparent 20%, transparent 80%, black 84%, black 100%)'
+    );
+    expect(
+      getProgressiveLayers('blurredTopAndBottomClearCenter', 1, 20)[0]
+        ?.maskImage
+    ).toBe(
+      'linear-gradient(to bottom, black 0%, black 46%, transparent 50%, transparent 50%, black 54%, black 100%)'
+    );
+  });
+
   it('delays the ramp behind a fully-blurred plateau via startOffset', () => {
     const layers = getProgressiveLayers('blurredTopClearBottom', 0.3, 20);
     expect(layers[4]?.maskImage).toBe(
@@ -169,6 +189,14 @@ describe('getProgressiveTintGradient', () => {
       )
     ).toBe(
       'linear-gradient(to bottom, transparent 20%, rgba(255,255,255,0.2) 40%, rgba(255,255,255,0.2) 60%, transparent 80%)'
+    );
+  });
+
+  it('tints both edges for blurredTopAndBottomClearCenter', () => {
+    expect(
+      getProgressiveTintGradient('blurredTopAndBottomClearCenter', 0.2, 'red')
+    ).toBe(
+      'linear-gradient(to bottom, red 20%, transparent 40%, transparent 60%, red 80%)'
     );
   });
 });

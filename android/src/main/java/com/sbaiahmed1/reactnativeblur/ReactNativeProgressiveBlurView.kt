@@ -359,6 +359,18 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
 
     try {
       val gradient = when (currentDirection) {
+        "edges" -> {
+          val spec = ProgressiveMask.spec(currentDirection, currentStartOffset, width.toFloat(), height.toFloat())
+          LinearGradient(
+            spec.x0,
+            spec.y0,
+            spec.x1,
+            spec.y1,
+            ProgressiveMask.overlayColors(Color.WHITE, spec.alphas),
+            spec.positions,
+            Shader.TileMode.CLAMP
+          )
+        }
         "center" -> {
           // Clamp to [0.01, 0.3]: above 0.3 the derived stops
           // (centerLow = 0.2 + startEdge, centerHigh = 0.8 - startEdge) cross
@@ -679,6 +691,7 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
       "blurredcentercleartopandbottom", "center" -> "center"
       "blurredlefttoclearright", "lefttoright", "left" -> "leftToRight"
       "blurredrighttoclearleft", "righttoleft", "right" -> "rightToLeft"
+      "blurredtopandbottomclearcenter", "edges" -> "edges"
       else -> {
         logWarning("Unknown direction: $direction, defaulting to topToBottom")
         "topToBottom"
