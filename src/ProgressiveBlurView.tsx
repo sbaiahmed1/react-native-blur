@@ -34,6 +34,19 @@ export interface ProgressiveBlurViewProps extends ViewProps {
   blurRounds?: number;
 
   /**
+   * @description How much QmBlurView scales the captured backdrop down before
+   * blurring it (1-16). Lower values keep edges behind the blur from stepping
+   * at a higher CPU and memory cost, which grows with the square of the
+   * reduction (2 captures 16x the pixels of 8). Applies on Android 11 and
+   * earlier. Android 12 and later blur on the GPU and ignore it.
+   *
+   * @default 8
+   *
+   * @platform Android
+   */
+  downsampleFactor?: number;
+
+  /**
    * @description The direction of the progressive blur gradient
    * - 'blurredTopClearBottom': Blur starts at top, clear at bottom
    * - 'blurredBottomClearTop': Blur starts at bottom, clear at top
@@ -130,6 +143,7 @@ const ProgressiveBlurViewComponent = forwardRef<
       blurType = 'regular',
       blurAmount = 20,
       blurRounds = 5,
+      downsampleFactor = 8,
       direction = 'blurredTopClearBottom',
       startOffset = 0.0,
       reducedTransparencyFallbackColor = '#FFFFFF',
@@ -153,6 +167,7 @@ const ProgressiveBlurViewComponent = forwardRef<
           blurType={blurType}
           blurAmount={blurAmount}
           blurRounds={blurRounds}
+          downsampleFactor={downsampleFactor}
           direction={direction}
           startOffset={startOffset}
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
@@ -174,6 +189,7 @@ const ProgressiveBlurViewComponent = forwardRef<
           blurType={blurType}
           blurAmount={blurAmount}
           blurRounds={blurRounds}
+          downsampleFactor={downsampleFactor}
           direction={direction}
           startOffset={startOffset}
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
@@ -194,6 +210,7 @@ const ProgressiveBlurViewComponent = forwardRef<
           blurType={blurType}
           blurAmount={blurAmount}
           blurRounds={blurRounds}
+          downsampleFactor={downsampleFactor}
           direction={direction}
           startOffset={startOffset}
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}

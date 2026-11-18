@@ -56,7 +56,7 @@ On react-native-web, `BlurView` renders a `backdrop-filter: blur() saturate(180%
 - `overlayColor` paints above the blur, below children, like on native.
 - In browsers without `backdrop-filter` (and during server-side rendering), only the tint remains — the same graceful degradation `expo-blur` uses.
 - During hydration, the initial client render uses the same tint-only markup as the server. Supported browsers then enable blur; client-only rendering can enable it immediately.
-- `blurRounds`, `reducedTransparencyFallbackColor`, and `ignoreSafeArea` are native-only no-ops.
+- `blurRounds`, `downsampleFactor`, `reducedTransparencyFallbackColor`, and `ignoreSafeArea` are native-only no-ops.
 - A forwarded `ref` resolves to the root `View` (a DOM element) instead of a native view.
 
 ## Android behavior
@@ -66,6 +66,7 @@ On Android 12 and later, a blur view blurs the views drawn behind it on the GPU.
 - **Content drawn on top of a blur view stays out of it on Android 12 and later**, as on iOS. On Android 11 and earlier the capture includes anything rendered above the blur inside the capture root, which shows up as a blurred halo under the crisp original. If the halo shows in a design, move that content outside the capture root (e.g. a portal above the navigator).
 - **Blur and glass views show each other on Android 12 and later.** Where two of them overlap, the top one shows the one below it, with its text and tint.
 - **`blurRounds` only changes Android 11 and earlier.** Each pass adds a CPU blur pass, and lowering it trades quality for less work. Measure on target devices.
+- **`downsampleFactor` only changes Android 11 and earlier.** QmBlurView blurs a copy of the backdrop scaled down by this factor, so edges behind the blur can show steps at the default of 8. Lowering it smooths them, but the capture and blur cost grows with the square of the reduction (2 captures 16x the pixels of 8). Measure on target devices.
 - **In-app screenshots show the tint without the blur on Android 12 and later.** A screenshot that draws your views into a bitmap gets the blur view's tint only. System screenshots show the blur.
 - **The blur falls back to a screen capture if the library cannot read the views behind it.** The library then logs a warning tagged `RNBackdrop`. Content drawn on top shows as a halo, and overlapping blur and glass views leave each other out.
 
