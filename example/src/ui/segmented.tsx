@@ -7,7 +7,7 @@ function title(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-/** Single select over 2 to 5 options. */
+/** Single select over 2 to 6 options. */
 export function Segmented<T extends string>({
   label,
   value,

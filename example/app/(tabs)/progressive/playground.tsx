@@ -20,6 +20,7 @@ const DIRECTIONS = [
   'blurredCenterClearTopAndBottom',
   'blurredLeftToClearRight',
   'blurredRightToClearLeft',
+  'blurredTopAndBottomClearCenter',
 ] as const satisfies readonly ProgressiveBlurDirection[];
 
 const DIRECTION_LABELS = {
@@ -28,10 +29,14 @@ const DIRECTION_LABELS = {
   blurredCenterClearTopAndBottom: 'Center',
   blurredLeftToClearRight: 'Left',
   blurredRightToClearLeft: 'Right',
+  blurredTopAndBottomClearCenter: 'Edges',
 };
 
-// The center direction clamps startOffset to 0.3, so the slider stops there.
+// The center and edges directions clamp startOffset to 0.3, so the slider stops there.
 const CENTER_MAX_OFFSET = 0.3;
+const clampsOffset = (direction: ProgressiveBlurDirection) =>
+  direction === 'blurredCenterClearTopAndBottom' ||
+  direction === 'blurredTopAndBottomClearCenter';
 
 const DEFAULTS = {
   direction: 'blurredTopClearBottom',
@@ -48,11 +53,10 @@ export default function ProgressivePlayground() {
   const [startOffset, setStartOffset] = useState(0.2);
   const [blurAmount, setBlurAmount] = useState(40);
   const [blurType, setBlurType] = useState<BlurType>('regular');
-  const offsetMax =
-    direction === 'blurredCenterClearTopAndBottom' ? CENTER_MAX_OFFSET : 1;
+  const offsetMax = clampsOffset(direction) ? CENTER_MAX_OFFSET : 1;
   const changeDirection = (next: ProgressiveBlurDirection) => {
     setDirection(next);
-    if (next === 'blurredCenterClearTopAndBottom') {
+    if (clampsOffset(next)) {
       setStartOffset((offset) => Math.min(offset, CENTER_MAX_OFFSET));
     }
   };
