@@ -12,7 +12,7 @@ export const progressiveBlurViewProps: PropRow[] = [
   },
   {
     name: 'direction',
-    type: "'blurredTopClearBottom' | 'blurredBottomClearTop' | 'blurredCenterClearTopAndBottom'",
+    type: "'blurredTopClearBottom' | 'blurredBottomClearTop' | 'blurredCenterClearTopAndBottom' | 'blurredLeftToClearRight' | 'blurredRightToClearLeft'",
     default: "'blurredTopClearBottom'",
     description: 'Direction of the blur gradient.',
   },

@@ -38,6 +38,8 @@ export interface ProgressiveBlurViewProps extends ViewProps {
    * - 'blurredTopClearBottom': Blur starts at top, clear at bottom
    * - 'blurredBottomClearTop': Blur starts at bottom, clear at top
    * - 'blurredCenterClearTopAndBottom': Blur peaks at center, clear at both edges
+   * - 'blurredLeftToClearRight': Blur starts at left, clear at right
+   * - 'blurredRightToClearLeft': Blur starts at right, clear at left
    *
    * @default 'blurredTopClearBottom'
    */
