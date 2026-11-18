@@ -199,8 +199,7 @@ open class VariableBlurView: UIVisualEffectView {
   /// blur *radius*, and even a small radius fraction already smears text, so a
   /// linear radius ramp reads as "everything blurred" the moment the fade
   /// starts. The cubic keeps the radius near zero through the first part of
-  /// the fade — matching the readable window of Android's eased *opacity*
-  /// mask — then rises into the plateau.
+  /// the fade, then rises into the plateau. Android 12+ places its bands on the same curve.
   private func makeEdgeGradientImage(
     width: CGFloat = 100,
     height: CGFloat = 100,
