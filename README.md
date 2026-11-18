@@ -27,7 +27,7 @@ Full documentation, guides, and the complete API reference live on the docs site
 - [Props reference](https://sbaiahmed1.github.io/react-native-blur/docs/props-reference)
 - [Migration & breaking changes](https://sbaiahmed1.github.io/react-native-blur/docs/migration)
 
-> ⚠️ **v5 is New Architecture only** (React Native 0.80+) and drops legacy Paper support. See [Migration & breaking changes](https://sbaiahmed1.github.io/react-native-blur/docs/migration).
+> ⚠️ **New Architecture only** (React Native 0.80+). The legacy architecture has not been supported since v5. See [Migration & breaking changes](https://sbaiahmed1.github.io/react-native-blur/docs/migration).
 
 ## Demo
 
