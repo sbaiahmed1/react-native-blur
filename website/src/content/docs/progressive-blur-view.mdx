@@ -17,7 +17,7 @@ import { progressiveBlurDirectionValues } from '../props-data/enums';
 - **Android**: Android 12 and later ramp the blur radius on the GPU. Android 11 and earlier use QmBlurView's `BlurView`, which fades one blur out with a gradient mask.
 - **Web**: stacks several CSS `backdrop-filter` layers with gradient masks, halving the radius per layer — a genuine blur-radius ramp (from `blurAmount` px down to sharp), not a single blur fading in opacity.
 
-On web, `blurAmount` is the maximum radius in px (matching native), and browsers without `backdrop-filter` fall back to the directional tint gradient alone. Since 6.0, `startOffset` means the same thing on every platform — see [Platform differences](#platform-differences) for how the fade is constructed per backend.
+On web, `blurAmount` is the maximum radius in px, and browsers without `backdrop-filter` fall back to the directional tint gradient alone. Since 6.0, `startOffset` means the same thing on every platform. See [Platform differences](#platform-differences) for how the fade is constructed per backend.
 
 ## Basic usage
 
@@ -97,7 +97,7 @@ import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
 
 The three backends aim for the same look but get there differently:
 
-- **Blur ramp.** iOS and Web ramp the blur *radius* from `blurAmount` down to 0 across the gradient. Android 12 and later ramp the radius along the same curve, but the same `blurAmount` gives a lighter blur than on iOS. Android 11 and earlier render one fixed-radius blur and ramp its *opacity* with an eased mask, and blur the center direction at about a third of `blurAmount`.
+- **Blur ramp.** iOS and Web ramp the blur *radius* from `blurAmount` down to 0 across the gradient. Android 12 and later ramp the radius along the same curve and blur as strongly as iOS at the same `blurAmount`. Android 11 and earlier render one fixed-radius blur and ramp its *opacity*, so the same `blurAmount` gives a lighter blur there at most amounts. On those versions the center direction also blurs at about a third of `blurAmount`.
 - **`startOffset`** means the same thing on every platform. For the edge directions it grows a fully blurred plateau from the blurred edge: `0.4` means the nearest 40% of the view is uniformly blurred and the fade spans the remaining 60%. For the center direction it insets the fade start from the edges (clamped to 0.3), which shortens the blur body, so `0` gives the longest body. For the top and bottom direction it sets the fully blurred band at each edge (clamped to 0.3).
 
 <div class="glass-panel-subtle my-6 rounded-xl border border-amber-400/30 p-4 text-sm text-white/80">

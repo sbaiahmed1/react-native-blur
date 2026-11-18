@@ -15,8 +15,9 @@ export interface ProgressiveBlurViewProps extends ViewProps {
   blurType?: BlurType;
 
   /**
-   * @description The maximum intensity of the blur effect (in pixels)
-   * This is the blur radius at the most blurred part of the gradient
+   * @description The blur radius in points at the most blurred part of the
+   * gradient. Android 12 and later blur as strongly as iOS at the same value.
+   * Android 11 and earlier blur less at most amounts.
    *
    * @default 20
    */
@@ -105,7 +106,8 @@ export type ProgressiveBlurViewRef = React.ComponentRef<
  *
  * **Platform Support:**
  * - iOS: Full support using private Core Animation filters
- * - Android: Supported using QmBlurView's ProgressiveBlurView
+ * - Android 12 and later: ramps the blur radius on the GPU, as strong as iOS
+ * - Android 11 and earlier: QmBlurView fades one blur out with a gradient mask
  *
  * This component uses the same positioning pattern as BlurView where the blur
  * effect is positioned absolutely behind the content.
