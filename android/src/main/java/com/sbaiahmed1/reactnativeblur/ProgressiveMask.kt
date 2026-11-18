@@ -15,8 +15,6 @@ internal object ProgressiveMask {
   // Rises above linear early and saturates at 3/4 of the ramp, so startOffset stays visible (#119).
   private val RAMP_POSITIONS = floatArrayOf(0f, 0.15f, 0.3f, 0.45f, 0.6f, 0.75f, 1f)
   private val RAMP_ALPHAS = floatArrayOf(0f, 0.08f, 0.3f, 0.52f, 0.75f, 0.9f, 1f)
-  // The center direction blurs at this share of the amount.
-  private const val CENTER_AMOUNT_SCALE = 0.35f
 
   fun normalizeDirection(raw: String): String = when (raw.lowercase()) {
     "blurredbottomcleartop", "bottomtotop", "bottom" -> "bottomToTop"
@@ -32,9 +30,6 @@ internal object ProgressiveMask {
     val alpha = (color ushr 24) and 0xFF
     return IntArray(alphas.size) { (Math.round(alpha * alphas[it]) shl 24) or (color and 0xFFFFFF) }
   }
-
-  fun effectiveAmount(amount: Float, direction: String): Float =
-    if (direction == "center") amount * CENTER_AMOUNT_SCALE else amount
 
   fun spec(direction: String, startOffset: Float, width: Float, height: Float): MaskSpec {
     if (direction == "center") {

@@ -60,8 +60,4 @@ class ProgressiveMaskTest {
     assertArrayEquals(intArrayOf(0x00FFFFFF, 0x12FFFFFF, 0x23FFFFFF), colors)
   }
 
-  @Test fun centerScalesAmount() {
-    assertEquals(14f, ProgressiveMask.effectiveAmount(40f, "center"), 0.0001f)
-    assertEquals(40f, ProgressiveMask.effectiveAmount(40f, "topToBottom"), 0f)
-  }
 }
