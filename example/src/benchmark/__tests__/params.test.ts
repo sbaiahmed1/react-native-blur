@@ -74,6 +74,13 @@ it('parses the left and right directions', () => {
   ).toBe('blurredLeftToClearRight');
 });
 
+it('parses the top and bottom direction', () => {
+  expect(
+    parseBenchParams({ direction: 'blurredTopAndBottomClearCenter' }, D)
+      .direction
+  ).toBe('blurredTopAndBottomClearCenter');
+});
+
 it('falls back on an unknown direction and clamps the offset to 0-1', () => {
   const p = parseBenchParams({ direction: 'sideways', offset: '2' }, D);
   expect([p.direction, p.offset]).toEqual(['blurredTopClearBottom', 1]);
