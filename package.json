@@ -166,7 +166,7 @@
   },
   "codegenConfig": {
     "name": "ReactNativeBlurViewSpec",
-    "type": "all",
+    "type": "components",
     "jsSrcsDir": "src",
     "android": {
       "javaPackageName": "com.sbaiahmed1.reactnativeblur"
