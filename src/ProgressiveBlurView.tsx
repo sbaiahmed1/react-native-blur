@@ -40,6 +40,7 @@ export interface ProgressiveBlurViewProps extends ViewProps {
    * - 'blurredCenterClearTopAndBottom': Blur peaks at center, clear at both edges
    * - 'blurredLeftToClearRight': Blur starts at left, clear at right
    * - 'blurredRightToClearLeft': Blur starts at right, clear at left
+   * - 'blurredTopAndBottomClearCenter': Blur at the top and bottom edges, clear in the middle
    *
    * @default 'blurredTopClearBottom'
    */
@@ -52,7 +53,9 @@ export interface ProgressiveBlurViewProps extends ViewProps {
    * whole view. For the center direction the fade always occupies fixed ~20%
    * bands at the clear edges around a blurred center plateau; startOffset
    * insets where those bands start (clamped to 0.3), so 0.0 keeps them at the
-   * very edges rather than spreading the fade
+   * very edges rather than spreading the fade. For the top and bottom
+   * direction it sets the fully-blurred band at each edge (clamped to 0.3),
+   * and a ~20% fade toward the clear middle follows it
    *
    * @default 0.0
    */
