@@ -63,6 +63,25 @@ class SoftwareSourceRegionsTest {
     assertTrue(lane.isDue(101, false))
   }
 
+  @Test fun progressiveAtTheGlassScaleCapturesEveryFrame() {
+    val lane = SoftwareSource.laneFor(LaneKey(BackdropScale.PROGRESSIVE, throttled = false))
+    lane.onCaptureResult(0, true)
+    assertTrue(lane.isDue(1, false))
+    assertTrue(lane.isDue(1, true))
+  }
+
+  @Test fun glassKeepsItsCadenceAtTheSameScale() {
+    val lane = SoftwareSource.laneFor(LaneKey(BackdropScale.GLASS, throttled = true))
+    lane.onCaptureResult(0, true)
+    assertFalse(lane.isDue(20, true))
+    assertFalse(lane.isDue(50, false))
+    assertTrue(lane.isDue(101, false))
+  }
+
+  @Test fun glassAndProgressiveAtOneScaleGetTwoLanes() {
+    assertTrue(LaneKey(BackdropScale.GLASS, throttled = true) != LaneKey(BackdropScale.PROGRESSIVE, throttled = false))
+  }
+
   @Test fun remainingMsCountsToTheNextDueTime() {
     val lane = glassLane()
     lane.onCaptureResult(0, true)

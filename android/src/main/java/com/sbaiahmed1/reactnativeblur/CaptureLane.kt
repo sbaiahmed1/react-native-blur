@@ -3,7 +3,10 @@ package com.sbaiahmed1.reactnativeblur
 import kotlin.math.ceil
 import kotlin.math.floor
 
-/** Region shape, cadence and failure backoff of one capture lane, the hosts that share a downsample factor. */
+/** Hosts share a capture lane when they share a downsample factor and a cadence. */
+internal data class LaneKey(val downsample: Int, val throttled: Boolean)
+
+/** Region shape, cadence and failure backoff of one capture lane. */
 internal class CaptureLane(
   val downsample: Int,
   private val minIntervalMs: Long,
