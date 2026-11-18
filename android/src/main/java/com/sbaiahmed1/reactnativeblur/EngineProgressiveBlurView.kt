@@ -22,11 +22,16 @@ internal class EngineProgressiveBlurView(context: Context) : BackdropHostView(co
   override val effect = BackdropEffect { createBlurEffect() }
 
   override val wantsBackdrop: Boolean
-    get() = ProgressiveBands.weight(BlurRadius.sigmaPx(blurAmount) / backdropScale) > 0f
+    get() = ProgressiveBands.weight(ProgressiveBands.plateauSigmaPx(blurAmount, density) / backdropScale) > 0f
+
+  private val density: Float
+    get() = resources.displayMetrics.density
 
   // Each band is a blur masked to its part of the fade, drawn over the weaker ones.
   private fun createBlurEffect(): RenderEffect {
-    val bands = ProgressiveBands.bands(blurAmount, direction, startOffset, width.toFloat(), height.toFloat(), backdropScale)
+    val bands = ProgressiveBands.bands(
+      blurAmount, direction, startOffset, width.toFloat(), height.toFloat(), backdropScale, density
+    )
     var stack: RenderEffect? = null
     for (band in bands.asReversed()) {
       val mask = RenderEffect.createShaderEffect(gradient(band.mask, OPAQUE))
