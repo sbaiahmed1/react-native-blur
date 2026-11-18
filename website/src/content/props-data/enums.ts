@@ -36,4 +36,8 @@ export const progressiveBlurDirectionValues: { value: string; description: strin
   },
   { value: 'blurredLeftToClearRight', description: 'Blurred at the left, fading to clear at the right.' },
   { value: 'blurredRightToClearLeft', description: 'Blurred at the right, fading to clear at the left.' },
+  {
+    value: 'blurredTopAndBottomClearCenter',
+    description: 'Blurred at the top and bottom edges, fading to clear in the middle.',
+  },
 ];

@@ -12,7 +12,7 @@ export const progressiveBlurViewProps: PropRow[] = [
   },
   {
     name: 'direction',
-    type: "'blurredTopClearBottom' | 'blurredBottomClearTop' | 'blurredCenterClearTopAndBottom' | 'blurredLeftToClearRight' | 'blurredRightToClearLeft'",
+    type: "'blurredTopClearBottom' | 'blurredBottomClearTop' | 'blurredCenterClearTopAndBottom' | 'blurredLeftToClearRight' | 'blurredRightToClearLeft' | 'blurredTopAndBottomClearCenter'",
     default: "'blurredTopClearBottom'",
     description: 'Direction of the blur gradient.',
   },
@@ -21,7 +21,7 @@ export const progressiveBlurViewProps: PropRow[] = [
     type: 'number',
     default: '0.0',
     description:
-      'Plateau size (0.0-1.0): grows the fully-blurred zone from the blurred edge, so for edge directions 0 gives the longest fade. For the center direction the fade occupies fixed edge bands and startOffset insets them (max 0.3), so 0 gives the longest center blur body. Same meaning on all platforms.',
+      'Plateau size (0.0-1.0): grows the fully-blurred zone from the blurred edge, so for edge directions 0 gives the longest fade. For the center direction the fade occupies fixed edge bands and startOffset insets them (max 0.3), so 0 gives the longest center blur body. For the top and bottom direction it sets the fully-blurred band at each edge (max 0.3). Same meaning on all platforms.',
   },
   {
     name: 'reducedTransparencyFallbackColor',
