@@ -65,6 +65,15 @@ it('parses direction and offset', () => {
   ]);
 });
 
+it('parses the left and right directions', () => {
+  expect(
+    parseBenchParams({ direction: 'blurredRightToClearLeft' }, D).direction
+  ).toBe('blurredRightToClearLeft');
+  expect(
+    parseBenchParams({ direction: 'blurredLeftToClearRight' }, D).direction
+  ).toBe('blurredLeftToClearRight');
+});
+
 it('falls back on an unknown direction and clamps the offset to 0-1', () => {
   const p = parseBenchParams({ direction: 'sideways', offset: '2' }, D);
   expect([p.direction, p.offset]).toEqual(['blurredTopClearBottom', 1]);

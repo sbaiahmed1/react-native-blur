@@ -18,12 +18,16 @@ const DIRECTIONS = [
   'blurredTopClearBottom',
   'blurredBottomClearTop',
   'blurredCenterClearTopAndBottom',
+  'blurredLeftToClearRight',
+  'blurredRightToClearLeft',
 ] as const satisfies readonly ProgressiveBlurDirection[];
 
 const DIRECTION_LABELS = {
   blurredTopClearBottom: 'Top',
   blurredBottomClearTop: 'Bottom',
   blurredCenterClearTopAndBottom: 'Center',
+  blurredLeftToClearRight: 'Left',
+  blurredRightToClearLeft: 'Right',
 };
 
 // The center direction clamps startOffset to 0.3, so the slider stops there.
