@@ -1,3 +1,5 @@
+import type { ProgressiveBlurDirection } from '@sbaiahmed1/react-native-blur';
+
 export type BenchParams = {
   count: number;
   duration: number;
@@ -7,6 +9,8 @@ export type BenchParams = {
   autoplay: boolean;
   animation: 'default' | 'fade' | 'fade_from_bottom';
   warmup: number;
+  direction: ProgressiveBlurDirection;
+  offset: number;
 };
 
 export const BENCH_LIMITS = {
@@ -15,7 +19,14 @@ export const BENCH_LIMITS = {
   amount: [0, 100],
   rounds: [1, 15],
   warmup: [0, 10],
+  offset: [0, 1],
 } as const;
+
+export const PROGRESSIVE_DIRECTIONS: readonly ProgressiveBlurDirection[] = [
+  'blurredTopClearBottom',
+  'blurredBottomClearTop',
+  'blurredCenterClearTopAndBottom',
+];
 
 type RawParams = Record<string, string | string[] | undefined>;
 
@@ -45,6 +56,9 @@ export function parseBenchParams(
   defaults: BenchParams
 ): BenchParams {
   const animation = first(raw.animation);
+  const direction = PROGRESSIVE_DIRECTIONS.find(
+    (value) => value === first(raw.direction)
+  );
   return {
     count: parseNumber(
       first(raw.count),
@@ -82,6 +96,13 @@ export function parseBenchParams(
       first(raw.warmup),
       defaults.warmup,
       BENCH_LIMITS.warmup,
+      false
+    ),
+    direction: direction ?? defaults.direction,
+    offset: parseNumber(
+      first(raw.offset),
+      defaults.offset,
+      BENCH_LIMITS.offset,
       false
     ),
   };

@@ -9,6 +9,8 @@ const D: BenchParams = {
   autoplay: false,
   animation: 'default',
   warmup: 0,
+  direction: 'blurredTopClearBottom',
+  offset: 0,
 };
 
 it('returns the defaults for an empty query', () => {
@@ -33,6 +35,8 @@ it('parses every param', () => {
         autoplay: '1',
         animation: 'fade',
         warmup: '2',
+        direction: 'blurredBottomClearTop',
+        offset: '0.25',
       },
       D
     )
@@ -45,7 +49,25 @@ it('parses every param', () => {
     autoplay: true,
     animation: 'fade',
     warmup: 2,
+    direction: 'blurredBottomClearTop',
+    offset: 0.25,
   });
+});
+
+it('parses direction and offset', () => {
+  const p = parseBenchParams(
+    { direction: 'blurredCenterClearTopAndBottom', offset: '0.3' },
+    D
+  );
+  expect([p.direction, p.offset]).toEqual([
+    'blurredCenterClearTopAndBottom',
+    0.3,
+  ]);
+});
+
+it('falls back on an unknown direction and clamps the offset to 0-1', () => {
+  const p = parseBenchParams({ direction: 'sideways', offset: '2' }, D);
+  expect([p.direction, p.offset]).toEqual(['blurredTopClearBottom', 1]);
 });
 
 it('clamps out-of-range numbers', () => {
