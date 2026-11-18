@@ -16,6 +16,8 @@ RUNS=(
   "blur-list count=3"
   "blur-list count=6"
   "progressive-bars"
+  "progressive-ramp"
+  "progressive-ramp count=2"
   "glass-list count=3"
   "blur-in-scroll count=6"
   "animated-amount"

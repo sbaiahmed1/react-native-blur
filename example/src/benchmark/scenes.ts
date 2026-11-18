@@ -15,6 +15,7 @@ import Nested from './scenes/nested';
 import Overlap from './scenes/overlap';
 import OverlapBadges from './scenes/overlap-badges';
 import ProgressiveBars from './scenes/progressive-bars';
+import ProgressiveRamp from './scenes/progressive-ramp';
 import Recycle from './scenes/recycle';
 import RootOverlay from './scenes/root-overlay';
 import SideBySide from './scenes/side-by-side';
@@ -49,6 +50,8 @@ export const DEFAULT_PARAMS: BenchParams = {
   autoplay: false,
   animation: 'default',
   warmup: 0,
+  direction: 'blurredTopClearBottom',
+  offset: 0,
 };
 
 export const SCENES: readonly SceneDef[] = [
@@ -72,6 +75,13 @@ export const SCENES: readonly SceneDef[] = [
     note: 'Top and bottom ProgressiveBlurView over a scrolling feed (#119).',
     defaults: { amount: 16, rounds: 8 },
     Component: ProgressiveBars,
+  },
+  {
+    id: 'progressive-ramp',
+    title: 'Progressive ramp',
+    note: 'One ProgressiveBlurView over the whole feed, so the fade runs from edge to edge. The rows in the clear half should read as sharp text. count=2 adds a BlurView card over it.',
+    defaults: { amount: 20, count: 1 },
+    Component: ProgressiveRamp,
   },
   {
     id: 'glass-list',
