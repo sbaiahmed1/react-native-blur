@@ -6,7 +6,6 @@ import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.ViewManagerDelegate
-import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.ReactNativeProgressiveBlurViewManagerInterface
 import com.facebook.react.viewmanagers.ReactNativeProgressiveBlurViewManagerDelegate
 
@@ -41,36 +40,30 @@ class ReactNativeProgressiveBlurViewManager : ViewGroupManager<ViewGroup>(),
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) EngineProgressiveBlurView(context)
     else ReactNativeProgressiveBlurView(context)
 
-  @ReactProp(name = "blurType")
   override fun setBlurType(view: ViewGroup?, blurType: String?) {
     // Provide default value if blurType is null or empty
     val safeBlurType = if (blurType.isNullOrBlank()) "regular" else blurType
     (view as? ProgressiveBlurViewProps)?.setBlurType(safeBlurType)
   }
 
-  @ReactProp(name = "blurAmount")
   override fun setBlurAmount(view: ViewGroup?, blurAmount: Double) {
     (view as? ProgressiveBlurViewProps)?.setBlurAmount(blurAmount.toFloat())
   }
 
-  @ReactProp(name = "blurRounds")
   override fun setBlurRounds(view: ViewGroup?, blurRounds: Int) {
     (view as? ProgressiveBlurViewProps)?.setRounds(blurRounds)
   }
 
-  @ReactProp(name = "direction")
   override fun setDirection(view: ViewGroup?, direction: String?) {
     // Provide default value if direction is null or empty
     val safeDirection = if (direction.isNullOrBlank()) "blurredTopClearBottom" else direction
     (view as? ProgressiveBlurViewProps)?.setDirection(safeDirection)
   }
 
-  @ReactProp(name = "startOffset")
   override fun setStartOffset(view: ViewGroup?, startOffset: Double) {
     (view as? ProgressiveBlurViewProps)?.setStartOffset(startOffset.toFloat())
   }
 
-  @ReactProp(name = "reducedTransparencyFallbackColor", customType = "Color")
   override fun setReducedTransparencyFallbackColor(
     view: ViewGroup?,
     reducedTransparencyFallbackColor: Int?
@@ -82,27 +75,22 @@ class ReactNativeProgressiveBlurViewManager : ViewGroupManager<ViewGroup>(),
   // spec). With children mounted inside the native view on Android, the view
   // must clip itself — the JS container that used to apply overflow: hidden
   // no longer wraps it.
-  @ReactProp(name = "borderRadius")
   override fun setBorderRadius(view: ViewGroup?, borderRadius: Float) {
     (view as? ProgressiveBlurViewProps)?.setBorderRadius(borderRadius)
   }
 
-  @ReactProp(name = "borderTopLeftRadius")
   override fun setBorderTopLeftRadius(view: ViewGroup?, borderTopLeftRadius: Float) {
     (view as? ProgressiveBlurViewProps)?.setBorderTopLeftRadius(borderTopLeftRadius)
   }
 
-  @ReactProp(name = "borderTopRightRadius")
   override fun setBorderTopRightRadius(view: ViewGroup?, borderTopRightRadius: Float) {
     (view as? ProgressiveBlurViewProps)?.setBorderTopRightRadius(borderTopRightRadius)
   }
 
-  @ReactProp(name = "borderBottomLeftRadius")
   override fun setBorderBottomLeftRadius(view: ViewGroup?, borderBottomLeftRadius: Float) {
     (view as? ProgressiveBlurViewProps)?.setBorderBottomLeftRadius(borderBottomLeftRadius)
   }
 
-  @ReactProp(name = "borderBottomRightRadius")
   override fun setBorderBottomRightRadius(view: ViewGroup?, borderBottomRightRadius: Float) {
     (view as? ProgressiveBlurViewProps)?.setBorderBottomRightRadius(borderBottomRightRadius)
   }
