@@ -15,6 +15,7 @@ export default function ProgressiveRamp({ params, running }: SceneProps) {
         direction={params.direction}
         startOffset={params.offset}
         style={StyleSheet.absoluteFill}
+        pointerEvents="none"
       />
       {params.count >= 2 ? (
         <View
