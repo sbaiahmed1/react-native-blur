@@ -1,22 +1,23 @@
 package com.sbaiahmed1.reactnativeblur
 
-import com.facebook.react.ReactPackage
+import com.facebook.react.BaseReactPackage
 import com.facebook.react.bridge.NativeModule
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.module.model.ReactModuleInfoProvider
 import com.facebook.react.uimanager.ViewManager
-import java.util.ArrayList
 
-class ReactNativeBlurViewPackage : ReactPackage {
-  override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
-    val viewManagers: MutableList<ViewManager<*, *>> = ArrayList()
-    viewManagers.add(ReactNativeBlurViewManager())
-    viewManagers.add(ReactNativeProgressiveBlurViewManager())
-    viewManagers.add(ReactNativeBlurSwitchManager())
-    viewManagers.add(ReactNativeLiquidGlassViewManager())
-    return viewManagers
-  }
+class ReactNativeBlurViewPackage : BaseReactPackage() {
+  override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> =
+    listOf(
+      ReactNativeBlurViewManager(),
+      ReactNativeProgressiveBlurViewManager(),
+      ReactNativeBlurSwitchManager(),
+      ReactNativeLiquidGlassViewManager(),
+    )
 
-  override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
-    return emptyList()
-  }
+  // The library has views only, no native modules.
+  override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? = null
+
+  override fun getReactModuleInfoProvider(): ReactModuleInfoProvider =
+    ReactModuleInfoProvider { emptyMap() }
 }

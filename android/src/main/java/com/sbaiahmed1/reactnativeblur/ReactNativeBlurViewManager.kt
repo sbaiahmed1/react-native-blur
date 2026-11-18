@@ -6,7 +6,6 @@ import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManagerDelegate
-import com.facebook.react.uimanager.annotations.ReactProp
 import com.facebook.react.viewmanagers.ReactNativeBlurViewManagerInterface
 import com.facebook.react.viewmanagers.ReactNativeBlurViewManagerDelegate
 
@@ -31,52 +30,42 @@ class ReactNativeBlurViewManager : ViewGroupManager<ViewGroup>(),
   public override fun createViewInstance(context: ThemedReactContext): ViewGroup =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) EngineBlurView(context) else ReactNativeBlurView(context)
 
-  @ReactProp(name = "blurType")
   override fun setBlurType(view: ViewGroup?, blurType: String?) {
     (view as? BlurViewProps)?.setBlurType(blurType ?: "xlight")
   }
 
-  @ReactProp(name = "blurAmount")
   override fun setBlurAmount(view: ViewGroup?, blurAmount: Double) {
     (view as? BlurViewProps)?.setBlurAmount(blurAmount.toFloat())
   }
 
-  @ReactProp(name = "blurRounds")
   override fun setBlurRounds(view: ViewGroup?, blurRounds: Int) {
     (view as? BlurViewProps)?.setRounds(blurRounds)
   }
 
-  @ReactProp(name = "borderRadius")
   override fun setBorderRadius(view: ViewGroup?, borderRadius: Float) {
     (view as? BlurViewProps)?.setBorderRadius(borderRadius)
   }
 
-  @ReactProp(name = "borderTopLeftRadius")
   override fun setBorderTopLeftRadius(view: ViewGroup?, borderTopLeftRadius: Float) {
     (view as? BlurViewProps)?.setBorderTopLeftRadius(borderTopLeftRadius)
   }
 
-  @ReactProp(name = "borderTopRightRadius")
   override fun setBorderTopRightRadius(view: ViewGroup?, borderTopRightRadius: Float) {
     (view as? BlurViewProps)?.setBorderTopRightRadius(borderTopRightRadius)
   }
 
-  @ReactProp(name = "borderBottomLeftRadius")
   override fun setBorderBottomLeftRadius(view: ViewGroup?, borderBottomLeftRadius: Float) {
     (view as? BlurViewProps)?.setBorderBottomLeftRadius(borderBottomLeftRadius)
   }
 
-  @ReactProp(name = "borderBottomRightRadius")
   override fun setBorderBottomRightRadius(view: ViewGroup?, borderBottomRightRadius: Float) {
     (view as? BlurViewProps)?.setBorderBottomRightRadius(borderBottomRightRadius)
   }
 
-  @ReactProp(name = "reducedTransparencyFallbackColor", customType = "Color")
   override fun setReducedTransparencyFallbackColor(view: ViewGroup?, reducedTransparencyFallbackColor: Int?) {
     // no-op
   }
 
-  @ReactProp(name = "ignoreSafeArea")
   override fun setIgnoreSafeArea(view: ViewGroup?, ignoreSafeArea: Boolean) {
     // no-op
   }
