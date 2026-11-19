@@ -9,6 +9,7 @@ import Geometry from './scenes/geometry';
 import GlassList from './scenes/glass-list';
 import Halo from './scenes/halo';
 import IdleCursor from './scenes/idle-cursor';
+import Materials from './scenes/materials';
 import ModalIdle from './scenes/modal-idle';
 import ModalLive from './scenes/modal-live';
 import Nested from './scenes/nested';
@@ -52,6 +53,9 @@ export const DEFAULT_PARAMS: BenchParams = {
   warmup: 0,
   direction: 'blurredTopClearBottom',
   offset: 0,
+  blurType: 'systemMaterial',
+  bg: 'bw',
+  overlay: 'none',
 };
 
 export const SCENES: readonly SceneDef[] = [
@@ -222,6 +226,13 @@ export const SCENES: readonly SceneDef[] = [
     note: 'Ten stacked BlurView cards (count) in a transparent Modal over the scrolling feed, open from mount. Android back closes it.',
     defaults: { count: 10 },
     Component: StackedModal,
+  },
+  {
+    id: 'materials',
+    title: 'Materials',
+    note: 'Flat color bands under one BlurView, for material calibration shots.',
+    defaults: {},
+    Component: Materials,
   },
 ];
 
