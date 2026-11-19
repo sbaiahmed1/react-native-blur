@@ -105,7 +105,7 @@ export const SCENES: readonly SceneDef[] = [
     id: 'animated-amount',
     title: 'Animated amount',
     note: 'Animates blurAmount from 0 to 100 and back through animated props.',
-    defaults: {},
+    defaults: { blurType: 'light' },
     Component: AnimatedAmount,
   },
   {
