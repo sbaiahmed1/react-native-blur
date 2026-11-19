@@ -4,6 +4,18 @@ description: Upgrading from v3.x, and migrating from @react-native-community/blu
 order: 9
 ---
 
+## Blur materials on web
+
+On web, `BlurView` now draws each `blurType` with the blur, saturation and tint of the same type on iOS. `blurAmount` sets how much of that material draws, as it does on iOS. The same props look different than before:
+
+- At `blurAmount` 100 the blur radius depends on the type: 19-48 px instead of 40 px for every type, so most types blur less.
+- At low values the tint fades with the blur. A `blurAmount` of 10 draws a tenth of the tint instead of the full tint.
+- The saturation depends on the type instead of 180% for every type.
+- `regular`, `prominent` and the `system*Material` types without a `Light` or `Dark` suffix follow Dark Mode in the browser.
+- `ProgressiveBlurView` tints with the same material as its `blurType`. Its tint follows Dark Mode too.
+
+If you set a different `blurAmount` on web to match iOS, use the iOS value.
+
 ## Controlled Android switches
 
 `BlurSwitch` now restores the supplied `value` when a native toggle is not accepted by the parent, matching React Native's built-in `Switch` on iOS and web. Android apps that previously relied on toggles changing the UI without updating `value` must now store the value and update it in `onValueChange`. Omitting `value` keeps the switch off.
