@@ -1,0 +1,19 @@
+name: PR labels
+on:
+  # pull_request_target gives the token write access on pull requests from forks.
+  # This workflow must never check out or run the pull request's code.
+  pull_request_target:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label:
+    name: Label by changed paths
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply labels
+        uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13 # v7.0.0
