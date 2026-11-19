@@ -10,7 +10,10 @@ import { useMaterialScheme } from './useMaterialScheme';
 
 export interface ProgressiveBlurViewProps extends ViewProps {
   /**
-   * @description The type of blur effect to apply
+   * @description The material whose tint the view draws, at full strength
+   * where the blur is strongest and fading out with the blur. `regular`,
+   * `prominent` and the `system*Material` types without a `Light` or `Dark`
+   * suffix follow the color scheme.
    *
    * @default 'regular'
    */
@@ -18,8 +21,8 @@ export interface ProgressiveBlurViewProps extends ViewProps {
 
   /**
    * @description The blur radius in points at the most blurred part of the
-   * gradient. Android 12 and later blur as strongly as iOS at the same value.
-   * Android 11 and earlier blur less at most amounts.
+   * gradient. Android 12 and later and web blur as strongly as iOS at the same
+   * value, up to 48. Android 11 and earlier blur less at most amounts.
    *
    * @default 20
    */

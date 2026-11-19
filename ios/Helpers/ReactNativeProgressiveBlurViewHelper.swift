@@ -35,4 +35,9 @@ import UIKit
   @objc public static func updateProgressiveBlurView(_ blurView: ProgressiveBlurView, withReducedTransparencyFallbackColor reducedTransparencyFallbackColor: UIColor) {
     blurView.reducedTransparencyFallbackColor = reducedTransparencyFallbackColor
   }
+
+  /// Updates the progressive blur view with the material tint of its blurType, or nil for none.
+  @objc public static func updateProgressiveBlurView(_ blurView: ProgressiveBlurView, withMaterialTint materialTint: UIColor?) {
+    blurView.materialTint = materialTint
+  }
 }

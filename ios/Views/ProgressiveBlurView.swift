@@ -54,6 +54,13 @@ import UIKit
     }
   }
 
+  /// The blurType material tint, drawn at full strength where the blur is strongest.
+  @objc public var materialTint: UIColor? {
+    didSet {
+      updateBlur()
+    }
+  }
+
   public override init(frame: CGRect) {
     super.init(frame: frame)
     setupView()
@@ -90,6 +97,7 @@ import UIKit
     ])
 
     self.variableBlurView = variableBlur
+    variableBlur.setTint(materialTint)
 
     let interfaceStyle = interfaceStyleForBlurType(blurTypeString) ?? .unspecified
     overrideUserInterfaceStyle = interfaceStyle
@@ -117,6 +125,7 @@ import UIKit
       startOffset: CGFloat(startOffset),
       blurStyle: blurStyle
     )
+    variableBlurView.setTint(materialTint)
 
     let interfaceStyle = interfaceStyleForBlurType(blurTypeString) ?? .unspecified
     overrideUserInterfaceStyle = interfaceStyle

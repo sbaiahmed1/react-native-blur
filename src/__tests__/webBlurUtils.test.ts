@@ -1,7 +1,9 @@
 import { materialFor } from '../materials';
 import {
+  PROGRESSIVE_CAP,
   PROGRESSIVE_LAYER_COUNT,
   PROGRESSIVE_RADIUS_COMPENSATION,
+  PROGRESSIVE_SIGMA_PER_AMOUNT,
   blurLayerStyle,
   getProgressiveLayers,
   getProgressiveTintGradient,
@@ -87,11 +89,19 @@ describe('getProgressiveLayers', () => {
   it('halves the radius per layer down from the compensated maximum', () => {
     const layers = getProgressiveLayers('blurredTopClearBottom', 0, 20);
     expect(layers).toHaveLength(PROGRESSIVE_LAYER_COUNT);
-    expect(layers.map((l) => l.radius)).toEqual([1.09, 2.17, 4.35, 8.7, 17.4]);
-    expect(layers[layers.length - 1]?.radius).toBeCloseTo(
-      20 * PROGRESSIVE_RADIUS_COMPENSATION,
-      5
-    );
+    expect(layers.map((l) => l.radius)).toEqual([2.17, 4.35, 8.7, 17.4, 34.8]);
+  });
+
+  it('progressive strength is 2 px per unit capped at 96', () => {
+    expect(PROGRESSIVE_SIGMA_PER_AMOUNT).toBe(2);
+    expect(PROGRESSIVE_CAP).toBe(96);
+    const strongest = (amount: number) =>
+      getProgressiveLayers('blurredTopClearBottom', 0, amount)[
+        PROGRESSIVE_LAYER_COUNT - 1
+      ]?.radius;
+    expect(strongest(20)).toBeCloseTo(40 * PROGRESSIVE_RADIUS_COMPENSATION, 2);
+    expect(strongest(48)).toBeCloseTo(96 * PROGRESSIVE_RADIUS_COMPENSATION, 2);
+    expect(strongest(60)).toBeCloseTo(96 * PROGRESSIVE_RADIUS_COMPENSATION, 2);
   });
 
   it('anchors every mask at the blurred edge, fading one band further per weaker layer', () => {
@@ -179,46 +189,68 @@ describe('getProgressiveLayers', () => {
 });
 
 describe('getProgressiveTintGradient', () => {
-  it('fades the tint along the blur direction', () => {
-    expect(
-      getProgressiveTintGradient('blurredTopClearBottom', 0, 'rgba(0,0,0,0.5)')
-    ).toBe(
-      'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.5) 0%, transparent 100%)'
-    );
-    expect(
-      getProgressiveTintGradient(
-        'blurredBottomClearTop',
-        0.3,
-        'rgba(0,0,0,0.5)'
-      )
-    ).toBe(
-      'linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.5) 30%, transparent 100%)'
-    );
-    expect(
-      getProgressiveTintGradient('blurredLeftToClearRight', 0, 'red')
-    ).toBe('linear-gradient(to right, red 0%, red 0%, transparent 100%)');
-    expect(
-      getProgressiveTintGradient('blurredRightToClearLeft', 0, 'red')
-    ).toBe('linear-gradient(to left, red 0%, red 0%, transparent 100%)');
-  });
+  const RED = '#FF0000FF';
+  const stops = (gradient: string) =>
+    gradient
+      .replace(/^linear-gradient\([^,]+, /, '')
+      .replace(/\)$/, '')
+      .split(/, (?=rgba)/);
 
-  it('peaks at the center for blurredCenterClearTopAndBottom', () => {
-    expect(
-      getProgressiveTintGradient(
-        'blurredCenterClearTopAndBottom',
-        0.2,
-        'rgba(255,255,255,0.2)'
-      )
-    ).toBe(
-      'linear-gradient(to bottom, transparent 20%, rgba(255,255,255,0.2) 40%, rgba(255,255,255,0.2) 60%, transparent 80%)'
+  it('progressive tint follows the cube', () => {
+    expect(getProgressiveTintGradient('blurredTopClearBottom', 0, RED)).toBe(
+      'linear-gradient(to bottom, rgba(255, 0, 0, 1) 0%, rgba(255, 0, 0, 0.67) 12.5%, ' +
+        'rgba(255, 0, 0, 0.422) 25%, rgba(255, 0, 0, 0.244) 37.5%, rgba(255, 0, 0, 0.125) 50%, ' +
+        'rgba(255, 0, 0, 0.053) 62.5%, rgba(255, 0, 0, 0.016) 75%, rgba(255, 0, 0, 0.002) 87.5%, ' +
+        'rgba(255, 0, 0, 0) 100%)'
     );
   });
 
-  it('tints both edges for blurredTopAndBottomClearCenter', () => {
-    expect(
-      getProgressiveTintGradient('blurredTopAndBottomClearCenter', 0.2, 'red')
-    ).toBe(
-      'linear-gradient(to bottom, red 20%, transparent 40%, transparent 60%, red 80%)'
+  it('scales the token alpha and starts the fade after the plateau', () => {
+    const gradient = getProgressiveTintGradient(
+      'blurredBottomClearTop',
+      0.3,
+      '#00000080'
     );
+    expect(gradient.startsWith('linear-gradient(to top, ')).toBe(true);
+    const list = stops(gradient);
+    expect(list).toHaveLength(9);
+    expect(list[0]).toBe(`${tintRgba('#00000080')} 30%`);
+    expect(list[4]).toBe(`${tintRgba('#00000080', 0.125)} 65%`);
+    expect(list[8]).toBe('rgba(0, 0, 0, 0) 100%');
+  });
+
+  it('runs along x for the left and right directions', () => {
+    expect(
+      getProgressiveTintGradient('blurredLeftToClearRight', 0, RED)
+    ).toMatch(/^linear-gradient\(to right, /);
+    expect(
+      getProgressiveTintGradient('blurredRightToClearLeft', 0, RED)
+    ).toMatch(/^linear-gradient\(to left, /);
+  });
+
+  it('eases into the center plateau from both edges for blurredCenterClearTopAndBottom', () => {
+    const list = stops(
+      getProgressiveTintGradient('blurredCenterClearTopAndBottom', 0.2, RED)
+    );
+    expect(list).toHaveLength(18);
+    expect(list[0]).toBe('rgba(255, 0, 0, 0) 20%');
+    expect(list[4]).toBe('rgba(255, 0, 0, 0.125) 30%');
+    expect(list[8]).toBe('rgba(255, 0, 0, 1) 40%');
+    expect(list[9]).toBe('rgba(255, 0, 0, 1) 60%');
+    expect(list[13]).toBe('rgba(255, 0, 0, 0.125) 70%');
+    expect(list[17]).toBe('rgba(255, 0, 0, 0) 80%');
+  });
+
+  it('eases out of both edge plateaus for blurredTopAndBottomClearCenter', () => {
+    const list = stops(
+      getProgressiveTintGradient('blurredTopAndBottomClearCenter', 0.2, RED)
+    );
+    expect(list).toHaveLength(18);
+    expect(list[0]).toBe('rgba(255, 0, 0, 1) 20%');
+    expect(list[4]).toBe('rgba(255, 0, 0, 0.125) 30%');
+    expect(list[8]).toBe('rgba(255, 0, 0, 0) 40%');
+    expect(list[9]).toBe('rgba(255, 0, 0, 0) 60%');
+    expect(list[13]).toBe('rgba(255, 0, 0, 0.125) 70%');
+    expect(list[17]).toBe('rgba(255, 0, 0, 1) 80%');
   });
 });
