@@ -668,6 +668,11 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
    * Set the number of blur rounds.
    * @param rounds The number of blur rounds (1-15)
    */
+  // The progressive tint does not read the material yet.
+  override fun setMaterialTint(color: Int?) = Unit
+  override fun setMaterialSaturation(saturation: Float) = Unit
+  override fun setMaterialRadius(radiusDp: Float) = Unit
+
   override fun setRounds(rounds: Int) {
     val blurRounds = rounds.coerceIn(1, 15)
     currentBlurRounds = blurRounds

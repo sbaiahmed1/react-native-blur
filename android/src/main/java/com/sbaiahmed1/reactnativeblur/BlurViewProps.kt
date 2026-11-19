@@ -10,6 +10,10 @@ interface BlurViewProps {
   fun setBorderTopRightRadius(radius: Float)
   fun setBorderBottomLeftRadius(radius: Float)
   fun setBorderBottomRightRadius(radius: Float)
+  // The blurType material at full strength from the JS wrapper. A negative radius means none was set.
+  fun setMaterialTint(color: Int?)
+  fun setMaterialSaturation(saturation: Float)
+  fun setMaterialRadius(radiusDp: Float)
   fun cleanup()
 }
 
