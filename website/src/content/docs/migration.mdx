@@ -14,9 +14,14 @@ On Android and web, `BlurView` now draws each `blurType` with the blur, saturati
 - The saturation depends on the type. Web used 180% for every type, and Android had none.
 - `regular`, `prominent` and the `system*Material` types without a `Light` or `Dark` suffix follow Dark Mode.
 - Android 11 and earlier take the blur and the tint of the type, without the saturation.
-- On web, `ProgressiveBlurView` tints with the same material as its `blurType`. Its tint follows Dark Mode too.
 
 If you set a different `blurAmount` on Android or web to match iOS, use the iOS value.
+
+## Progressive blur tint
+
+`ProgressiveBlurView` now draws the tint of its `blurType` on iOS, Android and web, at full strength where the blur is strongest and fading out with the blur. On iOS, where it drew no tint before, every progressive view now shows one. The default `regular` draws a light tint in light mode and a dark tint in Dark Mode. On Android 12 and later and on web the tint now fades out sooner. It follows Dark Mode on every platform. Check the screens that use a progressive view, and pick the `blurType` whose tint suits each one.
+
+On web, `ProgressiveBlurView` now blurs about as strongly as iOS at the same `blurAmount`, which is about twice as strongly as before. If you raised `blurAmount` on web to match iOS, use the iOS value.
 
 ## Overlay color above the blur
 

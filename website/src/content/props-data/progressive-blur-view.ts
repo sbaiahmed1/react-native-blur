@@ -1,8 +1,20 @@
 import type { PropRow } from './types';
 
 export const progressiveBlurViewProps: PropRow[] = [
-  { name: 'blurType', type: 'BlurType', default: "'regular'", description: 'The type of blur effect to apply.' },
-  { name: 'blurAmount', type: 'number', default: '20', description: 'Sets the blur radius in points at the most blurred part of the gradient. Android 12 and later blur as strongly as iOS at the same value, and Android 11 and earlier blur less at most amounts.' },
+  {
+    name: 'blurType',
+    type: 'BlurType',
+    default: "'regular'",
+    description:
+      'Sets the material whose tint the view draws, at full strength where the blur is strongest and fading out with the blur. `regular`, `prominent` and the `system*Material` types without a `Light` or `Dark` suffix follow Dark Mode.',
+  },
+  {
+    name: 'blurAmount',
+    type: 'number',
+    default: '20',
+    description:
+      'Sets the blur radius in points at the most blurred part of the gradient. Android 12 and later and web blur about as strongly as iOS at the same value, up to 48. Android 11 and earlier blur less at most amounts.',
+  },
   {
     name: 'blurRounds',
     type: 'number',
