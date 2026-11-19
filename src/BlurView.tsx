@@ -144,19 +144,27 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
       ]
     );
 
-    // If no children, render the blur view directly (for background use)
+    // The overlay draws above the blur material and below the children.
+    const overlayView =
+      overlayColor != null ? (
+        <View style={[StyleSheet.absoluteFill, styles.passThrough, overlay]} />
+      ) : null;
+
+    // Without children the blur view is the root, and its native children draw above the blur.
     if (!Children.count(children)) {
       return (
         <ReactNativeBlurView
           ref={ref}
-          style={[style, overlay]}
+          style={style}
           {...commonProps}
           {...props}
-        />
+        >
+          {overlayView}
+        </ReactNativeBlurView>
       );
     }
 
-    // If children exist, use the style default for Android
+    // On Android the overlay and the children live inside the native view, which draws its blur first.
     if (Platform.OS === 'android') {
       return (
         <ReactNativeBlurView
@@ -165,23 +173,22 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
           {...commonProps}
           {...props}
         >
-          <View style={[StyleSheet.absoluteFill, overlay]} />
-
+          {overlayView}
           {children}
         </ReactNativeBlurView>
       );
     }
 
-    // If children exist, use the absolute positioning pattern for iOS and others
+    // Elsewhere the blur is positioned absolutely behind the overlay and the children
     return (
-      <View style={[styles.container, style, overlay]}>
-        {/* Blur effect positioned absolutely behind content */}
+      <View style={[styles.container, style]}>
         <ReactNativeBlurView
           ref={ref}
           style={StyleSheet.absoluteFill}
           {...commonProps}
           {...props}
         />
+        {overlayView}
         {children}
       </View>
     );
@@ -200,5 +207,8 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
     overflow: 'hidden',
+  },
+  passThrough: {
+    pointerEvents: 'none',
   },
 });
