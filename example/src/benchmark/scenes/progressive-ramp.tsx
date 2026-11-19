@@ -9,7 +9,7 @@ export default function ProgressiveRamp({ params, running }: SceneProps) {
     <FeedList scrolling={running} images={params.images}>
       <ProgressiveBlurView
         testID="progressive-ramp-view"
-        blurType="regular"
+        blurType={params.blurType}
         blurAmount={params.amount}
         blurRounds={params.rounds}
         direction={params.direction}
