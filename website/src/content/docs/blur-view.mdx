@@ -66,6 +66,8 @@ On react-native-web, `BlurView` draws each `blurType` with the blur, saturation 
 
 ## Android behavior
 
+On Android, `BlurView` draws each `blurType` with the blur, saturation and tint of the same type on iOS, and `blurAmount` sets how much of that material draws, as on iOS. `regular`, `prominent` and the `system*Material` types without a `Light` or `Dark` suffix follow Dark Mode, as on iOS. Android 11 and earlier draw the blur and the tint without the saturation, and their blur stops at 40 screen pixels. On Android 12 and later, a blur lighter than 4 screen pixels draws only the tint, unless Android's own blur is on. On a screen of density 2, that includes the default `xlight` at 10.
+
 On Android 12 and later, a blur view blurs the views drawn behind it on the GPU. On Android 11 and earlier, QmBlurView captures the view tree around the blur into a downsampled bitmap and blurs it on the CPU. The capture covers the nearest `react-native-screens` Screen, or the React root when there is none. In practice:
 
 - **Content drawn on top of a blur view stays out of it on Android 12 and later**, as on iOS. On Android 11 and earlier the capture includes anything rendered above the blur inside the capture root, which shows up as a blurred halo under the crisp original. If the halo shows in a design, move that content outside the capture root (e.g. a portal above the navigator).
