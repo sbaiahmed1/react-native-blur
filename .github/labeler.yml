@@ -1,0 +1,42 @@
+android:
+  - changed-files:
+      - any-glob-to-any-file:
+          - android/**
+
+ios:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ios/**
+          - spm-headers/**
+          - spm-support/**
+          - Package.swift
+          - ReactNativeBlur.podspec
+
+web:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/**/*.web.ts
+          - src/**/*.web.tsx
+          - src/webBlurUtils.ts
+
+example:
+  - changed-files:
+      - any-glob-to-any-file:
+          - example/**
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - website/**
+
+build:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/**
+          - scripts/**
+          - turbo.json
+          - lefthook.yml
+          - tsconfig*.json
+          - babel.config.js
+          - eslint.config.mjs

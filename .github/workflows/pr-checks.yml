@@ -1,0 +1,122 @@
+name: PR checks
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  title:
+    name: PR title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Check the title is a conventional commit
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s\n' "$PR_TITLE" | yarn commitlint --verbose
+
+  commits:
+    name: Commit messages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Check every commit in the pull request
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: yarn commitlint --verbose --from "$BASE_SHA" --to "$HEAD_SHA"
+
+  description:
+    name: PR description
+    # Bots such as Dependabot write their own description.
+    if: github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the description is filled in
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Drop the template's HTML comments, headings and checkboxes; what is left is what the author wrote.
+          written=$(printf '%s\n' "$PR_BODY" \
+            | perl -0pe 's/<!--.*?-->//gs' \
+            | grep -vE '^\s*(#|- \[[ xX]\])' \
+            | tr -d '[:space:]' || true)
+          failed=0
+
+          if [ -z "$written" ]; then
+            echo "::error::The description is empty. Say what the pull request changes and why."
+            failed=1
+          fi
+
+          if ! printf '%s\n' "$PR_BODY" | grep -qiE '^\s*- \[x\] (iOS|Android|Web|None)'; then
+            echo "::error::Tick at least one box under Platforms (iOS, Android, Web or None)."
+            failed=1
+          fi
+
+          exit "$failed"
+
+  docs-reminder:
+    name: Docs reminder
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Warn when a native component spec changes without the docs
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          changed=$(git diff --name-only "$BASE_SHA...$HEAD_SHA")
+          specs=$(printf '%s\n' "$changed" | grep -E '^src/[^/]+NativeComponent\.ts$' || true)
+
+          if [ -z "$specs" ]; then
+            echo "No native component spec changed."
+            exit 0
+          fi
+
+          if printf '%s\n' "$changed" | grep -qE '^(README\.md|website/)'; then
+            echo "A native component spec changed, and so did the README or the website."
+            exit 0
+          fi
+
+          message="A native component spec changed, but the README and the website did not. If the public API changed, update them in this pull request."
+          echo "::warning::$message"
+          {
+            echo "### Docs reminder"
+            echo
+            echo "$message"
+            echo
+            echo "Changed specs:"
+            printf '%s\n' "$specs" | sed 's/^/- `/; s/$/`/'
+          } >> "$GITHUB_STEP_SUMMARY"
