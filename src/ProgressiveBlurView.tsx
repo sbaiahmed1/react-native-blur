@@ -5,6 +5,8 @@ import ReactNativeProgressiveBlurView, {
   type BlurType,
   type ProgressiveBlurDirection,
 } from './ReactNativeProgressiveBlurViewNativeComponent';
+import { materialFor } from './materials';
+import { useMaterialScheme } from './useMaterialScheme';
 
 export interface ProgressiveBlurViewProps extends ViewProps {
   /**
@@ -151,6 +153,15 @@ const ProgressiveBlurViewComponent = forwardRef<
       () => ({ backgroundColor: overlayColor }),
       [overlayColor]
     );
+    const material = materialFor(blurType, useMaterialScheme());
+    const materialProps = useMemo(
+      () => ({
+        materialTint: material.tint,
+        materialSaturation: material.saturation,
+        materialRadius: material.radius,
+      }),
+      [material]
+    );
 
     // If no children, render the blur view directly (for background use)
     if (!Children.count(children)) {
@@ -163,6 +174,7 @@ const ProgressiveBlurViewComponent = forwardRef<
           direction={direction}
           startOffset={startOffset}
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+          {...materialProps}
           style={[style, overlay]}
           {...props}
         />
@@ -184,6 +196,7 @@ const ProgressiveBlurViewComponent = forwardRef<
           direction={direction}
           startOffset={startOffset}
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+          {...materialProps}
           style={[styles.container, style, overlay]}
           {...props}
         >
@@ -204,6 +217,7 @@ const ProgressiveBlurViewComponent = forwardRef<
           direction={direction}
           startOffset={startOffset}
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+          {...materialProps}
           style={StyleSheet.absoluteFill}
           {...props}
         />
