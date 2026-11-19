@@ -6,8 +6,11 @@ type Rgb = [number, number, number];
 
 const AA = 4.5;
 
-// The blurAmount MaterialCard uses.
+// The blurAmount MaterialCard and the field sheet use.
 const CARD_AMOUNT = 100;
+
+// The blurAmount of the Vibrancy card, a plain BlurView on Android and web.
+const VIBRANCY_AMOUNT = 30;
 
 function hex(color: string): Rgb {
   const h = color.replace('#', '');
@@ -38,23 +41,17 @@ function contrast(a: Rgb, b: Rgb): number {
   return (hi! + 0.05) / (lo! + 0.05);
 }
 
-/** What a MaterialCard paints over each backdrop color: the blurType material and the Android overlay (BlurType.kt). */
-function materials(theme: Theme): [string, Rgb][] {
+/** What the theme's systemMaterial card at `amount` paints over each backdrop color, on every platform. */
+function materials(theme: Theme, amount: number): Rgb[] {
   const token = materialFor(
     theme.dark ? 'systemMaterialDark' : 'systemMaterialLight',
     theme.dark ? 'dark' : 'light'
   );
-  const f = materialFraction(CARD_AMOUNT);
+  const f = materialFraction(amount);
   const tint = hex(token.tint);
   const alpha = (f * parseInt(token.tint.slice(7, 9), 16)) / 255;
   const s = 1 + f * (token.saturation - 1);
-  const android = theme.dark
-    ? { rgb: [65, 60, 60] as Rgb, alpha: 215 / 255 }
-    : { rgb: [245, 245, 245] as Rgb, alpha: 140 / 255 };
-  return theme.field.flatMap((color): [string, Rgb][] => [
-    [`material over ${color}`, over(tint, alpha, saturate(hex(color), s))],
-    [`android over ${color}`, over(android.rgb, android.alpha, hex(color))],
-  ]);
+  return theme.field.map((color) => over(tint, alpha, saturate(hex(color), s)));
 }
 
 describe.each([
@@ -71,8 +68,14 @@ describe.each([
   });
 
   it('keeps muted text at AA on a material card over the backdrop', () => {
-    for (const [, background] of materials(theme)) {
+    for (const background of materials(theme, CARD_AMOUNT)) {
       expect(contrast(hex(colors.textMuted), background)).toBeGreaterThan(AA);
+    }
+  });
+
+  it('keeps body text at AA on the Vibrancy card over the backdrop', () => {
+    for (const background of materials(theme, VIBRANCY_AMOUNT)) {
+      expect(contrast(hex(colors.text), background)).toBeGreaterThan(AA);
     }
   });
 
