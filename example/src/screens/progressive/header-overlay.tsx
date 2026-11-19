@@ -36,7 +36,7 @@ export function HeaderOverlay() {
         <ProgressiveBlurView
           direction="blurredTopClearBottom"
           startOffset={0.3}
-          blurType={t.dark ? 'dark' : 'light'}
+          blurType="regular"
           blurAmount={30}
           reducedTransparencyFallbackColor={t.colors.surface}
           style={styles.header}

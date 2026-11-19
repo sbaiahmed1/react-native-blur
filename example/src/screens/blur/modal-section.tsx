@@ -62,7 +62,7 @@ export function ModalSection() {
       {open ? (
         <Overlay onClose={close}>
           <BlurView
-            blurType={t.dark ? 'systemMaterialDark' : 'systemMaterialLight'}
+            blurType="systemMaterial"
             blurAmount={30}
             reducedTransparencyFallbackColor={t.colors.grouped}
             style={styles.fill}
