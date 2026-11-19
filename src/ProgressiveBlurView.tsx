@@ -163,7 +163,13 @@ const ProgressiveBlurViewComponent = forwardRef<
       [material]
     );
 
-    // If no children, render the blur view directly (for background use)
+    // The overlay draws above the blur material and below the children.
+    const overlayView =
+      overlayColor != null ? (
+        <View style={[StyleSheet.absoluteFill, styles.passThrough, overlay]} />
+      ) : null;
+
+    // Without children the blur view is the root, and its native children draw above the blur.
     if (!Children.count(children)) {
       return (
         <ReactNativeProgressiveBlurView
@@ -175,9 +181,11 @@ const ProgressiveBlurViewComponent = forwardRef<
           startOffset={startOffset}
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
           {...materialProps}
-          style={[style, overlay]}
+          style={style}
           {...props}
-        />
+        >
+          {overlayView}
+        </ReactNativeProgressiveBlurView>
       );
     }
 
@@ -197,9 +205,10 @@ const ProgressiveBlurViewComponent = forwardRef<
           startOffset={startOffset}
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
           {...materialProps}
-          style={[styles.container, style, overlay]}
+          style={[styles.container, style]}
           {...props}
         >
+          {overlayView}
           {children}
         </ReactNativeProgressiveBlurView>
       );
@@ -207,7 +216,7 @@ const ProgressiveBlurViewComponent = forwardRef<
 
     // If children exist, use the absolute positioning pattern
     return (
-      <View style={[styles.container, style, overlay]}>
+      <View style={[styles.container, style]}>
         {/* Blur effect positioned absolutely behind content */}
         <ReactNativeProgressiveBlurView
           ref={ref}
@@ -221,7 +230,7 @@ const ProgressiveBlurViewComponent = forwardRef<
           style={StyleSheet.absoluteFill}
           {...props}
         />
-
+        {overlayView}
         {children}
       </View>
     );
@@ -240,5 +249,8 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
     overflow: 'hidden',
+  },
+  passThrough: {
+    pointerEvents: 'none',
   },
 });

@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import TestRenderer, { act } from 'react-test-renderer';
-import { Platform, View, type ColorValue } from 'react-native';
+import { Platform, StyleSheet, View, type ColorValue } from 'react-native';
 
 import * as PublicApi from '../index';
 import ReactNativeBlurView from '../ReactNativeBlurViewNativeComponent';
@@ -270,6 +270,108 @@ describe('material props', () => {
         tokenProps('systemMaterial', 'dark'),
         tokenProps('systemMaterialLight', 'light'),
       ]);
+      act(() => tree.unmount());
+    });
+  });
+});
+
+describe('overlayColor', () => {
+  const OVERLAY = '#FF000080';
+
+  const isOverlay = (node: TestRenderer.ReactTestInstance) =>
+    node.type === View &&
+    StyleSheet.flatten(node.props.style)?.backgroundColor === OVERLAY;
+
+  describe.each([
+    ['BlurView', BlurView, ReactNativeBlurView],
+    [
+      'ProgressiveBlurView',
+      ProgressiveBlurView,
+      ReactNativeProgressiveBlurView,
+    ],
+  ] as const)('%s', (_name, Wrapper, Native) => {
+    const drawOrder = (
+      os: 'ios' | 'android',
+      children: ReactElement | null
+    ) => {
+      const replaced = jest.replaceProperty(Platform, 'OS', os);
+      try {
+        const tree = render(
+          <Wrapper overlayColor={OVERLAY}>{children}</Wrapper>
+        );
+        const nodes = tree.root.findAll(
+          (node) =>
+            node.type === Native ||
+            isOverlay(node) ||
+            node.props.testID === 'child',
+          { deep: true }
+        );
+        const order = nodes.map((node) =>
+          node.type === Native
+            ? 'blur'
+            : node.props.testID === 'child'
+              ? 'child'
+              : 'overlay'
+        );
+        const native = tree.root.findByType(Native);
+        const nativeBackground = StyleSheet.flatten(
+          native.props.style
+        )?.backgroundColor;
+        act(() => tree.unmount());
+        return { order: [...new Set(order)], nativeBackground };
+      } finally {
+        replaced.restore();
+      }
+    };
+
+    it.each(['ios', 'android'] as const)(
+      'draws overlayColor above the blur with no children on %s',
+      (os) => {
+        expect(drawOrder(os, null)).toEqual({
+          order: ['blur', 'overlay'],
+          nativeBackground: undefined,
+        });
+      }
+    );
+
+    it.each(['ios', 'android'] as const)(
+      'draws overlayColor above the blur with children on %s',
+      (os) => {
+        expect(drawOrder(os, <View testID="child" />)).toEqual({
+          order: ['blur', 'overlay', 'child'],
+          nativeBackground: undefined,
+        });
+      }
+    );
+
+    it.each(['ios', 'android'] as const)(
+      'keeps style and props on the native view that holds the overlay with no children on %s',
+      (os) => {
+        const replaced = jest.replaceProperty(Platform, 'OS', os);
+        try {
+          const tree = render(
+            <Wrapper
+              overlayColor={OVERLAY}
+              pointerEvents="none"
+              style={{ height: 40 }}
+            />
+          );
+          const native = tree.root.findByType(Native);
+          expect(StyleSheet.flatten(native.props.style)).toMatchObject({
+            height: 40,
+          });
+          expect(native.props.pointerEvents).toBe('none');
+          expect(native.findAll(isOverlay)).toHaveLength(1);
+          act(() => tree.unmount());
+        } finally {
+          replaced.restore();
+        }
+      }
+    );
+
+    it('adds no overlay without overlayColor', () => {
+      const tree = render(<Wrapper />);
+      expect(tree.root.findAll(isOverlay)).toHaveLength(0);
       act(() => tree.unmount());
     });
   });
