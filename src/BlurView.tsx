@@ -32,6 +32,19 @@ export interface BlurViewProps extends ViewProps {
   blurRounds?: number;
 
   /**
+   * @description How much QmBlurView scales the captured backdrop down before
+   * blurring it (1-16). Lower values keep edges behind the blur from stepping
+   * at a higher CPU and memory cost, which grows with the square of the
+   * reduction (2 captures 16x the pixels of 8). Applies on Android 11 and
+   * earlier. Android 12 and later blur on the GPU and ignore it.
+   *
+   * @default 8
+   *
+   * @platform Android
+   */
+  downsampleFactor?: number;
+
+  /**
    * @description Fallback color when reduced transparency is enabled
    *
    * @default '#FFFFFF'
@@ -102,6 +115,7 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
       blurType = 'xlight',
       blurAmount = 10,
       blurRounds = 5,
+      downsampleFactor = 8,
       reducedTransparencyFallbackColor = '#FFFFFF',
       overlayColor,
       style,
@@ -120,6 +134,7 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
         blurType,
         blurAmount,
         blurRounds,
+        downsampleFactor,
         ignoreSafeArea,
         reducedTransparencyFallbackColor,
       }),
@@ -127,6 +142,7 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
         blurType,
         blurAmount,
         blurRounds,
+        downsampleFactor,
         ignoreSafeArea,
         reducedTransparencyFallbackColor,
       ]

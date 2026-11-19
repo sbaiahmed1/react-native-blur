@@ -22,8 +22,8 @@ export type BlurViewRef = React.ComponentRef<typeof View>;
  * native positioning pattern. In browsers without backdrop-filter support (and
  * during server-side rendering) only the tint remains.
  *
- * `blurRounds`, `reducedTransparencyFallbackColor` and `ignoreSafeArea` are
- * native-only and accepted for API compatibility.
+ * `blurRounds`, `downsampleFactor`, `reducedTransparencyFallbackColor` and
+ * `ignoreSafeArea` are native-only and accepted for API compatibility.
  */
 const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
   (
@@ -35,6 +35,7 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
       children,
       // Native-only props, accepted for API compatibility
       blurRounds: _blurRounds,
+      downsampleFactor: _downsampleFactor,
       reducedTransparencyFallbackColor: _reducedTransparencyFallbackColor,
       ignoreSafeArea: _ignoreSafeArea,
       ...props

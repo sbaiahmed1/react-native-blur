@@ -28,7 +28,7 @@ export type ProgressiveBlurViewRef = React.ComponentRef<typeof View>;
  * children render above everything, sharp.
  *
  * Without backdrop-filter support (old browsers, server-side rendering) only
- * the tint gradient remains. `blurRounds` and
+ * the tint gradient remains. `blurRounds`, `downsampleFactor` and
  * `reducedTransparencyFallbackColor` are native-only and accepted for API
  * compatibility.
  */
@@ -47,6 +47,7 @@ const ProgressiveBlurViewComponent = forwardRef<
       children,
       // Native-only props, accepted for API compatibility
       blurRounds: _blurRounds,
+      downsampleFactor: _downsampleFactor,
       reducedTransparencyFallbackColor: _reducedTransparencyFallbackColor,
       ...props
     },

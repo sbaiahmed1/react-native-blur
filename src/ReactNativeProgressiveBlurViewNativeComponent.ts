@@ -36,6 +36,7 @@ export interface NativeProps extends ViewProps {
   blurAmount?: CodegenTypes.WithDefault<CodegenTypes.Double, 20.0>;
   blurType?: CodegenTypes.WithDefault<BlurType, 'regular'>;
   blurRounds?: CodegenTypes.WithDefault<CodegenTypes.Int32, 5>;
+  downsampleFactor?: CodegenTypes.WithDefault<CodegenTypes.Double, 8.0>;
   direction?: CodegenTypes.WithDefault<
     ProgressiveBlurDirection,
     'blurredTopClearBottom'

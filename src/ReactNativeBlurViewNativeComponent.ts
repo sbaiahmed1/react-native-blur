@@ -28,6 +28,7 @@ export interface NativeProps extends ViewProps {
   blurAmount?: CodegenTypes.WithDefault<CodegenTypes.Double, 10.0>;
   blurType?: CodegenTypes.WithDefault<BlurType, 'xlight'>;
   blurRounds?: CodegenTypes.WithDefault<CodegenTypes.Int32, 5>;
+  downsampleFactor?: CodegenTypes.WithDefault<CodegenTypes.Double, 8.0>;
   reducedTransparencyFallbackColor?: ColorValue;
   ignoreSafeArea?: CodegenTypes.WithDefault<boolean, true>;
 }

@@ -5,6 +5,7 @@ interface BlurViewProps {
   fun setBlurAmount(amount: Float)
   fun setBlurType(type: String)
   fun setRounds(rounds: Int)
+  fun setDownsample(factor: Float)
   fun setBorderRadius(radius: Float)
   fun setBorderTopLeftRadius(radius: Float)
   fun setBorderTopRightRadius(radius: Float)
