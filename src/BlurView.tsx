@@ -10,14 +10,18 @@ import { useMaterialScheme } from './useMaterialScheme';
 
 export interface BlurViewProps extends ViewProps {
   /**
-   * @description The type of blur effect to apply
+   * @description The material to draw: the blur, saturation and tint of the
+   * iOS blur style of the same name. `regular`, `prominent` and the
+   * `system*Material` types without a `Light` or `Dark` suffix follow the
+   * color scheme.
    *
    * @default 'xlight'
    */
   blurType?: BlurType;
 
   /**
-   * @description The intensity of the blur effect (0-100)
+   * @description How much of the `blurType` material to draw, from 0 for
+   * none to 100 for the whole material.
    *
    * @default 10
    */
