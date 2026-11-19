@@ -15,9 +15,9 @@ import { progressiveBlurDirectionValues } from '../props-data/enums';
 - **iOS**: private Core Animation filters for true variable blur.
 - **iOS accessibility**: Reduce Transparency switches to `reducedTransparencyFallbackColor` immediately, including changes while mounted. Turning it off restores the configured blur without changing the children.
 - **Android**: Android 12 and later ramp the blur radius on the GPU. Android 11 and earlier use QmBlurView's `BlurView`, which fades one blur out with a gradient mask.
-- **Web**: stacks several CSS `backdrop-filter` layers with gradient masks, halving the radius per layer — a genuine blur-radius ramp (from `blurAmount` px down to sharp), not a single blur fading in opacity.
+- **Web**: CSS `backdrop-filter` layers with gradient masks, each at half the radius of the one before. Together they ramp the blur radius down to sharp.
 
-On web, `blurAmount` is the maximum radius in px, and browsers without `backdrop-filter` fall back to the directional tint gradient alone. Since 6.0, `startOffset` means the same thing on every platform. See [Platform differences](#platform-differences) for how the fade is constructed per backend.
+On web, browsers without `backdrop-filter` show the tint alone. Since 6.0, `startOffset` means the same thing on every platform. See [Platform differences](#platform-differences) for how each platform builds the fade.
 
 ## Basic usage
 
@@ -37,6 +37,10 @@ import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
 
 <DemoVideo src="progressive-blur-ios.mp4" caption="ProgressiveBlurView on iOS" />
 <DemoVideo src="progressive-blur-android.mp4" caption="ProgressiveBlurView on Android" />
+
+## Tint
+
+`ProgressiveBlurView` draws the tint of its `blurType` over the blur on every platform. The tint is at full strength where the blur is strongest and fades out with the blur, so the clear part of the view has no tint. `regular`, `prominent` and the `system*Material` types without a `Light` or `Dark` suffix follow Dark Mode. Unlike `BlurView`, a progressive view doesn't raise the saturation of the content behind it. To draw a color over the whole view, use `overlayColor`.
 
 ## Center blur
 
@@ -97,7 +101,7 @@ import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
 
 The three backends aim for the same look but get there differently:
 
-- **Blur ramp.** iOS and Web ramp the blur *radius* from `blurAmount` down to 0 across the gradient. Android 12 and later ramp the radius along the same curve and blur as strongly as iOS at the same `blurAmount`. Android 11 and earlier render one fixed-radius blur and ramp its *opacity*, so the same `blurAmount` gives a lighter blur there at most amounts. On those versions the center direction also blurs at about a third of `blurAmount`.
+- **Blur ramp.** iOS, Android 12 and later, and web ramp the blur *radius* from its strongest at the blurred edge down to 0. They blur about as strongly at the same `blurAmount` up to 48. Past 48, the strongest blur on Android and web stays where it is at 48. Android 11 and earlier render one fixed-radius blur and ramp its *opacity*, so the same `blurAmount` gives a lighter blur there at most amounts. On those versions the center direction also blurs at about a third of `blurAmount`.
 - **`startOffset`** means the same thing on every platform. For the edge directions it grows a fully blurred plateau from the blurred edge: `0.4` means the nearest 40% of the view is uniformly blurred and the fade spans the remaining 60%. For the center direction it insets the fade start from the edges (clamped to 0.3), which shortens the blur body, so `0` gives the longest body. For the top and bottom direction it sets the fully blurred band at each edge (clamped to 0.3).
 
 <div class="glass-panel-subtle my-6 rounded-xl border border-amber-400/30 p-4 text-sm text-white/80">
