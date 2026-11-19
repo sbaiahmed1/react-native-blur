@@ -75,7 +75,7 @@ jobs:
             failed=1
           fi
 
-          if ! printf '%s\n' "$PR_BODY" | grep -qiE '^\s*- \[x\] (iOS|Android|Web|None)'; then
+          if ! printf '%s\n' "$PR_BODY" | grep -qiE '^\s*- \[x\] (iOS|Android|Web|None)([^[:alnum:]_]|$)'; then
             echo "::error::Tick at least one box under Platforms (iOS, Android, Web or None)."
             failed=1
           fi
