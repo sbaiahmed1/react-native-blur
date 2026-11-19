@@ -1,8 +1,10 @@
 import React, { forwardRef, memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { BlurViewProps } from './BlurView';
+import { materialFor } from './materials';
+import { useMaterialScheme } from './useMaterialScheme.web';
 import {
-  getBlurLayerStyle,
+  blurLayerStyle,
   useBackdropFilterSupport,
   useCornerRadii,
 } from './webBlurUtils';
@@ -16,9 +18,9 @@ export type BlurViewRef = React.ComponentRef<typeof View>;
  * Web implementation of BlurView using CSS `backdrop-filter`.
  *
  * Renders a container with an absolutely-filled layer carrying a
- * `backdrop-filter: blur() saturate()` plus a semi-transparent background tint
- * derived from `blurType`, approximating the native UIVisualEffectView /
- * QmBlurView look. Children render above the blur, sharp, exactly like the
+ * `backdrop-filter: blur() saturate()` plus a semi-transparent background tint:
+ * the iOS material of `blurType`, at the fraction of it `blurAmount` asks
+ * for. Children render above the blur, sharp, exactly like the
  * native positioning pattern. In browsers without backdrop-filter support (and
  * during server-side rendering) only the tint remains.
  *
@@ -43,15 +45,16 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
   ) => {
     const hasBackdropFilter = useBackdropFilterSupport();
     const radii = useCornerRadii(style);
+    const material = materialFor(blurType, useMaterialScheme());
 
-    const blurLayerStyle = useMemo(
+    const blurStyle = useMemo(
       () => [
         StyleSheet.absoluteFill,
         styles.layer,
-        getBlurLayerStyle(blurType, blurAmount, hasBackdropFilter),
+        blurLayerStyle(material, blurAmount, hasBackdropFilter),
         radii,
       ],
-      [blurType, blurAmount, hasBackdropFilter, radii]
+      [material, blurAmount, hasBackdropFilter, radii]
     );
     const overlayLayerStyle = useMemo(
       () => [
@@ -67,7 +70,7 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
       <View ref={ref} style={[styles.container, style]} {...props}>
         {/* Blur positioned absolutely behind content, tint above it, children
             on top — sibling paint order handles the stacking. */}
-        <View style={blurLayerStyle} />
+        <View style={blurStyle} />
         {overlayColor != null && <View style={overlayLayerStyle} />}
         {children}
       </View>
