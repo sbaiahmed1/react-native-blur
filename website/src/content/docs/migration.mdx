@@ -18,6 +18,10 @@ On Android and web, `BlurView` now draws each `blurType` with the blur, saturati
 
 If you set a different `blurAmount` on Android or web to match iOS, use the iOS value.
 
+## Overlay color above the blur
+
+`overlayColor` now draws above the blur and below the children on every platform, for `BlurView` and `ProgressiveBlurView`. On iOS it drew under the blur, so the same color now reads stronger there. On Android, a `BlurView` without children now shows its `overlayColor`. If you raised the alpha of `overlayColor` to make it show on iOS, lower it again.
+
 ## Controlled Android switches
 
 `BlurSwitch` now restores the supplied `value` when a native toggle is not accepted by the parent, matching React Native's built-in `Switch` on iOS and web. Android apps that previously relied on toggles changing the UI without updating `value` must now store the value and update it in `onValueChange`. Omitting `value` keeps the switch off.
