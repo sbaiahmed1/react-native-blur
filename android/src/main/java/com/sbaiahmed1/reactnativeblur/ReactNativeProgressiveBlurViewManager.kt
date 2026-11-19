@@ -72,15 +72,15 @@ class ReactNativeProgressiveBlurViewManager : ViewGroupManager<ViewGroup>(),
   }
 
   override fun setMaterialTint(view: ViewGroup?, materialTint: Int?) {
-    // no-op
+    (view as? BlurViewProps)?.setMaterialTint(materialTint)
   }
 
   override fun setMaterialSaturation(view: ViewGroup?, materialSaturation: Double) {
-    // no-op
+    (view as? BlurViewProps)?.setMaterialSaturation(materialSaturation.toFloat())
   }
 
   override fun setMaterialRadius(view: ViewGroup?, materialRadius: Double) {
-    // no-op
+    (view as? BlurViewProps)?.setMaterialRadius(materialRadius.toFloat())
   }
 
   // Border radii come from the style (BaseViewManager setters, not the codegen
