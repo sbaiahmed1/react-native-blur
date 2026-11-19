@@ -13,6 +13,9 @@ internal class ValueChangeEvent(surfaceId: Int, viewId: Int, private val value: 
   override fun getEventData(): WritableMap =
     Arguments.createMap().apply { putBoolean("value", value) }
 
+  // Every change must reach JS. Coalescing would replace an earlier change with a later one.
+  override fun canCoalesce(): Boolean = false
+
   companion object {
     const val EVENT_NAME = "topValueChange"
   }
