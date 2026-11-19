@@ -30,6 +30,15 @@ export const PROGRESSIVE_LAYER_COUNT = 5;
  */
 export const PROGRESSIVE_RADIUS_COMPENSATION = 0.87;
 
+/** Gaussian sigma in px at the plateau per unit of `blurAmount`, as iOS and Android draw it. */
+export const PROGRESSIVE_SIGMA_PER_AMOUNT = 2;
+
+/** The plateau sigma in px stops growing here (amount 48), as on Android. */
+export const PROGRESSIVE_CAP = 96;
+
+/** Stops per fade of the progressive tint, whose alpha follows the t^3 curve of the iOS blur mask. */
+const TINT_STOPS = 9;
+
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), max);
 
@@ -186,8 +195,8 @@ const maskForLayer = (
  * blur ramp from `blurAmount` px at the blurred edge down to 0 at the clear
  * edge — a true radius ramp rather than a single blur fading in opacity.
  *
- * `blurAmount` is the maximum radius in px (matching the native components,
- * where it is a pixel radius, unlike BlurView's 0-100 scale).
+ * `blurAmount` sets the plateau blur as on iOS: `PROGRESSIVE_SIGMA_PER_AMOUNT`
+ * px of sigma per unit, capped at `PROGRESSIVE_CAP` px.
  */
 export function getProgressiveLayers(
   direction: ProgressiveBlurDirection,
@@ -195,7 +204,12 @@ export function getProgressiveLayers(
   blurAmount: number
 ): ProgressiveLayer[] {
   const s = clamp(startOffset, 0, 1);
-  const maxRadius = Math.max(blurAmount, 0) * PROGRESSIVE_RADIUS_COMPENSATION;
+  const sigma = clamp(
+    PROGRESSIVE_SIGMA_PER_AMOUNT * blurAmount,
+    0,
+    PROGRESSIVE_CAP
+  );
+  const maxRadius = sigma * PROGRESSIVE_RADIUS_COMPENSATION;
   const layers: ProgressiveLayer[] = [];
   for (let layer = 1; layer <= PROGRESSIVE_LAYER_COUNT; layer++) {
     layers.push({
@@ -207,9 +221,10 @@ export function getProgressiveLayers(
 }
 
 /**
- * Gradient for the tint layer of a progressive blur: the blurType tint at full
- * strength over the blurred plateau, fading to transparent at the clear edge,
- * following the same direction as the blur ramp.
+ * Gradient for the tint layer of a progressive blur: the token `tint`
+ * (`#RRGGBBAA`) at full strength over the blurred plateau, its alpha falling
+ * as (1 - u)^3 across each fade, the t^3 curve of the iOS blur mask read from
+ * the blurred side.
  */
 export function getProgressiveTintGradient(
   direction: ProgressiveBlurDirection,
@@ -217,27 +232,30 @@ export function getProgressiveTintGradient(
   tint: string
 ): string {
   const s = clamp(startOffset, 0, 1);
+  // One fade from `from` (u = 0) to `to` (u = 1), with the alpha rising when `rising`.
+  const fade = (from: number, to: number, rising: boolean): string[] =>
+    Array.from({ length: TINT_STOPS }, (_, i) => {
+      const u = i / (TINT_STOPS - 1);
+      const t = rising ? u : 1 - u;
+      return `${tintRgba(tint, t * t * t)} ${pct(from + (to - from) * u)}`;
+    });
 
-  if (direction === 'blurredCenterClearTopAndBottom') {
-    // Follows the blur body: clear over the edge insets, full tint over the
-    // center plateau (same geometry as the center mask above).
+  if (
+    direction === 'blurredCenterClearTopAndBottom' ||
+    direction === 'blurredTopAndBottomClearCenter'
+  ) {
+    // Same geometry as the center masks: a 20% fade after an inset of `startOffset` (clamped to 0.3) at each edge.
+    const center = direction === 'blurredCenterClearTopAndBottom';
     const inset = Math.min(s, 0.3) * 100;
-    return (
-      `linear-gradient(to bottom, transparent ${pct(inset)}, ${tint} ${pct(inset + 20)}, ` +
-      `${tint} ${pct(80 - inset)}, transparent ${pct(100 - inset)})`
-    );
+    const stops = [
+      ...fade(inset, inset + 20, center),
+      ...fade(80 - inset, 100 - inset, !center),
+    ];
+    return `linear-gradient(to bottom, ${stops.join(', ')})`;
   }
 
-  if (direction === 'blurredTopAndBottomClearCenter') {
-    const inset = Math.min(s, 0.3) * 100;
-    return (
-      `linear-gradient(to bottom, ${tint} ${pct(inset)}, transparent ${pct(inset + 20)}, ` +
-      `transparent ${pct(80 - inset)}, ${tint} ${pct(100 - inset)})`
-    );
-  }
-
-  const axis = axisFor(direction);
-  return `linear-gradient(${axis}, ${tint} 0%, ${tint} ${pct(s * 100)}, transparent 100%)`;
+  const stops = fade(s * 100, 100, false);
+  return `linear-gradient(${axisFor(direction)}, ${stops.join(', ')})`;
 }
 
 const CORNER_RADIUS_KEYS = [

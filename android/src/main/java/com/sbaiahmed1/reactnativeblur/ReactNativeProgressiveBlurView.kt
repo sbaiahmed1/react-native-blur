@@ -58,6 +58,7 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
   private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
   private var currentOverlayColor = Color.TRANSPARENT
   private var currentBlurType = "xlight"
+  private var materialTint: Int? = null
   private var currentDirection = "topToBottom"
   private var currentStartOffset = 0.0f
   private var isBlurInitialized: Boolean = false
@@ -664,15 +665,19 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
     }
   }
 
+  override fun setMaterialTint(color: Int?) {
+    materialTint = color
+    applyOverlayColor()
+  }
+
+  // A progressive blur draws no saturation and keeps blurAmount as its radius, as on iOS.
+  override fun setMaterialSaturation(saturation: Float) = Unit
+  override fun setMaterialRadius(radiusDp: Float) = Unit
+
   /**
    * Set the number of blur rounds.
    * @param rounds The number of blur rounds (1-15)
    */
-  // The progressive tint does not read the material yet.
-  override fun setMaterialTint(color: Int?) = Unit
-  override fun setMaterialSaturation(saturation: Float) = Unit
-  override fun setMaterialRadius(radiusDp: Float) = Unit
-
   override fun setRounds(rounds: Int) {
     val blurRounds = rounds.coerceIn(1, 15)
     currentBlurRounds = blurRounds
@@ -736,9 +741,12 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
    */
   override fun setBlurType(type: String) {
     currentBlurType = type
-    val blurType = BlurType.fromString(type)
-    currentOverlayColor = blurType.overlayColor
-    logDebug("setBlurType: $type -> ${blurType.name} -> ${Integer.toHexString(currentOverlayColor)}")
+    applyOverlayColor()
+  }
+
+  private fun applyOverlayColor() {
+    currentOverlayColor = ProgressiveMask.tintColor(materialTint, currentBlurType)
+    logDebug("overlay: $currentBlurType -> ${Integer.toHexString(currentOverlayColor)}")
 
     try {
       blurView?.setOverlayColor(currentOverlayColor)

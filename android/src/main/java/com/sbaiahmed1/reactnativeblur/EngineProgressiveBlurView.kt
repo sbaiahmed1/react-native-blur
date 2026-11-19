@@ -15,6 +15,8 @@ internal class EngineProgressiveBlurView(context: Context) : BackdropHostView(co
   private var blurAmount = BlurRadius.DEFAULT_AMOUNT
   private var direction = "topToBottom"
   private var startOffset = 0f
+  private var blurType = "regular"
+  private var materialTint: Int? = null
   private var overlayColor = Color.TRANSPARENT
   private val overlayPaint = Paint()
 
@@ -52,8 +54,9 @@ internal class EngineProgressiveBlurView(context: Context) : BackdropHostView(co
   }
 
   private fun updateMask() {
+    overlayColor = ProgressiveMask.tintColor(materialTint, blurType)
     if (width <= 0 || height <= 0) return
-    val spec = ProgressiveMask.spec(direction, startOffset, width.toFloat(), height.toFloat())
+    val spec = ProgressiveMask.tintSpec(direction, startOffset, width.toFloat(), height.toFloat())
     overlayPaint.shader = gradient(spec, overlayColor)
     invalidate()
   }
@@ -69,15 +72,19 @@ internal class EngineProgressiveBlurView(context: Context) : BackdropHostView(co
   }
 
   override fun setBlurType(type: String) {
-    overlayColor = BlurType.fromString(type).overlayColor
+    blurType = type
     updateMask()
   }
 
   // QmBlurView's box blur passes have no meaning for a Gaussian blur.
   override fun setRounds(rounds: Int) = Unit
 
-  // The progressive tint does not read the material yet.
-  override fun setMaterialTint(color: Int?) = Unit
+  override fun setMaterialTint(color: Int?) {
+    materialTint = color
+    updateMask()
+  }
+
+  // A progressive blur draws no saturation and keeps blurAmount as its radius, as on iOS.
   override fun setMaterialSaturation(saturation: Float) = Unit
   override fun setMaterialRadius(radiusDp: Float) = Unit
 
