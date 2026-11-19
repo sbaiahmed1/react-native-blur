@@ -39,7 +39,7 @@ export const blurViewProps: PropRow[] = [
     name: 'overlayColor',
     type: 'ColorValue',
     default: 'undefined',
-    description: 'An overlay color to apply on top of the blur effect.',
+    description: 'Sets a color drawn over the whole view, above the blur and below the children.',
   },
   { name: 'style', type: 'StyleProp<ViewStyle>', default: 'undefined', description: 'Style object for the blur view.' },
   { name: 'children', type: 'React.ReactNode', default: 'undefined', description: 'Child components to render inside the blur view.' },
