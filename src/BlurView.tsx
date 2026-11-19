@@ -3,7 +3,10 @@ import { Platform, StyleSheet, View } from 'react-native';
 import type { ViewStyle, StyleProp, ColorValue, ViewProps } from 'react-native';
 import ReactNativeBlurView, {
   type BlurType,
+  type NativeProps,
 } from './ReactNativeBlurViewNativeComponent';
+import { materialFor } from './materials';
+import { useMaterialScheme } from './useMaterialScheme';
 
 export interface BlurViewProps extends ViewProps {
   /**
@@ -115,13 +118,17 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
       () => ({ backgroundColor: overlayColor }),
       [overlayColor]
     );
-    const commonProps = useMemo<BlurViewProps>(
+    const material = materialFor(blurType, useMaterialScheme());
+    const commonProps = useMemo<NativeProps>(
       () => ({
         blurType,
         blurAmount,
         blurRounds,
         ignoreSafeArea,
         reducedTransparencyFallbackColor,
+        materialTint: material.tint,
+        materialSaturation: material.saturation,
+        materialRadius: material.radius,
       }),
       [
         blurType,
@@ -129,6 +136,7 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
         blurRounds,
         ignoreSafeArea,
         reducedTransparencyFallbackColor,
+        material,
       ]
     );
 

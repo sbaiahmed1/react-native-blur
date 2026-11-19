@@ -71,6 +71,18 @@ class ReactNativeProgressiveBlurViewManager : ViewGroupManager<ViewGroup>(),
     // no-op
   }
 
+  override fun setMaterialTint(view: ViewGroup?, materialTint: Int?) {
+    // no-op
+  }
+
+  override fun setMaterialSaturation(view: ViewGroup?, materialSaturation: Double) {
+    // no-op
+  }
+
+  override fun setMaterialRadius(view: ViewGroup?, materialRadius: Double) {
+    // no-op
+  }
+
   // Border radii come from the style (BaseViewManager setters, not the codegen
   // spec). With children mounted inside the native view on Android, the view
   // must clip itself — the JS container that used to apply overflow: hidden

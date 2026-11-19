@@ -42,6 +42,10 @@ export interface NativeProps extends ViewProps {
   >;
   startOffset?: CodegenTypes.WithDefault<CodegenTypes.Double, 0.0>;
   reducedTransparencyFallbackColor?: ColorValue;
+  // The blurType material at full strength, filled by the wrapper. A negative radius means unset.
+  materialTint?: ColorValue;
+  materialSaturation?: CodegenTypes.WithDefault<CodegenTypes.Double, -1>;
+  materialRadius?: CodegenTypes.WithDefault<CodegenTypes.Double, -1>;
 }
 
 export default codegenNativeComponent<NativeProps>(
