@@ -72,12 +72,9 @@ export function useBackdropFilterSupport(): boolean {
   );
 }
 
-// The fraction a blurAmount that is not a number draws, the default amount of 10.
-const INVALID_AMOUNT_FRACTION = 0.1;
-
-/** The fraction of the material a BlurView `blurAmount` draws, as iOS reads it: 0-100 maps to 0-1. */
+/** The fraction of the material a BlurView `blurAmount` draws, as iOS reads it: 0-100 maps to 0-1, NaN to 1. */
 export function materialFraction(amount: number): number {
-  if (!Number.isFinite(amount)) return INVALID_AMOUNT_FRACTION;
+  if (Number.isNaN(amount)) return 1;
   return clamp(amount, 0, 100) / 100;
 }
 

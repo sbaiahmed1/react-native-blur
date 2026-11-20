@@ -17,12 +17,12 @@ describe('supportsBackdropFilter', () => {
 });
 
 describe('materialFraction', () => {
-  it('fraction clamps edge amounts', () => {
+  it('fraction clamps edge amounts as iOS does', () => {
     expect(materialFraction(0)).toBe(0);
     expect(materialFraction(-5)).toBe(0);
-    expect(materialFraction(Number.NaN)).toBe(0.1);
-    expect(materialFraction(Number.POSITIVE_INFINITY)).toBe(0.1);
-    expect(materialFraction(Number.NEGATIVE_INFINITY)).toBe(0.1);
+    expect(materialFraction(Number.NaN)).toBe(1);
+    expect(materialFraction(Number.POSITIVE_INFINITY)).toBe(1);
+    expect(materialFraction(Number.NEGATIVE_INFINITY)).toBe(0);
     expect(materialFraction(250)).toBe(1);
     expect(materialFraction(50)).toBe(0.5);
   });
