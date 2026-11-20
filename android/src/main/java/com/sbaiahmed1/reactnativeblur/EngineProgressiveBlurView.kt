@@ -54,7 +54,7 @@ internal class EngineProgressiveBlurView(context: Context) : BackdropHostView(co
   }
 
   private fun updateMask() {
-    overlayColor = ProgressiveMask.tintColor(materialTint, blurType)
+    overlayColor = ProgressiveMask.tintColor(materialTint, blurType, blurAmount)
     if (width <= 0 || height <= 0) return
     val spec = ProgressiveMask.tintSpec(direction, startOffset, width.toFloat(), height.toFloat())
     overlayPaint.shader = gradient(spec, overlayColor)
@@ -69,6 +69,7 @@ internal class EngineProgressiveBlurView(context: Context) : BackdropHostView(co
   override fun setBlurAmount(amount: Float) {
     blurAmount = amount
     markEffectDirty()
+    updateMask()
   }
 
   override fun setBlurType(type: String) {

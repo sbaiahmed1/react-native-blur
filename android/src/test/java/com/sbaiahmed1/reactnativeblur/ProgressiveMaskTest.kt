@@ -108,8 +108,18 @@ class ProgressiveMaskTest {
   }
 
   @Test fun tintPrefersTheMaterial() {
-    assertEquals(0x4DFFFFFF, ProgressiveMask.tintColor(0x4DFFFFFF, "dark"))
-    assertEquals(BlurType.fromString("dark").overlayColor, ProgressiveMask.tintColor(null, "dark"))
+    assertEquals(0x4DFFFFFF, ProgressiveMask.tintColor(0x4DFFFFFF, "dark", 20f))
+    assertEquals(BlurType.fromString("dark").overlayColor, ProgressiveMask.tintColor(null, "dark", 20f))
+  }
+
+  @Test fun tintFadesInOverTheFirstTenUnits() {
+    val tint = 0xCCFFFFFF.toInt()
+    assertEquals(0x00FFFFFF, ProgressiveMask.tintColor(tint, "dark", 0f))
+    assertEquals(0x00FFFFFF, ProgressiveMask.tintColor(tint, "dark", -5f))
+    assertEquals(0x66FFFFFF, ProgressiveMask.tintColor(tint, "dark", 5f))
+    assertEquals(tint, ProgressiveMask.tintColor(tint, "dark", 10f))
+    assertEquals(tint, ProgressiveMask.tintColor(tint, "dark", 40f))
+    assertEquals(tint, ProgressiveMask.tintColor(tint, "dark", Float.NaN))
   }
 
   @Test fun overlayColorsScaleTheAlphaByte() {

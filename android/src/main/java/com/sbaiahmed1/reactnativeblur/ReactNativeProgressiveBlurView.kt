@@ -639,6 +639,7 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
   override fun setBlurAmount(amount: Float) {
     currentBlurAmount = amount
     applyBlurRadius()
+    applyOverlayColor()
   }
 
   /**
@@ -745,7 +746,7 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
   }
 
   private fun applyOverlayColor() {
-    currentOverlayColor = ProgressiveMask.tintColor(materialTint, currentBlurType)
+    currentOverlayColor = ProgressiveMask.tintColor(materialTint, currentBlurType, currentBlurAmount)
     logDebug("overlay: $currentBlurType -> ${Integer.toHexString(currentOverlayColor)}")
 
     try {
