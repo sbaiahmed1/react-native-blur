@@ -40,7 +40,7 @@ import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
 
 ## Tint
 
-`ProgressiveBlurView` draws the tint of its `blurType` over the blur on every platform. The tint is at full strength where the blur is strongest and fades out with the blur, so the clear part of the view has no tint. `regular`, `prominent` and the `system*Material` types without a `Light` or `Dark` suffix follow Dark Mode. Unlike `BlurView`, a progressive view doesn't raise the saturation of the content behind it. To draw a color over the whole view, use `overlayColor`.
+`ProgressiveBlurView` draws the tint of its `blurType` over the blur on every platform. The tint is at full strength where the blur is strongest and fades out with the blur, so the clear part of the view has no tint. The tint fades in as `blurAmount` goes from 0 to 10, so a view at 0 draws no tint. `regular`, `prominent` and the `system*Material` types without a `Light` or `Dark` suffix follow Dark Mode. Unlike `BlurView`, a progressive view doesn't raise the saturation of the content behind it. To draw a color over the whole view, use `overlayColor`.
 
 ## Center blur
 
