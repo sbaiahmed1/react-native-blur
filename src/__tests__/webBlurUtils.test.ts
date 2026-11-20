@@ -1,23 +1,14 @@
+import { materialFor } from '../materials';
 import {
-  BLUR_TYPE_TO_BACKGROUND,
   PROGRESSIVE_LAYER_COUNT,
   PROGRESSIVE_RADIUS_COMPENSATION,
-  WEB_BLUR_RADIUS_SCALE,
-  getBlurLayerStyle,
+  blurLayerStyle,
   getProgressiveLayers,
   getProgressiveTintGradient,
+  materialFraction,
   supportsBackdropFilter,
+  tintRgba,
 } from '../webBlurUtils';
-
-describe('BLUR_TYPE_TO_BACKGROUND', () => {
-  it('covers all 21 blur types with rgba colours', () => {
-    const entries = Object.entries(BLUR_TYPE_TO_BACKGROUND);
-    expect(entries).toHaveLength(21);
-    for (const [, colour] of entries) {
-      expect(colour).toMatch(/^rgba\(\d+, \d+, \d+, 0?\.\d+\)$/);
-    }
-  });
-});
 
 describe('supportsBackdropFilter', () => {
   it('reports false in a CSS-less environment (Node / SSR)', () => {
@@ -25,35 +16,66 @@ describe('supportsBackdropFilter', () => {
   });
 });
 
-describe('getBlurLayerStyle', () => {
-  it('degrades to a tint-only style without backdrop-filter support', () => {
-    const style = getBlurLayerStyle('dark', 40);
-    expect(style).toEqual({ backgroundColor: 'rgba(0, 0, 0, 0.5)' });
+describe('materialFraction', () => {
+  it('fraction clamps edge amounts as iOS does', () => {
+    expect(materialFraction(0)).toBe(0);
+    expect(materialFraction(-5)).toBe(0);
+    expect(materialFraction(Number.NaN)).toBe(1);
+    expect(materialFraction(Number.POSITIVE_INFINITY)).toBe(1);
+    expect(materialFraction(Number.NEGATIVE_INFINITY)).toBe(0);
+    expect(materialFraction(250)).toBe(1);
+    expect(materialFraction(50)).toBe(0.5);
+  });
+});
+
+describe('tintRgba', () => {
+  it('scales only the alpha of a token tint', () => {
+    expect(tintRgba('#F6F7F6CC')).toBe('rgba(246, 247, 246, 0.8)');
+    expect(tintRgba('#F6F7F6CC', 0.5)).toBe('rgba(246, 247, 246, 0.4)');
+  });
+});
+
+describe('blurLayerStyle', () => {
+  const material = materialFor('systemMaterial', 'light');
+
+  it('scales the material with the amount', () => {
+    expect(blurLayerStyle(material, 50, true)).toEqual({
+      backgroundColor: 'rgba(246, 247, 246, 0.4)',
+      backdropFilter: 'blur(14.7px) saturate(1.33)',
+      WebkitBackdropFilter: 'blur(14.7px) saturate(1.33)',
+    });
+    expect(blurLayerStyle(material, 100, true).backdropFilter).toBe(
+      'blur(29.4px) saturate(1.66)'
+    );
   });
 
-  it('emits prefixed and unprefixed filters when supported', () => {
+  it('draws nothing at amount 0', () => {
+    expect(blurLayerStyle(material, 0, true)).toEqual({
+      backgroundColor: 'transparent',
+    });
+    expect(blurLayerStyle(material, -5, true)).toEqual({
+      backgroundColor: 'transparent',
+    });
+  });
+
+  it('degrades to the scaled tint without backdrop-filter support', () => {
+    expect(blurLayerStyle(materialFor('dark', 'light'), 40, false)).toEqual({
+      backgroundColor: 'rgba(28, 28, 28, 0.292)',
+    });
+  });
+
+  it('detects backdrop-filter support by default', () => {
     jest.isolateModules(() => {
-      const supports = jest.fn().mockReturnValue(true);
-      (globalThis as { CSS?: unknown }).CSS = { supports };
+      (globalThis as { CSS?: unknown }).CSS = {
+        supports: jest.fn().mockReturnValue(true),
+      };
       try {
         // Fresh module instance so the memoized support check re-runs.
         const utils =
           require('../webBlurUtils') as typeof import('../webBlurUtils');
-
-        const style = utils.getBlurLayerStyle('light', 10);
-        expect(style.backgroundColor).toBe('rgba(255, 255, 255, 0.4)');
-        expect(style.backdropFilter).toBe(
-          `blur(${10 * WEB_BLUR_RADIUS_SCALE}px) saturate(180%)`
-        );
+        const style = utils.blurLayerStyle(material, 400);
+        expect(style.backdropFilter).toBe('blur(29.4px) saturate(1.66)');
         expect(style.WebkitBackdropFilter).toBe(style.backdropFilter);
-
-        // blurAmount is clamped into 0-100 before scaling.
-        expect(utils.getBlurLayerStyle('light', 400).backdropFilter).toBe(
-          `blur(${100 * WEB_BLUR_RADIUS_SCALE}px) saturate(180%)`
-        );
-        expect(utils.getBlurLayerStyle('light', -5).backdropFilter).toBe(
-          'blur(0px) saturate(180%)'
-        );
       } finally {
         delete (globalThis as { CSS?: unknown }).CSS;
       }
