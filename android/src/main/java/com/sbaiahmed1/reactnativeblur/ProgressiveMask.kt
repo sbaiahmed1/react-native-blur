@@ -39,8 +39,16 @@ internal object ProgressiveMask {
   private val TINT_ALPHAS = FloatArray(TINT_STOPS) { TINT_POSITIONS[it] * TINT_POSITIONS[it] * TINT_POSITIONS[it] }
   private val TINT_ALPHAS_OUT = TINT_ALPHAS.reversedArray()
 
-  /** The material tint when the wrapper sent one, else the legacy color of [blurType]. */
-  fun tintColor(materialTint: Int?, blurType: String): Int = materialTint ?: BlurType.fromString(blurType).overlayColor
+  /** The blurAmount at which the tint reaches full strength, so a view at 0 draws no tint. */
+  const val TINT_FULL_AMOUNT = 10f
+
+  /** The material tint when the wrapper sent one, else the legacy color of [blurType], faded in up to [TINT_FULL_AMOUNT]. */
+  fun tintColor(materialTint: Int?, blurType: String, amount: Float): Int {
+    val color = materialTint ?: BlurType.fromString(blurType).overlayColor
+    val scale = if (amount.isNaN()) 1f else (amount / TINT_FULL_AMOUNT).coerceIn(0f, 1f)
+    val alpha = Math.round(((color ushr 24) and 0xFF) * scale)
+    return (alpha shl 24) or (color and 0xFFFFFF)
+  }
 
   /** The tint ramp on the blur's own line: alpha t^3, where t is 0 at the clear edge and 1 at the plateau. */
   fun tintSpec(direction: String, startOffset: Float, width: Float, height: Float): MaskSpec {
