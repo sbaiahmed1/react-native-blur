@@ -3,18 +3,25 @@ import { Platform, StyleSheet, View } from 'react-native';
 import type { ViewStyle, StyleProp, ColorValue, ViewProps } from 'react-native';
 import ReactNativeBlurView, {
   type BlurType,
+  type NativeProps,
 } from './ReactNativeBlurViewNativeComponent';
+import { materialFor } from './materials';
+import { useMaterialScheme } from './useMaterialScheme';
 
 export interface BlurViewProps extends ViewProps {
   /**
-   * @description The type of blur effect to apply
+   * @description The material to draw: the blur, saturation and tint of the
+   * iOS blur style of the same name. `regular`, `prominent` and the
+   * `system*Material` types without a `Light` or `Dark` suffix follow the
+   * color scheme.
    *
    * @default 'xlight'
    */
   blurType?: BlurType;
 
   /**
-   * @description The intensity of the blur effect (0-100)
+   * @description How much of the `blurType` material to draw, from 0 for
+   * none to 100 for the whole material.
    *
    * @default 10
    */
@@ -115,13 +122,17 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
       () => ({ backgroundColor: overlayColor }),
       [overlayColor]
     );
-    const commonProps = useMemo<BlurViewProps>(
+    const material = materialFor(blurType, useMaterialScheme());
+    const commonProps = useMemo<NativeProps>(
       () => ({
         blurType,
         blurAmount,
         blurRounds,
         ignoreSafeArea,
         reducedTransparencyFallbackColor,
+        materialTint: material.tint,
+        materialSaturation: material.saturation,
+        materialRadius: material.radius,
       }),
       [
         blurType,
@@ -129,22 +140,31 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
         blurRounds,
         ignoreSafeArea,
         reducedTransparencyFallbackColor,
+        material,
       ]
     );
 
-    // If no children, render the blur view directly (for background use)
+    // The overlay draws above the blur material and below the children.
+    const overlayView =
+      overlayColor != null ? (
+        <View style={[StyleSheet.absoluteFill, styles.passThrough, overlay]} />
+      ) : null;
+
+    // Without children the blur view is the root, and its native children draw above the blur.
     if (!Children.count(children)) {
       return (
         <ReactNativeBlurView
           ref={ref}
-          style={[style, overlay]}
+          style={style}
           {...commonProps}
           {...props}
-        />
+        >
+          {overlayView}
+        </ReactNativeBlurView>
       );
     }
 
-    // If children exist, use the style default for Android
+    // On Android the overlay and the children live inside the native view, which draws its blur first.
     if (Platform.OS === 'android') {
       return (
         <ReactNativeBlurView
@@ -153,23 +173,22 @@ const BlurViewComponent = forwardRef<BlurViewRef, BlurViewProps>(
           {...commonProps}
           {...props}
         >
-          <View style={[StyleSheet.absoluteFill, overlay]} />
-
+          {overlayView}
           {children}
         </ReactNativeBlurView>
       );
     }
 
-    // If children exist, use the absolute positioning pattern for iOS and others
+    // Elsewhere the blur is positioned absolutely behind the overlay and the children
     return (
-      <View style={[styles.container, style, overlay]}>
-        {/* Blur effect positioned absolutely behind content */}
+      <View style={[styles.container, style]}>
         <ReactNativeBlurView
           ref={ref}
           style={StyleSheet.absoluteFill}
           {...commonProps}
           {...props}
         />
+        {overlayView}
         {children}
       </View>
     );
@@ -188,5 +207,8 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
     overflow: 'hidden',
+  },
+  passThrough: {
+    pointerEvents: 'none',
   },
 });

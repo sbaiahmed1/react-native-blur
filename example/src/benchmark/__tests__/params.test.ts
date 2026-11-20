@@ -11,6 +11,9 @@ const D: BenchParams = {
   warmup: 0,
   direction: 'blurredTopClearBottom',
   offset: 0,
+  blurType: 'systemMaterial',
+  bg: 'bw',
+  overlay: 'none',
 };
 
 it('returns the defaults for an empty query', () => {
@@ -37,6 +40,9 @@ it('parses every param', () => {
         warmup: '2',
         direction: 'blurredBottomClearTop',
         offset: '0.25',
+        type: 'systemThinMaterialDark',
+        bg: 'edge',
+        overlay: 'above',
       },
       D
     )
@@ -51,7 +57,27 @@ it('parses every param', () => {
     warmup: 2,
     direction: 'blurredBottomClearTop',
     offset: 0.25,
+    blurType: 'systemThinMaterialDark',
+    bg: 'edge',
+    overlay: 'above',
   });
+});
+
+it('parses the material params', () => {
+  const p = parseBenchParams(
+    { type: 'xlight', bg: 'photo', overlay: 'prop' },
+    D
+  );
+  expect([p.blurType, p.bg, p.overlay]).toEqual(['xlight', 'photo', 'prop']);
+});
+
+it('falls back on unknown material params', () => {
+  const p = parseBenchParams({ type: 'glass', bg: 'sky', overlay: '1' }, D);
+  expect([p.blurType, p.bg, p.overlay]).toEqual([
+    'systemMaterial',
+    'bw',
+    'none',
+  ]);
 });
 
 it('parses direction and offset', () => {

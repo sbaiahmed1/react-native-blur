@@ -10,10 +10,8 @@ import type { ReactTestInstance } from 'react-test-renderer';
 
 import { BlurView } from '../BlurView.web';
 import { ProgressiveBlurView } from '../ProgressiveBlurView.web';
-import {
-  PROGRESSIVE_LAYER_COUNT,
-  WEB_BLUR_RADIUS_SCALE,
-} from '../webBlurUtils';
+import { materialFor } from '../materials';
+import { PROGRESSIVE_LAYER_COUNT, tintRgba } from '../webBlurUtils';
 
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -51,9 +49,7 @@ it('BlurView emits prefixed and unprefixed backdrop filters', () => {
   const styles = flattenedStyles(renderer.root);
   const blurLayer = styles.find((style) => 'backdropFilter' in style);
   expect(blurLayer).toBeDefined();
-  expect(blurLayer?.backdropFilter).toBe(
-    `blur(${40 * WEB_BLUR_RADIUS_SCALE}px) saturate(180%)`
-  );
+  expect(blurLayer?.backdropFilter).toBe('blur(7.64px) saturate(1.32)');
   expect(blurLayer?.WebkitBackdropFilter).toBe(blurLayer?.backdropFilter);
 });
 
@@ -112,4 +108,47 @@ it('ProgressiveBlurView rounds every ramp layer and the tint gradient', () => {
   );
   expect(layers).toHaveLength(PROGRESSIVE_LAYER_COUNT + 1);
   for (const layer of layers) expect(layer.borderRadius).toBe(30);
+});
+
+describe('in dark mode', () => {
+  beforeEach(() => {
+    (globalThis as { matchMedia?: unknown }).matchMedia = jest.fn(() => ({
+      matches: true,
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+    }));
+  });
+
+  afterEach(() => {
+    delete (globalThis as { matchMedia?: unknown }).matchMedia;
+  });
+
+  it('BlurView follows dark mode for adaptive types', () => {
+    const renderer = render(
+      <View>
+        <BlurView blurType="systemMaterial" blurAmount={100} />
+        <BlurView blurType="systemMaterialLight" blurAmount={100} />
+      </View>
+    );
+
+    const layers = flattenedStyles(renderer.root).filter(
+      (style) => 'backdropFilter' in style
+    );
+    expect(layers.map((style) => style.backgroundColor)).toEqual([
+      tintRgba(materialFor('systemMaterialDark', 'dark').tint),
+      tintRgba(materialFor('systemMaterialLight', 'light').tint),
+    ]);
+    expect(layers[0]?.backdropFilter).toBe('blur(29.4px) saturate(1.63)');
+  });
+
+  it('ProgressiveBlurView tints with the dark material', () => {
+    const renderer = render(<ProgressiveBlurView blurType="systemMaterial" />);
+
+    const gradient = flattenedStyles(renderer.root).find(
+      (style) => 'backgroundImage' in style
+    );
+    expect(gradient?.backgroundImage).toContain(
+      tintRgba(materialFor('systemMaterial', 'dark').tint)
+    );
+  });
 });

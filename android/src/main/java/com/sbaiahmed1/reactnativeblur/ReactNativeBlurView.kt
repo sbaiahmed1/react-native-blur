@@ -31,6 +31,10 @@ import android.view.View.MeasureSpec
 class ReactNativeBlurView : BlurViewGroup, BlurViewProps {
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
   private var currentOverlayColor = Color.TRANSPARENT
+  private var currentAmount = BlurRadius.DEFAULT_AMOUNT
+  private var materialTint: Int? = null
+  private var materialSaturation = -1f
+  private var materialRadius = -1f
   private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
   private var borderRadius = 0f
   private var borderTopLeftRadius = -1f
@@ -282,13 +286,44 @@ class ReactNativeBlurView : BlurViewGroup, BlurViewProps {
   }
 
   override fun setBlurAmount(amount: Float) {
-    currentBlurRadius = mapBlurAmountToRadius(amount)
+    currentAmount = amount
+    applyMaterial()
     logDebug("setBlurAmount: $amount -> $currentBlurRadius")
+  }
 
+  override fun setMaterialTint(color: Int?) {
+    materialTint = color
+    applyMaterial()
+  }
+
+  override fun setMaterialSaturation(saturation: Float) {
+    materialSaturation = saturation
+    applyMaterial()
+  }
+
+  override fun setMaterialRadius(radiusDp: Float) {
+    materialRadius = radiusDp
+    applyMaterial()
+  }
+
+  // QmBlurView has no saturation hook, so a material draws its radius and tint only.
+  private fun applyMaterial() {
+    val spec = MaterialMath.drawSpec(
+      currentAmount, materialRadius, materialTint, materialSaturation, resources.displayMetrics.density, currentBlurType
+    )
+    val amount = if (materialRadius >= 0f) MaterialMath.legacyAmount(spec.sigmaPx) else currentAmount
+    currentBlurRadius = mapBlurAmountToRadius(amount)
     try {
       super.setBlurRadius(currentBlurRadius)
+      if (spec.overlayColor != currentOverlayColor) {
+        currentOverlayColor = spec.overlayColor
+        if (viewType != "liquidGlass") {
+          super.setBackgroundColor(currentOverlayColor)
+          super.setOverlayColor(currentOverlayColor)
+        }
+      }
     } catch (e: Exception) {
-      logError("Failed to set blur radius: ${e.message}", e)
+      logError("Failed to apply the material: ${e.message}", e)
     }
   }
 
@@ -310,16 +345,8 @@ class ReactNativeBlurView : BlurViewGroup, BlurViewProps {
    */
   override fun setBlurType(type: String) {
     currentBlurType = type
-    val blurType = BlurType.fromString(type)
-    currentOverlayColor = blurType.overlayColor
-    logDebug("setBlurType: $type -> ${blurType.name}")
-
-    try {
-      super.setBackgroundColor(currentOverlayColor)
-      super.setOverlayColor(currentOverlayColor)
-    } catch (e: Exception) {
-      logError("Failed to set overlay color: ${e.message}", e)
-    }
+    applyMaterial()
+    logDebug("setBlurType: $type -> $currentOverlayColor")
   }
 
   /**

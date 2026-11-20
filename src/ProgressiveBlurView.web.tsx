@@ -1,10 +1,12 @@
 import React, { forwardRef, memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { ProgressiveBlurViewProps } from './ProgressiveBlurView';
+import { materialFor } from './materials';
+import { useMaterialScheme } from './useMaterialScheme.web';
 import {
-  BLUR_TYPE_TO_BACKGROUND,
   getProgressiveLayers,
   getProgressiveTintGradient,
+  progressiveTintScale,
   useBackdropFilterSupport,
   useCornerRadii,
 } from './webBlurUtils';
@@ -21,11 +23,11 @@ export type ProgressiveBlurViewRef = React.ComponentRef<typeof View>;
  * A single CSS `backdrop-filter` cannot vary its radius across an element, so
  * this stacks several absolutely-filled backdrop-filter layers, each masked
  * with a `linear-gradient` band and blurring at half the radius of the one
- * before. Composited, they produce a genuine blur-radius ramp from
- * `blurAmount` px at the blurred edge down to sharp at the clear edge —
+ * before. Composited, they produce a genuine blur-radius ramp from the
+ * `blurAmount` strength at the blurred edge down to sharp at the clear edge,
  * matching the native variable blur rather than fading a constant blur in and
- * out. A gradient of the `blurType` tint fades along the same direction, and
- * children render above everything, sharp.
+ * out. The `blurType` material tint fades along the same direction on the same
+ * t^3 curve, and children render above everything, sharp.
  *
  * Without backdrop-filter support (old browsers, server-side rendering) only
  * the tint gradient remains. `blurRounds` and
@@ -70,17 +72,18 @@ const ProgressiveBlurViewComponent = forwardRef<
       );
     }, [canUseBackdropFilter, direction, startOffset, blurAmount]);
 
-    const tintLayerStyle = useMemo((): WebBlurStyle => {
-      const tint =
-        BLUR_TYPE_TO_BACKGROUND[blurType] ?? BLUR_TYPE_TO_BACKGROUND.regular;
-      return {
+    const material = materialFor(blurType, useMaterialScheme());
+    const tintLayerStyle = useMemo(
+      (): WebBlurStyle => ({
         backgroundImage: getProgressiveTintGradient(
           direction,
           startOffset,
-          tint
+          material.tint,
+          progressiveTintScale(blurAmount)
         ),
-      };
-    }, [blurType, direction, startOffset]);
+      }),
+      [material, direction, startOffset, blurAmount]
+    );
 
     const overlayLayerStyle = useMemo(
       () => [
