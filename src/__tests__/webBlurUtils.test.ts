@@ -1,23 +1,17 @@
+import { materialFor } from '../materials';
 import {
-  BLUR_TYPE_TO_BACKGROUND,
+  PROGRESSIVE_CAP,
   PROGRESSIVE_LAYER_COUNT,
   PROGRESSIVE_RADIUS_COMPENSATION,
-  WEB_BLUR_RADIUS_SCALE,
-  getBlurLayerStyle,
+  PROGRESSIVE_SIGMA_PER_AMOUNT,
+  blurLayerStyle,
   getProgressiveLayers,
   getProgressiveTintGradient,
+  materialFraction,
+  progressiveTintScale,
   supportsBackdropFilter,
+  tintRgba,
 } from '../webBlurUtils';
-
-describe('BLUR_TYPE_TO_BACKGROUND', () => {
-  it('covers all 21 blur types with rgba colours', () => {
-    const entries = Object.entries(BLUR_TYPE_TO_BACKGROUND);
-    expect(entries).toHaveLength(21);
-    for (const [, colour] of entries) {
-      expect(colour).toMatch(/^rgba\(\d+, \d+, \d+, 0?\.\d+\)$/);
-    }
-  });
-});
 
 describe('supportsBackdropFilter', () => {
   it('reports false in a CSS-less environment (Node / SSR)', () => {
@@ -25,35 +19,66 @@ describe('supportsBackdropFilter', () => {
   });
 });
 
-describe('getBlurLayerStyle', () => {
-  it('degrades to a tint-only style without backdrop-filter support', () => {
-    const style = getBlurLayerStyle('dark', 40);
-    expect(style).toEqual({ backgroundColor: 'rgba(0, 0, 0, 0.5)' });
+describe('materialFraction', () => {
+  it('fraction clamps edge amounts as iOS does', () => {
+    expect(materialFraction(0)).toBe(0);
+    expect(materialFraction(-5)).toBe(0);
+    expect(materialFraction(Number.NaN)).toBe(1);
+    expect(materialFraction(Number.POSITIVE_INFINITY)).toBe(1);
+    expect(materialFraction(Number.NEGATIVE_INFINITY)).toBe(0);
+    expect(materialFraction(250)).toBe(1);
+    expect(materialFraction(50)).toBe(0.5);
+  });
+});
+
+describe('tintRgba', () => {
+  it('scales only the alpha of a token tint', () => {
+    expect(tintRgba('#F6F7F6CC')).toBe('rgba(246, 247, 246, 0.8)');
+    expect(tintRgba('#F6F7F6CC', 0.5)).toBe('rgba(246, 247, 246, 0.4)');
+  });
+});
+
+describe('blurLayerStyle', () => {
+  const material = materialFor('systemMaterial', 'light');
+
+  it('scales the material with the amount', () => {
+    expect(blurLayerStyle(material, 50, true)).toEqual({
+      backgroundColor: 'rgba(246, 247, 246, 0.4)',
+      backdropFilter: 'blur(14.7px) saturate(1.33)',
+      WebkitBackdropFilter: 'blur(14.7px) saturate(1.33)',
+    });
+    expect(blurLayerStyle(material, 100, true).backdropFilter).toBe(
+      'blur(29.4px) saturate(1.66)'
+    );
   });
 
-  it('emits prefixed and unprefixed filters when supported', () => {
+  it('draws nothing at amount 0', () => {
+    expect(blurLayerStyle(material, 0, true)).toEqual({
+      backgroundColor: 'transparent',
+    });
+    expect(blurLayerStyle(material, -5, true)).toEqual({
+      backgroundColor: 'transparent',
+    });
+  });
+
+  it('degrades to the scaled tint without backdrop-filter support', () => {
+    expect(blurLayerStyle(materialFor('dark', 'light'), 40, false)).toEqual({
+      backgroundColor: 'rgba(28, 28, 28, 0.292)',
+    });
+  });
+
+  it('detects backdrop-filter support by default', () => {
     jest.isolateModules(() => {
-      const supports = jest.fn().mockReturnValue(true);
-      (globalThis as { CSS?: unknown }).CSS = { supports };
+      (globalThis as { CSS?: unknown }).CSS = {
+        supports: jest.fn().mockReturnValue(true),
+      };
       try {
         // Fresh module instance so the memoized support check re-runs.
         const utils =
           require('../webBlurUtils') as typeof import('../webBlurUtils');
-
-        const style = utils.getBlurLayerStyle('light', 10);
-        expect(style.backgroundColor).toBe('rgba(255, 255, 255, 0.4)');
-        expect(style.backdropFilter).toBe(
-          `blur(${10 * WEB_BLUR_RADIUS_SCALE}px) saturate(180%)`
-        );
+        const style = utils.blurLayerStyle(material, 400);
+        expect(style.backdropFilter).toBe('blur(29.4px) saturate(1.66)');
         expect(style.WebkitBackdropFilter).toBe(style.backdropFilter);
-
-        // blurAmount is clamped into 0-100 before scaling.
-        expect(utils.getBlurLayerStyle('light', 400).backdropFilter).toBe(
-          `blur(${100 * WEB_BLUR_RADIUS_SCALE}px) saturate(180%)`
-        );
-        expect(utils.getBlurLayerStyle('light', -5).backdropFilter).toBe(
-          'blur(0px) saturate(180%)'
-        );
       } finally {
         delete (globalThis as { CSS?: unknown }).CSS;
       }
@@ -65,11 +90,19 @@ describe('getProgressiveLayers', () => {
   it('halves the radius per layer down from the compensated maximum', () => {
     const layers = getProgressiveLayers('blurredTopClearBottom', 0, 20);
     expect(layers).toHaveLength(PROGRESSIVE_LAYER_COUNT);
-    expect(layers.map((l) => l.radius)).toEqual([1.09, 2.17, 4.35, 8.7, 17.4]);
-    expect(layers[layers.length - 1]?.radius).toBeCloseTo(
-      20 * PROGRESSIVE_RADIUS_COMPENSATION,
-      5
-    );
+    expect(layers.map((l) => l.radius)).toEqual([2.17, 4.35, 8.7, 17.4, 34.8]);
+  });
+
+  it('progressive strength is 2 px per unit capped at 96', () => {
+    expect(PROGRESSIVE_SIGMA_PER_AMOUNT).toBe(2);
+    expect(PROGRESSIVE_CAP).toBe(96);
+    const strongest = (amount: number) =>
+      getProgressiveLayers('blurredTopClearBottom', 0, amount)[
+        PROGRESSIVE_LAYER_COUNT - 1
+      ]?.radius;
+    expect(strongest(20)).toBeCloseTo(40 * PROGRESSIVE_RADIUS_COMPENSATION, 2);
+    expect(strongest(48)).toBeCloseTo(96 * PROGRESSIVE_RADIUS_COMPENSATION, 2);
+    expect(strongest(60)).toBeCloseTo(96 * PROGRESSIVE_RADIUS_COMPENSATION, 2);
   });
 
   it('anchors every mask at the blurred edge, fading one band further per weaker layer', () => {
@@ -157,46 +190,90 @@ describe('getProgressiveLayers', () => {
 });
 
 describe('getProgressiveTintGradient', () => {
-  it('fades the tint along the blur direction', () => {
-    expect(
-      getProgressiveTintGradient('blurredTopClearBottom', 0, 'rgba(0,0,0,0.5)')
-    ).toBe(
-      'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.5) 0%, transparent 100%)'
-    );
-    expect(
-      getProgressiveTintGradient(
-        'blurredBottomClearTop',
-        0.3,
-        'rgba(0,0,0,0.5)'
-      )
-    ).toBe(
-      'linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.5) 30%, transparent 100%)'
-    );
-    expect(
-      getProgressiveTintGradient('blurredLeftToClearRight', 0, 'red')
-    ).toBe('linear-gradient(to right, red 0%, red 0%, transparent 100%)');
-    expect(
-      getProgressiveTintGradient('blurredRightToClearLeft', 0, 'red')
-    ).toBe('linear-gradient(to left, red 0%, red 0%, transparent 100%)');
-  });
+  const RED = '#FF0000FF';
+  const stops = (gradient: string) =>
+    gradient
+      .replace(/^linear-gradient\([^,]+, /, '')
+      .replace(/\)$/, '')
+      .split(/, (?=rgba)/);
 
-  it('peaks at the center for blurredCenterClearTopAndBottom', () => {
-    expect(
-      getProgressiveTintGradient(
-        'blurredCenterClearTopAndBottom',
-        0.2,
-        'rgba(255,255,255,0.2)'
-      )
-    ).toBe(
-      'linear-gradient(to bottom, transparent 20%, rgba(255,255,255,0.2) 40%, rgba(255,255,255,0.2) 60%, transparent 80%)'
+  it('progressive tint follows the cube', () => {
+    expect(getProgressiveTintGradient('blurredTopClearBottom', 0, RED)).toBe(
+      'linear-gradient(to bottom, rgba(255, 0, 0, 1) 0%, rgba(255, 0, 0, 0.67) 12.5%, ' +
+        'rgba(255, 0, 0, 0.422) 25%, rgba(255, 0, 0, 0.244) 37.5%, rgba(255, 0, 0, 0.125) 50%, ' +
+        'rgba(255, 0, 0, 0.053) 62.5%, rgba(255, 0, 0, 0.016) 75%, rgba(255, 0, 0, 0.002) 87.5%, ' +
+        'rgba(255, 0, 0, 0) 100%)'
     );
   });
 
-  it('tints both edges for blurredTopAndBottomClearCenter', () => {
-    expect(
-      getProgressiveTintGradient('blurredTopAndBottomClearCenter', 0.2, 'red')
-    ).toBe(
-      'linear-gradient(to bottom, red 20%, transparent 40%, transparent 60%, red 80%)'
+  it('scales the token alpha and starts the fade after the plateau', () => {
+    const gradient = getProgressiveTintGradient(
+      'blurredBottomClearTop',
+      0.3,
+      '#00000080'
     );
+    expect(gradient.startsWith('linear-gradient(to top, ')).toBe(true);
+    const list = stops(gradient);
+    expect(list).toHaveLength(9);
+    expect(list[0]).toBe(`${tintRgba('#00000080')} 30%`);
+    expect(list[4]).toBe(`${tintRgba('#00000080', 0.125)} 65%`);
+    expect(list[8]).toBe('rgba(0, 0, 0, 0) 100%');
+  });
+
+  it('runs along x for the left and right directions', () => {
+    expect(
+      getProgressiveTintGradient('blurredLeftToClearRight', 0, RED)
+    ).toMatch(/^linear-gradient\(to right, /);
+    expect(
+      getProgressiveTintGradient('blurredRightToClearLeft', 0, RED)
+    ).toMatch(/^linear-gradient\(to left, /);
+  });
+
+  it('eases into the center plateau from both edges for blurredCenterClearTopAndBottom', () => {
+    const list = stops(
+      getProgressiveTintGradient('blurredCenterClearTopAndBottom', 0.2, RED)
+    );
+    expect(list).toHaveLength(18);
+    expect(list[0]).toBe('rgba(255, 0, 0, 0) 20%');
+    expect(list[4]).toBe('rgba(255, 0, 0, 0.125) 30%');
+    expect(list[8]).toBe('rgba(255, 0, 0, 1) 40%');
+    expect(list[9]).toBe('rgba(255, 0, 0, 1) 60%');
+    expect(list[13]).toBe('rgba(255, 0, 0, 0.125) 70%');
+    expect(list[17]).toBe('rgba(255, 0, 0, 0) 80%');
+  });
+
+  it('eases out of both edge plateaus for blurredTopAndBottomClearCenter', () => {
+    const list = stops(
+      getProgressiveTintGradient('blurredTopAndBottomClearCenter', 0.2, RED)
+    );
+    expect(list).toHaveLength(18);
+    expect(list[0]).toBe('rgba(255, 0, 0, 1) 20%');
+    expect(list[4]).toBe('rgba(255, 0, 0, 0.125) 30%');
+    expect(list[8]).toBe('rgba(255, 0, 0, 0) 40%');
+    expect(list[9]).toBe('rgba(255, 0, 0, 0) 60%');
+    expect(list[13]).toBe('rgba(255, 0, 0, 0.125) 70%');
+    expect(list[17]).toBe('rgba(255, 0, 0, 1) 80%');
+  });
+});
+
+describe('progressiveTintScale', () => {
+  it('progressive tint fades in over the first 10 units', () => {
+    expect(progressiveTintScale(0)).toBe(0);
+    expect(progressiveTintScale(-5)).toBe(0);
+    expect(progressiveTintScale(5)).toBe(0.5);
+    expect(progressiveTintScale(10)).toBe(1);
+    expect(progressiveTintScale(40)).toBe(1);
+    expect(progressiveTintScale(Number.NaN)).toBe(1);
+  });
+
+  it('scales every stop of the tint gradient', () => {
+    const gradient = getProgressiveTintGradient(
+      'blurredTopClearBottom',
+      0,
+      '#FF0000FF',
+      0.5
+    );
+    expect(gradient).toContain('rgba(255, 0, 0, 0.5) 0%');
+    expect(gradient).toContain('rgba(255, 0, 0, 0.063) 50%');
   });
 });

@@ -52,6 +52,9 @@ open class VariableBlurView: UIVisualEffectView {
   private var blurStyle: UIBlurEffect.Style = .regular
   private var cachedMask: (direction: VariableBlurDirection, startOffset: CGFloat, image: CGImage)?
   private var foregroundObserver: NSObjectProtocol?
+  private var materialTint: UIColor?
+  private let tintLayer = CALayer()
+  private let tintMask = CALayer()
 
   public init(
     maxBlurRadius: CGFloat = 20,
@@ -117,6 +120,8 @@ open class VariableBlurView: UIVisualEffectView {
 
   private func setupVariableBlur() {
     BlurDebugCounters.rebuild("VariableBlurView")
+    // The tint follows a new direction or offset even when the private filter is missing.
+    defer { applyTint() }
     // Creates filter via runtime reflection
     // This uses a private Core Animation filter called "variableBlur"
     let clsName = String("retliFAC".reversed()) // CAFilter
@@ -147,6 +152,48 @@ open class VariableBlurView: UIVisualEffectView {
     for subview in subviews.dropFirst() {
       subview.alpha = 0
     }
+  }
+
+  /// Draws `color` above the blur, faded by the same mask as the blur radius. `nil` removes the tint.
+  public func setTint(_ color: UIColor?) {
+    materialTint = color
+    applyTint()
+  }
+
+  // Re-adding the layer keeps it above effect subviews that UIKit adds back after a style change or a foreground return.
+  private func applyTint() {
+    CATransaction.begin()
+    CATransaction.setDisableActions(true)
+    defer { CATransaction.commit() }
+    guard let materialTint else {
+      tintLayer.removeFromSuperlayer()
+      return
+    }
+    tintLayer.backgroundColor = materialTint.resolvedColor(with: traitCollection).cgColor
+    tintLayer.opacity = tintOpacity
+    tintMask.contents = maskImage()
+    tintLayer.mask = tintMask
+    tintLayer.frame = bounds
+    tintMask.frame = tintLayer.bounds
+    layer.addSublayer(tintLayer)
+  }
+
+  /// The tint fades in as the radius goes from 0 to `tintFullRadius`, so a view at 0 draws no tint, as on Android and web.
+  private static let tintFullRadius: CGFloat = 10
+
+  private var tintOpacity: Float {
+    if maxBlurRadius.isNaN { return 1 }
+    return Float(min(max(maxBlurRadius / Self.tintFullRadius, 0), 1))
+  }
+
+  open override func layoutSubviews() {
+    super.layoutSubviews()
+    guard tintLayer.superlayer != nil else { return }
+    CATransaction.begin()
+    CATransaction.setDisableActions(true)
+    tintLayer.frame = bounds
+    tintMask.frame = tintLayer.bounds
+    CATransaction.commit()
   }
 
   open override func didMoveToWindow() {

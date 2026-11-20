@@ -95,6 +95,12 @@ using namespace facebook::react;
     [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withReducedTransparencyFallbackColor:fallbackColor];
   }
 
+  // An empty prop passes nil, which removes the tint.
+  if (oldViewProps.materialTint != newViewProps.materialTint) {
+    UIColor *materialTint = RCTUIColorFromSharedColor(newViewProps.materialTint);
+    [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withMaterialTint:materialTint];
+  }
+
   [_progressiveBlurView endBatchUpdate];
   [super updateProps:props oldProps:oldProps];
 }

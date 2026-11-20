@@ -17,7 +17,7 @@ export function VibrancySection() {
   return (
     <Section title="Vibrancy" badge="iOS">
       <VibrancyView
-        blurType={t.dark ? 'systemMaterialDark' : 'systemMaterialLight'}
+        blurType="systemMaterial"
         blurAmount={30}
         style={styles.card}
       >

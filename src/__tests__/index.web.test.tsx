@@ -6,6 +6,9 @@ import { StyleSheet } from 'react-native';
 
 import * as nativeIndex from '../index';
 import * as webIndex from '../index.web';
+import { FALLBACK_BLUR_AMOUNT } from '../colorUtils';
+import { materialFor } from '../materials';
+import { tintRgba } from '../webBlurUtils';
 import {
   BlurView,
   BlurSwitch,
@@ -54,7 +57,7 @@ describe('BlurView (web)', () => {
 
     const styles = flattenedStyles(renderer.root);
     const tintLayer = styles.find(
-      (style) => style.backgroundColor === 'rgba(0, 0, 0, 0.5)'
+      (style) => style.backgroundColor === 'rgba(28, 28, 28, 0.292)'
     );
     expect(tintLayer).toBeDefined();
     expect(tintLayer).not.toHaveProperty('backdropFilter');
@@ -70,7 +73,7 @@ describe('BlurView (web)', () => {
 
     const styles = flattenedStyles(renderer.root);
     const blurLayerIndex = styles.findIndex(
-      (style) => style.backgroundColor === 'rgba(255, 255, 255, 0.6)'
+      (style) => style.backgroundColor === 'rgba(247, 247, 247, 0.08)'
     );
     const overlayLayerIndex = styles.findIndex(
       (style) => style.backgroundColor === '#FF000080'
@@ -108,7 +111,12 @@ describe('LiquidGlassView (web)', () => {
     // regular blurType tint from the delegated BlurView…
     expect(
       styles.some(
-        (style) => style.backgroundColor === 'rgba(255, 255, 255, 0.2)'
+        (style) =>
+          style.backgroundColor ===
+          tintRgba(
+            materialFor('regular', 'light').tint,
+            FALLBACK_BLUR_AMOUNT / 100
+          )
       )
     ).toBe(true);
     // …plus the glass tint scaled down to the capped fallback alpha.

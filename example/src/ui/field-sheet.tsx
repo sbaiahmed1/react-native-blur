@@ -51,7 +51,7 @@ export function FieldSheet({
         onPress={onClose}
       />
       <BlurView
-        blurType={t.dark ? 'systemMaterialDark' : 'systemMaterialLight'}
+        blurType="systemMaterial"
         blurAmount={100}
         reducedTransparencyFallbackColor={t.colors.surface}
         style={[

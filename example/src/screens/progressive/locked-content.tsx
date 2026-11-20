@@ -40,7 +40,7 @@ export function LockedContent() {
           <ProgressiveBlurView
             direction="blurredBottomClearTop"
             startOffset={0.45}
-            blurType={t.dark ? 'dark' : 'light'}
+            blurType="regular"
             blurAmount={20}
             reducedTransparencyFallbackColor={t.colors.surface}
             style={styles.fade}

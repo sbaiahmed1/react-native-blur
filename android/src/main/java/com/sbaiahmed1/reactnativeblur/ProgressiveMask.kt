@@ -32,6 +32,43 @@ internal object ProgressiveMask {
     return IntArray(alphas.size) { (Math.round(alpha * alphas[it]) shl 24) or (color and 0xFFFFFF) }
   }
 
+  /** Stops per fade of the tint, whose alpha follows the same t^3 curve as the iOS blur mask. */
+  const val TINT_STOPS = 9
+  private const val CENTER_FADE = 0.2f
+  private val TINT_POSITIONS = FloatArray(TINT_STOPS) { it / (TINT_STOPS - 1f) }
+  private val TINT_ALPHAS = FloatArray(TINT_STOPS) { TINT_POSITIONS[it] * TINT_POSITIONS[it] * TINT_POSITIONS[it] }
+  private val TINT_ALPHAS_OUT = TINT_ALPHAS.reversedArray()
+
+  /** The blurAmount at which the tint reaches full strength, so a view at 0 draws no tint. */
+  const val TINT_FULL_AMOUNT = 10f
+
+  /** The material tint when the wrapper sent one, else the legacy color of [blurType], faded in up to [TINT_FULL_AMOUNT]. */
+  fun tintColor(materialTint: Int?, blurType: String, amount: Float): Int {
+    val color = materialTint ?: BlurType.fromString(blurType).overlayColor
+    val scale = if (amount.isNaN()) 1f else (amount / TINT_FULL_AMOUNT).coerceIn(0f, 1f)
+    val alpha = Math.round(((color ushr 24) and 0xFF) * scale)
+    return (alpha shl 24) or (color and 0xFFFFFF)
+  }
+
+  /** The tint ramp on the blur's own line: alpha t^3, where t is 0 at the clear edge and 1 at the plateau. */
+  fun tintSpec(direction: String, startOffset: Float, width: Float, height: Float): MaskSpec {
+    val line = spec(direction, startOffset, width, height)
+    val center = direction == "center"
+    if (!center && direction != "edges") {
+      if (startOffset >= 1f) return line
+      return line.copy(alphas = TINT_ALPHAS, positions = TINT_POSITIONS)
+    }
+    val inset = if (center) startOffset.coerceIn(0.01f, 0.3f) else startOffset.coerceIn(0f, 0.3f)
+    val outer = if (center) 0f else 1f
+    val first = FloatArray(TINT_STOPS) { inset + CENTER_FADE * TINT_POSITIONS[it] }
+    val second = FloatArray(TINT_STOPS) { 1f - inset - CENTER_FADE + CENTER_FADE * TINT_POSITIONS[it] }
+    val alphas = if (center) TINT_ALPHAS + TINT_ALPHAS_OUT else TINT_ALPHAS_OUT + TINT_ALPHAS
+    return line.copy(
+      alphas = floatArrayOf(outer) + alphas + outer,
+      positions = floatArrayOf(0f) + first + second + 1f
+    )
+  }
+
   fun spec(direction: String, startOffset: Float, width: Float, height: Float): MaskSpec {
     if (direction == "center") {
       val startEdge = startOffset.coerceIn(0.01f, 0.3f)

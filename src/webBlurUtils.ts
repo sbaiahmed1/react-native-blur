@@ -1,7 +1,7 @@
 import { useMemo, useSyncExternalStore } from 'react';
 import { StyleSheet } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
-import type { BlurType } from './ReactNativeBlurViewNativeComponent';
+import type { MaterialToken } from './materials';
 import type { ProgressiveBlurDirection } from './ReactNativeProgressiveBlurViewNativeComponent';
 
 /**
@@ -19,13 +19,6 @@ export type WebBlurStyle = ViewStyle & {
   backgroundImage?: string;
 };
 
-/**
- * Scale from the 0-100 `blurAmount` prop to a CSS blur radius in px.
- * 100 → 40px, calibrated side-by-side against the iOS simulator so common
- * amounts (40-70) diffuse the backdrop like UIVisualEffectView does.
- */
-export const WEB_BLUR_RADIUS_SCALE = 0.4;
-
 /** Number of stacked backdrop-filter layers used for the progressive ramp. */
 export const PROGRESSIVE_LAYER_COUNT = 5;
 
@@ -37,45 +30,26 @@ export const PROGRESSIVE_LAYER_COUNT = 5;
  */
 export const PROGRESSIVE_RADIUS_COMPENSATION = 0.87;
 
-/**
- * Maps native blur types to semi-transparent CSS background colours that
- * approximate the tint each type produces on iOS: light variants use
- * white-based overlays, dark variants black-based ones, and the system
- * materials follow the iOS ultra-thin → chrome opacity hierarchy.
- */
-export const BLUR_TYPE_TO_BACKGROUND: Record<BlurType, string> = {
-  // Base types
-  xlight: 'rgba(255, 255, 255, 0.6)',
-  light: 'rgba(255, 255, 255, 0.4)',
-  dark: 'rgba(0, 0, 0, 0.5)',
-  extraDark: 'rgba(0, 0, 0, 0.75)',
-  regular: 'rgba(255, 255, 255, 0.2)',
-  prominent: 'rgba(255, 255, 255, 0.35)',
+/** Gaussian sigma in px at the plateau per unit of `blurAmount`, as iOS and Android draw it. */
+export const PROGRESSIVE_SIGMA_PER_AMOUNT = 2;
 
-  // System materials (default / adaptive)
-  systemUltraThinMaterial: 'rgba(255, 255, 255, 0.1)',
-  systemThinMaterial: 'rgba(255, 255, 255, 0.2)',
-  systemMaterial: 'rgba(255, 255, 255, 0.3)',
-  systemThickMaterial: 'rgba(255, 255, 255, 0.45)',
-  systemChromeMaterial: 'rgba(255, 255, 255, 0.5)',
+/** The plateau sigma in px stops growing here (amount 48), as on Android. */
+export const PROGRESSIVE_CAP = 96;
 
-  // System materials (light)
-  systemUltraThinMaterialLight: 'rgba(255, 255, 255, 0.15)',
-  systemThinMaterialLight: 'rgba(255, 255, 255, 0.25)',
-  systemMaterialLight: 'rgba(255, 255, 255, 0.4)',
-  systemThickMaterialLight: 'rgba(255, 255, 255, 0.55)',
-  systemChromeMaterialLight: 'rgba(255, 255, 255, 0.6)',
+/** Stops per fade of the progressive tint, whose alpha follows the t^3 curve of the iOS blur mask. */
+const TINT_STOPS = 9;
 
-  // System materials (dark)
-  systemUltraThinMaterialDark: 'rgba(0, 0, 0, 0.2)',
-  systemThinMaterialDark: 'rgba(0, 0, 0, 0.3)',
-  systemMaterialDark: 'rgba(0, 0, 0, 0.45)',
-  systemThickMaterialDark: 'rgba(0, 0, 0, 0.6)',
-  systemChromeMaterialDark: 'rgba(0, 0, 0, 0.7)',
-};
+/** The progressive blurAmount at which the tint reaches full strength, so a view at 0 draws no tint. */
+export const PROGRESSIVE_TINT_FULL_AMOUNT = 10;
 
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), max);
+
+/** How much of the progressive tint draws at `amount`: none at 0, all of it from `PROGRESSIVE_TINT_FULL_AMOUNT` and for NaN. */
+export function progressiveTintScale(amount: number): number {
+  if (Number.isNaN(amount)) return 1;
+  return clamp(amount / PROGRESSIVE_TINT_FULL_AMOUNT, 0, 1);
+}
 
 /** Formats a number for CSS without float noise (2 decimals max). */
 const cssNumber = (value: number): number => Number(value.toFixed(2));
@@ -116,24 +90,39 @@ export function useBackdropFilterSupport(): boolean {
   );
 }
 
+/** The fraction of the material a BlurView `blurAmount` draws, as iOS reads it: 0-100 maps to 0-1, NaN to 1. */
+export function materialFraction(amount: number): number {
+  if (Number.isNaN(amount)) return 1;
+  return clamp(amount, 0, 100) / 100;
+}
+
+/** A token tint (`#RRGGBBAA`) as CSS `rgba()`, its alpha multiplied by `alphaScale`. */
+export function tintRgba(tint: string, alphaScale = 1): string {
+  const [r, g, b, a] = [1, 3, 5, 7].map((i) =>
+    parseInt(tint.slice(i, i + 2), 16)
+  ) as [number, number, number, number];
+  const alpha = Number(((a / 255) * alphaScale).toFixed(3));
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 /**
- * Builds the style for a uniform blur layer: the blurType tint as background
- * plus, when supported, a backdrop blur scaled from the 0-100 `blurAmount`.
- * Without backdrop-filter support the tint alone remains (graceful
- * degradation, same strategy as expo-blur).
+ * Builds the style for a uniform blur layer: the material at the fraction
+ * `blurAmount` asks for, its tint as background and, when supported, its blur
+ * and saturation as a backdrop filter. Without backdrop-filter support the
+ * tint alone remains (graceful degradation, same strategy as expo-blur).
  */
-export function getBlurLayerStyle(
-  blurType: BlurType,
+export function blurLayerStyle(
+  material: MaterialToken,
   blurAmount: number,
   hasBackdropFilter = supportsBackdropFilter()
 ): WebBlurStyle {
-  const style: WebBlurStyle = {
-    backgroundColor:
-      BLUR_TYPE_TO_BACKGROUND[blurType] ?? BLUR_TYPE_TO_BACKGROUND.regular,
-  };
+  const f = materialFraction(blurAmount);
+  if (f === 0) return { backgroundColor: 'transparent' };
+  const style: WebBlurStyle = { backgroundColor: tintRgba(material.tint, f) };
   if (hasBackdropFilter) {
-    const radius = cssNumber(clamp(blurAmount, 0, 100) * WEB_BLUR_RADIUS_SCALE);
-    const filter = `blur(${radius}px) saturate(180%)`;
+    const radius = cssNumber(f * material.radius);
+    const saturation = cssNumber(1 + f * (material.saturation - 1));
+    const filter = `blur(${radius}px) saturate(${saturation})`;
     style.backdropFilter = filter;
     style.WebkitBackdropFilter = filter;
   }
@@ -215,8 +204,8 @@ const maskForLayer = (
  * blur ramp from `blurAmount` px at the blurred edge down to 0 at the clear
  * edge — a true radius ramp rather than a single blur fading in opacity.
  *
- * `blurAmount` is the maximum radius in px (matching the native components,
- * where it is a pixel radius, unlike BlurView's 0-100 scale).
+ * `blurAmount` sets the plateau blur as on iOS: `PROGRESSIVE_SIGMA_PER_AMOUNT`
+ * px of sigma per unit, capped at `PROGRESSIVE_CAP` px.
  */
 export function getProgressiveLayers(
   direction: ProgressiveBlurDirection,
@@ -224,7 +213,12 @@ export function getProgressiveLayers(
   blurAmount: number
 ): ProgressiveLayer[] {
   const s = clamp(startOffset, 0, 1);
-  const maxRadius = Math.max(blurAmount, 0) * PROGRESSIVE_RADIUS_COMPENSATION;
+  const sigma = clamp(
+    PROGRESSIVE_SIGMA_PER_AMOUNT * blurAmount,
+    0,
+    PROGRESSIVE_CAP
+  );
+  const maxRadius = sigma * PROGRESSIVE_RADIUS_COMPENSATION;
   const layers: ProgressiveLayer[] = [];
   for (let layer = 1; layer <= PROGRESSIVE_LAYER_COUNT; layer++) {
     layers.push({
@@ -236,37 +230,42 @@ export function getProgressiveLayers(
 }
 
 /**
- * Gradient for the tint layer of a progressive blur: the blurType tint at full
- * strength over the blurred plateau, fading to transparent at the clear edge,
- * following the same direction as the blur ramp.
+ * Gradient for the tint layer of a progressive blur: the token `tint`
+ * (`#RRGGBBAA`) at full strength over the blurred plateau, its alpha falling
+ * as (1 - u)^3 across each fade, the t^3 curve of the iOS blur mask read from
+ * the blurred side.
  */
 export function getProgressiveTintGradient(
   direction: ProgressiveBlurDirection,
   startOffset: number,
-  tint: string
+  tint: string,
+  alphaScale = 1
 ): string {
   const s = clamp(startOffset, 0, 1);
+  // One fade from `from` (u = 0) to `to` (u = 1), with the alpha rising when `rising`.
+  const fade = (from: number, to: number, rising: boolean): string[] =>
+    Array.from({ length: TINT_STOPS }, (_, i) => {
+      const u = i / (TINT_STOPS - 1);
+      const t = rising ? u : 1 - u;
+      return `${tintRgba(tint, alphaScale * t * t * t)} ${pct(from + (to - from) * u)}`;
+    });
 
-  if (direction === 'blurredCenterClearTopAndBottom') {
-    // Follows the blur body: clear over the edge insets, full tint over the
-    // center plateau (same geometry as the center mask above).
+  if (
+    direction === 'blurredCenterClearTopAndBottom' ||
+    direction === 'blurredTopAndBottomClearCenter'
+  ) {
+    // Same geometry as the center masks: a 20% fade after an inset of `startOffset` (clamped to 0.3) at each edge.
+    const center = direction === 'blurredCenterClearTopAndBottom';
     const inset = Math.min(s, 0.3) * 100;
-    return (
-      `linear-gradient(to bottom, transparent ${pct(inset)}, ${tint} ${pct(inset + 20)}, ` +
-      `${tint} ${pct(80 - inset)}, transparent ${pct(100 - inset)})`
-    );
+    const stops = [
+      ...fade(inset, inset + 20, center),
+      ...fade(80 - inset, 100 - inset, !center),
+    ];
+    return `linear-gradient(to bottom, ${stops.join(', ')})`;
   }
 
-  if (direction === 'blurredTopAndBottomClearCenter') {
-    const inset = Math.min(s, 0.3) * 100;
-    return (
-      `linear-gradient(to bottom, ${tint} ${pct(inset)}, transparent ${pct(inset + 20)}, ` +
-      `transparent ${pct(80 - inset)}, ${tint} ${pct(100 - inset)})`
-    );
-  }
-
-  const axis = axisFor(direction);
-  return `linear-gradient(${axis}, ${tint} 0%, ${tint} ${pct(s * 100)}, transparent 100%)`;
+  const stops = fade(s * 100, 100, false);
+  return `linear-gradient(${axisFor(direction)}, ${stops.join(', ')})`;
 }
 
 const CORNER_RADIUS_KEYS = [

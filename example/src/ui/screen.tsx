@@ -135,7 +135,7 @@ export function MaterialCard({ children }: { children: ReactNode }) {
   const t = useTheme();
   return (
     <BlurView
-      blurType={t.dark ? 'systemMaterialDark' : 'systemMaterialLight'}
+      blurType="systemMaterial"
       blurAmount={100}
       reducedTransparencyFallbackColor={t.colors.surface}
       style={styles.card}

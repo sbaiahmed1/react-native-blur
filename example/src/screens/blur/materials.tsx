@@ -8,16 +8,8 @@ import { useTheme } from '@/ui/theme';
 export function Materials() {
   const t = useTheme();
   const pair: { label: string; type: BlurType }[] = [
-    {
-      label: 'Ultra thin',
-      type: t.dark
-        ? 'systemUltraThinMaterialDark'
-        : 'systemUltraThinMaterialLight',
-    },
-    {
-      label: 'Thick',
-      type: t.dark ? 'systemThickMaterialDark' : 'systemThickMaterialLight',
-    },
+    { label: 'Ultra thin', type: 'systemUltraThinMaterial' },
+    { label: 'Thick', type: 'systemThickMaterial' },
   ];
   return (
     <View style={styles.pair}>
