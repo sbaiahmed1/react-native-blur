@@ -170,11 +170,20 @@ open class VariableBlurView: UIVisualEffectView {
       return
     }
     tintLayer.backgroundColor = materialTint.resolvedColor(with: traitCollection).cgColor
+    tintLayer.opacity = tintOpacity
     tintMask.contents = maskImage()
     tintLayer.mask = tintMask
     tintLayer.frame = bounds
     tintMask.frame = tintLayer.bounds
     layer.addSublayer(tintLayer)
+  }
+
+  /// The tint fades in as the radius goes from 0 to `tintFullRadius`, so a view at 0 draws no tint, as on Android and web.
+  private static let tintFullRadius: CGFloat = 10
+
+  private var tintOpacity: Float {
+    if maxBlurRadius.isNaN { return 1 }
+    return Float(min(max(maxBlurRadius / Self.tintFullRadius, 0), 1))
   }
 
   open override func layoutSubviews() {

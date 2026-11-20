@@ -39,8 +39,17 @@ export const PROGRESSIVE_CAP = 96;
 /** Stops per fade of the progressive tint, whose alpha follows the t^3 curve of the iOS blur mask. */
 const TINT_STOPS = 9;
 
+/** The progressive blurAmount at which the tint reaches full strength, so a view at 0 draws no tint. */
+export const PROGRESSIVE_TINT_FULL_AMOUNT = 10;
+
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), max);
+
+/** How much of the progressive tint draws at `amount`: none at 0, all of it from `PROGRESSIVE_TINT_FULL_AMOUNT` and for NaN. */
+export function progressiveTintScale(amount: number): number {
+  if (Number.isNaN(amount)) return 1;
+  return clamp(amount / PROGRESSIVE_TINT_FULL_AMOUNT, 0, 1);
+}
 
 /** Formats a number for CSS without float noise (2 decimals max). */
 const cssNumber = (value: number): number => Number(value.toFixed(2));
@@ -229,7 +238,8 @@ export function getProgressiveLayers(
 export function getProgressiveTintGradient(
   direction: ProgressiveBlurDirection,
   startOffset: number,
-  tint: string
+  tint: string,
+  alphaScale = 1
 ): string {
   const s = clamp(startOffset, 0, 1);
   // One fade from `from` (u = 0) to `to` (u = 1), with the alpha rising when `rising`.
@@ -237,7 +247,7 @@ export function getProgressiveTintGradient(
     Array.from({ length: TINT_STOPS }, (_, i) => {
       const u = i / (TINT_STOPS - 1);
       const t = rising ? u : 1 - u;
-      return `${tintRgba(tint, t * t * t)} ${pct(from + (to - from) * u)}`;
+      return `${tintRgba(tint, alphaScale * t * t * t)} ${pct(from + (to - from) * u)}`;
     });
 
   if (

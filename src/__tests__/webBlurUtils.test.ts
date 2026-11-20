@@ -8,6 +8,7 @@ import {
   getProgressiveLayers,
   getProgressiveTintGradient,
   materialFraction,
+  progressiveTintScale,
   supportsBackdropFilter,
   tintRgba,
 } from '../webBlurUtils';
@@ -252,5 +253,27 @@ describe('getProgressiveTintGradient', () => {
     expect(list[9]).toBe('rgba(255, 0, 0, 0) 60%');
     expect(list[13]).toBe('rgba(255, 0, 0, 0.125) 70%');
     expect(list[17]).toBe('rgba(255, 0, 0, 1) 80%');
+  });
+});
+
+describe('progressiveTintScale', () => {
+  it('progressive tint fades in over the first 10 units', () => {
+    expect(progressiveTintScale(0)).toBe(0);
+    expect(progressiveTintScale(-5)).toBe(0);
+    expect(progressiveTintScale(5)).toBe(0.5);
+    expect(progressiveTintScale(10)).toBe(1);
+    expect(progressiveTintScale(40)).toBe(1);
+    expect(progressiveTintScale(Number.NaN)).toBe(1);
+  });
+
+  it('scales every stop of the tint gradient', () => {
+    const gradient = getProgressiveTintGradient(
+      'blurredTopClearBottom',
+      0,
+      '#FF0000FF',
+      0.5
+    );
+    expect(gradient).toContain('rgba(255, 0, 0, 0.5) 0%');
+    expect(gradient).toContain('rgba(255, 0, 0, 0.063) 50%');
   });
 });

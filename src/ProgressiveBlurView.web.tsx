@@ -6,6 +6,7 @@ import { useMaterialScheme } from './useMaterialScheme.web';
 import {
   getProgressiveLayers,
   getProgressiveTintGradient,
+  progressiveTintScale,
   useBackdropFilterSupport,
   useCornerRadii,
 } from './webBlurUtils';
@@ -77,10 +78,11 @@ const ProgressiveBlurViewComponent = forwardRef<
         backgroundImage: getProgressiveTintGradient(
           direction,
           startOffset,
-          material.tint
+          material.tint,
+          progressiveTintScale(blurAmount)
         ),
       }),
-      [material, direction, startOffset]
+      [material, direction, startOffset, blurAmount]
     );
 
     const overlayLayerStyle = useMemo(
