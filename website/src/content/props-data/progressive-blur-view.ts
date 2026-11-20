@@ -6,7 +6,7 @@ export const progressiveBlurViewProps: PropRow[] = [
     type: 'BlurType',
     default: "'regular'",
     description:
-      'Sets the material whose tint the view draws, at full strength where the blur is strongest and fading out with the blur. `regular`, `prominent` and the `system*Material` types without a `Light` or `Dark` suffix follow Dark Mode.',
+      'Sets the material whose tint the view draws, at full strength where the blur is strongest and fading out with the blur. The tint fades in as `blurAmount` goes from 0 to 10. `regular`, `prominent` and the `system*Material` types without a `Light` or `Dark` suffix follow Dark Mode.',
   },
   {
     name: 'blurAmount',
