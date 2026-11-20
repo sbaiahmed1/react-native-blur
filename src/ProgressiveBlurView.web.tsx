@@ -1,10 +1,12 @@
 import React, { forwardRef, memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { ProgressiveBlurViewProps } from './ProgressiveBlurView';
+import { materialFor } from './materials';
+import { useMaterialScheme } from './useMaterialScheme.web';
 import {
-  BLUR_TYPE_TO_BACKGROUND,
   getProgressiveLayers,
   getProgressiveTintGradient,
+  tintRgba,
   useBackdropFilterSupport,
   useCornerRadii,
 } from './webBlurUtils';
@@ -70,9 +72,9 @@ const ProgressiveBlurViewComponent = forwardRef<
       );
     }, [canUseBackdropFilter, direction, startOffset, blurAmount]);
 
+    const material = materialFor(blurType, useMaterialScheme());
     const tintLayerStyle = useMemo((): WebBlurStyle => {
-      const tint =
-        BLUR_TYPE_TO_BACKGROUND[blurType] ?? BLUR_TYPE_TO_BACKGROUND.regular;
+      const tint = tintRgba(material.tint);
       return {
         backgroundImage: getProgressiveTintGradient(
           direction,
@@ -80,7 +82,7 @@ const ProgressiveBlurViewComponent = forwardRef<
           tint
         ),
       };
-    }, [blurType, direction, startOffset]);
+    }, [material, direction, startOffset]);
 
     const overlayLayerStyle = useMemo(
       () => [

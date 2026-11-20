@@ -76,6 +76,11 @@ internal class EngineProgressiveBlurView(context: Context) : BackdropHostView(co
   // QmBlurView's box blur passes have no meaning for a Gaussian blur.
   override fun setRounds(rounds: Int) = Unit
 
+  // The progressive tint does not read the material yet.
+  override fun setMaterialTint(color: Int?) = Unit
+  override fun setMaterialSaturation(saturation: Float) = Unit
+  override fun setMaterialRadius(radiusDp: Float) = Unit
+
   override fun setDirection(direction: String) {
     this.direction = ProgressiveMask.normalizeDirection(direction)
     markEffectDirty()

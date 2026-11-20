@@ -5,6 +5,8 @@ import ReactNativeProgressiveBlurView, {
   type BlurType,
   type ProgressiveBlurDirection,
 } from './ReactNativeProgressiveBlurViewNativeComponent';
+import { materialFor } from './materials';
+import { useMaterialScheme } from './useMaterialScheme';
 
 export interface ProgressiveBlurViewProps extends ViewProps {
   /**
@@ -151,8 +153,23 @@ const ProgressiveBlurViewComponent = forwardRef<
       () => ({ backgroundColor: overlayColor }),
       [overlayColor]
     );
+    const material = materialFor(blurType, useMaterialScheme());
+    const materialProps = useMemo(
+      () => ({
+        materialTint: material.tint,
+        materialSaturation: material.saturation,
+        materialRadius: material.radius,
+      }),
+      [material]
+    );
 
-    // If no children, render the blur view directly (for background use)
+    // The overlay draws above the blur material and below the children.
+    const overlayView =
+      overlayColor != null ? (
+        <View style={[StyleSheet.absoluteFill, styles.passThrough, overlay]} />
+      ) : null;
+
+    // Without children the blur view is the root, and its native children draw above the blur.
     if (!Children.count(children)) {
       return (
         <ReactNativeProgressiveBlurView
@@ -163,9 +180,12 @@ const ProgressiveBlurViewComponent = forwardRef<
           direction={direction}
           startOffset={startOffset}
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-          style={[style, overlay]}
+          {...materialProps}
+          style={style}
           {...props}
-        />
+        >
+          {overlayView}
+        </ReactNativeProgressiveBlurView>
       );
     }
 
@@ -184,9 +204,11 @@ const ProgressiveBlurViewComponent = forwardRef<
           direction={direction}
           startOffset={startOffset}
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
-          style={[styles.container, style, overlay]}
+          {...materialProps}
+          style={[styles.container, style]}
           {...props}
         >
+          {overlayView}
           {children}
         </ReactNativeProgressiveBlurView>
       );
@@ -194,7 +216,7 @@ const ProgressiveBlurViewComponent = forwardRef<
 
     // If children exist, use the absolute positioning pattern
     return (
-      <View style={[styles.container, style, overlay]}>
+      <View style={[styles.container, style]}>
         {/* Blur effect positioned absolutely behind content */}
         <ReactNativeProgressiveBlurView
           ref={ref}
@@ -204,10 +226,11 @@ const ProgressiveBlurViewComponent = forwardRef<
           direction={direction}
           startOffset={startOffset}
           reducedTransparencyFallbackColor={reducedTransparencyFallbackColor}
+          {...materialProps}
           style={StyleSheet.absoluteFill}
           {...props}
         />
-
+        {overlayView}
         {children}
       </View>
     );
@@ -226,5 +249,8 @@ const styles = StyleSheet.create({
   container: {
     position: 'relative',
     overflow: 'hidden',
+  },
+  passThrough: {
+    pointerEvents: 'none',
   },
 });

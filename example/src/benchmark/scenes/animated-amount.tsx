@@ -39,7 +39,7 @@ export default function AnimatedAmount({ params, running }: SceneProps) {
     <FeedList scrolling={false} images={params.images}>
       <View style={styles.center} pointerEvents="box-none">
         <AnimatedBlurView
-          blurType="light"
+          blurType={params.blurType}
           blurRounds={params.rounds}
           animatedProps={animatedProps}
           style={styles.box}
