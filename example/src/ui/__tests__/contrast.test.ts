@@ -1,22 +1,28 @@
-import { BLUR_TYPE_TO_BACKGROUND } from '../../../../src/webBlurUtils';
+import { materialFor } from '../../../../src/materials';
+import { materialFraction } from '../../../../src/webBlurUtils';
 import { DARK, LIGHT, type Theme } from '../theme';
 
 type Rgb = [number, number, number];
 
 const AA = 4.5;
 
+// The blurAmount MaterialCard uses.
+const CARD_AMOUNT = 100;
+
 function hex(color: string): Rgb {
   const h = color.replace('#', '');
   return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)) as Rgb;
 }
 
-function rgba(color: string): { rgb: Rgb; alpha: number } {
-  const [r, g, b, a] = color.match(/[\d.]+/g)!.map(Number) as number[];
-  return { rgb: [r!, g!, b!], alpha: a! };
-}
-
 function over(top: Rgb, alpha: number, bottom: Rgb): Rgb {
   return top.map((c, i) => alpha * c + (1 - alpha) * bottom[i]!) as Rgb;
+}
+
+function saturate(rgb: Rgb, s: number): Rgb {
+  const luma = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  return rgb.map((c) =>
+    Math.min(255, Math.max(0, luma + s * (c - luma)))
+  ) as Rgb;
 }
 
 function luminance(rgb: Rgb): number {
@@ -32,18 +38,21 @@ function contrast(a: Rgb, b: Rgb): number {
   return (hi! + 0.05) / (lo! + 0.05);
 }
 
-/** What a MaterialCard paints over each backdrop color: the web tint and the Android overlay (BlurType.kt). */
+/** What a MaterialCard paints over each backdrop color: the blurType material and the Android overlay (BlurType.kt). */
 function materials(theme: Theme): [string, Rgb][] {
-  const web = rgba(
-    BLUR_TYPE_TO_BACKGROUND[
-      theme.dark ? 'systemMaterialDark' : 'systemMaterialLight'
-    ]
+  const token = materialFor(
+    theme.dark ? 'systemMaterialDark' : 'systemMaterialLight',
+    theme.dark ? 'dark' : 'light'
   );
+  const f = materialFraction(CARD_AMOUNT);
+  const tint = hex(token.tint);
+  const alpha = (f * parseInt(token.tint.slice(7, 9), 16)) / 255;
+  const s = 1 + f * (token.saturation - 1);
   const android = theme.dark
     ? { rgb: [65, 60, 60] as Rgb, alpha: 215 / 255 }
     : { rgb: [245, 245, 245] as Rgb, alpha: 140 / 255 };
   return theme.field.flatMap((color): [string, Rgb][] => [
-    [`web over ${color}`, over(web.rgb, web.alpha, hex(color))],
+    [`material over ${color}`, over(tint, alpha, saturate(hex(color), s))],
     [`android over ${color}`, over(android.rgb, android.alpha, hex(color))],
   ]);
 }

@@ -1,7 +1,7 @@
 import { useMemo, useSyncExternalStore } from 'react';
 import { StyleSheet } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
-import type { BlurType } from './ReactNativeBlurViewNativeComponent';
+import type { MaterialToken } from './materials';
 import type { ProgressiveBlurDirection } from './ReactNativeProgressiveBlurViewNativeComponent';
 
 /**
@@ -19,13 +19,6 @@ export type WebBlurStyle = ViewStyle & {
   backgroundImage?: string;
 };
 
-/**
- * Scale from the 0-100 `blurAmount` prop to a CSS blur radius in px.
- * 100 → 40px, calibrated side-by-side against the iOS simulator so common
- * amounts (40-70) diffuse the backdrop like UIVisualEffectView does.
- */
-export const WEB_BLUR_RADIUS_SCALE = 0.4;
-
 /** Number of stacked backdrop-filter layers used for the progressive ramp. */
 export const PROGRESSIVE_LAYER_COUNT = 5;
 
@@ -36,43 +29,6 @@ export const PROGRESSIVE_LAYER_COUNT = 5;
  * so radii are scaled down by ~0.87 to make the peak match `blurAmount`.
  */
 export const PROGRESSIVE_RADIUS_COMPENSATION = 0.87;
-
-/**
- * Maps native blur types to semi-transparent CSS background colours that
- * approximate the tint each type produces on iOS: light variants use
- * white-based overlays, dark variants black-based ones, and the system
- * materials follow the iOS ultra-thin → chrome opacity hierarchy.
- */
-export const BLUR_TYPE_TO_BACKGROUND: Record<BlurType, string> = {
-  // Base types
-  xlight: 'rgba(255, 255, 255, 0.6)',
-  light: 'rgba(255, 255, 255, 0.4)',
-  dark: 'rgba(0, 0, 0, 0.5)',
-  extraDark: 'rgba(0, 0, 0, 0.75)',
-  regular: 'rgba(255, 255, 255, 0.2)',
-  prominent: 'rgba(255, 255, 255, 0.35)',
-
-  // System materials (default / adaptive)
-  systemUltraThinMaterial: 'rgba(255, 255, 255, 0.1)',
-  systemThinMaterial: 'rgba(255, 255, 255, 0.2)',
-  systemMaterial: 'rgba(255, 255, 255, 0.3)',
-  systemThickMaterial: 'rgba(255, 255, 255, 0.45)',
-  systemChromeMaterial: 'rgba(255, 255, 255, 0.5)',
-
-  // System materials (light)
-  systemUltraThinMaterialLight: 'rgba(255, 255, 255, 0.15)',
-  systemThinMaterialLight: 'rgba(255, 255, 255, 0.25)',
-  systemMaterialLight: 'rgba(255, 255, 255, 0.4)',
-  systemThickMaterialLight: 'rgba(255, 255, 255, 0.55)',
-  systemChromeMaterialLight: 'rgba(255, 255, 255, 0.6)',
-
-  // System materials (dark)
-  systemUltraThinMaterialDark: 'rgba(0, 0, 0, 0.2)',
-  systemThinMaterialDark: 'rgba(0, 0, 0, 0.3)',
-  systemMaterialDark: 'rgba(0, 0, 0, 0.45)',
-  systemThickMaterialDark: 'rgba(0, 0, 0, 0.6)',
-  systemChromeMaterialDark: 'rgba(0, 0, 0, 0.7)',
-};
 
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), max);
@@ -116,24 +72,39 @@ export function useBackdropFilterSupport(): boolean {
   );
 }
 
+/** The fraction of the material a BlurView `blurAmount` draws, as iOS reads it: 0-100 maps to 0-1, NaN to 1. */
+export function materialFraction(amount: number): number {
+  if (Number.isNaN(amount)) return 1;
+  return clamp(amount, 0, 100) / 100;
+}
+
+/** A token tint (`#RRGGBBAA`) as CSS `rgba()`, its alpha multiplied by `alphaScale`. */
+export function tintRgba(tint: string, alphaScale = 1): string {
+  const [r, g, b, a] = [1, 3, 5, 7].map((i) =>
+    parseInt(tint.slice(i, i + 2), 16)
+  ) as [number, number, number, number];
+  const alpha = Number(((a / 255) * alphaScale).toFixed(3));
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 /**
- * Builds the style for a uniform blur layer: the blurType tint as background
- * plus, when supported, a backdrop blur scaled from the 0-100 `blurAmount`.
- * Without backdrop-filter support the tint alone remains (graceful
- * degradation, same strategy as expo-blur).
+ * Builds the style for a uniform blur layer: the material at the fraction
+ * `blurAmount` asks for, its tint as background and, when supported, its blur
+ * and saturation as a backdrop filter. Without backdrop-filter support the
+ * tint alone remains (graceful degradation, same strategy as expo-blur).
  */
-export function getBlurLayerStyle(
-  blurType: BlurType,
+export function blurLayerStyle(
+  material: MaterialToken,
   blurAmount: number,
   hasBackdropFilter = supportsBackdropFilter()
 ): WebBlurStyle {
-  const style: WebBlurStyle = {
-    backgroundColor:
-      BLUR_TYPE_TO_BACKGROUND[blurType] ?? BLUR_TYPE_TO_BACKGROUND.regular,
-  };
+  const f = materialFraction(blurAmount);
+  if (f === 0) return { backgroundColor: 'transparent' };
+  const style: WebBlurStyle = { backgroundColor: tintRgba(material.tint, f) };
   if (hasBackdropFilter) {
-    const radius = cssNumber(clamp(blurAmount, 0, 100) * WEB_BLUR_RADIUS_SCALE);
-    const filter = `blur(${radius}px) saturate(180%)`;
+    const radius = cssNumber(f * material.radius);
+    const saturation = cssNumber(1 + f * (material.saturation - 1));
+    const filter = `blur(${radius}px) saturate(${saturation})`;
     style.backdropFilter = filter;
     style.WebkitBackdropFilter = filter;
   }

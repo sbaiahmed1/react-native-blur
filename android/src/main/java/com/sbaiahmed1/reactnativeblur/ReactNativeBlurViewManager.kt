@@ -70,6 +70,18 @@ class ReactNativeBlurViewManager : ViewGroupManager<ViewGroup>(),
     // no-op
   }
 
+  override fun setMaterialTint(view: ViewGroup?, materialTint: Int?) {
+    (view as? BlurViewProps)?.setMaterialTint(materialTint)
+  }
+
+  override fun setMaterialSaturation(view: ViewGroup?, materialSaturation: Double) {
+    (view as? BlurViewProps)?.setMaterialSaturation(materialSaturation.toFloat())
+  }
+
+  override fun setMaterialRadius(view: ViewGroup?, materialRadius: Double) {
+    (view as? BlurViewProps)?.setMaterialRadius(materialRadius.toFloat())
+  }
+
   /**
    * Called when view is detached from view hierarchy and allows for cleanup.
    * This prevents the white screen issue during navigation transitions on Android.

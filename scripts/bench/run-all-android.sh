@@ -38,6 +38,7 @@ RUNS=(
   "stacked-badges count=6"
   "side-by-side"
   "stacked-modal count=10"
+  "materials"
 )
 
 for run in "${RUNS[@]}"; do

@@ -11,6 +11,30 @@ import { LiquidGlassView, getFallbackOverlayColor } from '../LiquidGlassView';
 import { LiquidGlassContainer } from '../LiquidGlassContainer';
 import { VibrancyView } from '../VibrancyView';
 import { BlurSwitch } from '../BlurSwitch';
+import ReactNativeProgressiveBlurView from '../ReactNativeProgressiveBlurViewNativeComponent';
+import { materialFor } from '../materials';
+
+// A color scheme store that re-renders its subscribers, like Appearance does.
+jest.mock('react-native/Libraries/Utilities/useColorScheme', () => {
+  const { useSyncExternalStore } = jest.requireActual('react');
+  const listeners = new Set<() => void>();
+  let scheme: string | null = null;
+  const subscribe = (listener: () => void) => {
+    listeners.add(listener);
+    return () => listeners.delete(listener);
+  };
+  const useColorScheme = () => useSyncExternalStore(subscribe, () => scheme);
+  useColorScheme.set = (next: string | null) => {
+    scheme = next;
+    listeners.forEach((listener) => listener());
+  };
+  return { __esModule: true, default: useColorScheme };
+});
+
+const setColorScheme = (
+  jest.requireMock('react-native/Libraries/Utilities/useColorScheme')
+    .default as { set: (scheme: string | null) => void }
+).set;
 
 // react-test-renderer under React 19 requires renders to run inside act().
 (
@@ -166,5 +190,87 @@ describe('wrapper rendering', () => {
       expect(tree.toJSON()).not.toBeNull();
       act(() => tree.unmount());
     }
+  });
+});
+
+describe('material props', () => {
+  const tokenProps = (blurType: string, scheme: 'light' | 'dark') => {
+    const token = materialFor(blurType, scheme);
+    return {
+      materialTint: token.tint,
+      materialSaturation: token.saturation,
+      materialRadius: token.radius,
+    };
+  };
+
+  const nativeTokenProps = (
+    tree: TestRenderer.ReactTestRenderer,
+    type: typeof ReactNativeBlurView | typeof ReactNativeProgressiveBlurView
+  ) =>
+    tree.root.findAllByType(type).map(({ props }) => ({
+      materialTint: props.materialTint,
+      materialSaturation: props.materialSaturation,
+      materialRadius: props.materialRadius,
+    }));
+
+  afterEach(() => act(() => setColorScheme(null)));
+
+  describe.each([
+    ['BlurView', BlurView, ReactNativeBlurView],
+    [
+      'ProgressiveBlurView',
+      ProgressiveBlurView,
+      ReactNativeProgressiveBlurView,
+    ],
+  ] as const)('%s', (_name, Wrapper, Native) => {
+    it('passes the material token of the blurType', () => {
+      for (const os of ['ios', 'android'] as const) {
+        const replaced = jest.replaceProperty(Platform, 'OS', os);
+        try {
+          for (const children of [null, <View key="child" />]) {
+            const tree = render(
+              <Wrapper blurType="systemMaterial">{children}</Wrapper>
+            );
+            expect(nativeTokenProps(tree, Native)).toEqual([
+              tokenProps('systemMaterial', 'light'),
+            ]);
+            act(() => tree.unmount());
+          }
+        } finally {
+          replaced.restore();
+        }
+      }
+    });
+
+    it('passes the full token whatever the amount', () => {
+      for (const blurAmount of [10, 90]) {
+        const tree = render(
+          <Wrapper blurType="xlight" blurAmount={blurAmount} />
+        );
+        expect(nativeTokenProps(tree, Native)).toEqual([
+          tokenProps('xlight', 'light'),
+        ]);
+        act(() => tree.unmount());
+      }
+    });
+
+    it('re-resolves on a scheme change', () => {
+      const tree = render(
+        <View>
+          <Wrapper blurType="systemMaterial" />
+          <Wrapper blurType="systemMaterialLight" />
+        </View>
+      );
+      expect(nativeTokenProps(tree, Native)).toEqual([
+        tokenProps('systemMaterial', 'light'),
+        tokenProps('systemMaterialLight', 'light'),
+      ]);
+      act(() => setColorScheme('dark'));
+      expect(nativeTokenProps(tree, Native)).toEqual([
+        tokenProps('systemMaterial', 'dark'),
+        tokenProps('systemMaterialLight', 'light'),
+      ]);
+      act(() => tree.unmount());
+    });
   });
 });

@@ -1,4 +1,24 @@
-import type { ProgressiveBlurDirection } from '@sbaiahmed1/react-native-blur';
+import type {
+  BlurType,
+  ProgressiveBlurDirection,
+} from '@sbaiahmed1/react-native-blur';
+
+import { BLUR_TYPES } from '../constants/blur';
+
+export type MaterialBackdrop = 'bw' | 'grays' | 'mid' | 'gb' | 'edge' | 'photo';
+
+export type MaterialOverlay = 'none' | 'prop' | 'above';
+
+export const MATERIAL_BACKDROPS: readonly MaterialBackdrop[] = [
+  'bw',
+  'grays',
+  'mid',
+  'gb',
+  'edge',
+  'photo',
+];
+
+const MATERIAL_OVERLAYS: readonly MaterialOverlay[] = ['none', 'prop', 'above'];
 
 export type BenchParams = {
   count: number;
@@ -11,6 +31,10 @@ export type BenchParams = {
   warmup: number;
   direction: ProgressiveBlurDirection;
   offset: number;
+  /** Query key `type`. */
+  blurType: BlurType;
+  bg: MaterialBackdrop;
+  overlay: MaterialOverlay;
 };
 
 export const BENCH_LIMITS = {
@@ -54,14 +78,19 @@ function parseFlag(value: string | undefined, fallback: boolean): boolean {
   return value === undefined ? fallback : value === '1';
 }
 
+function parseOneOf<T extends string>(
+  value: string | undefined,
+  allowed: readonly T[],
+  fallback: T
+): T {
+  return allowed.find((candidate) => candidate === value) ?? fallback;
+}
+
 export function parseBenchParams(
   raw: RawParams,
   defaults: BenchParams
 ): BenchParams {
   const animation = first(raw.animation);
-  const direction = PROGRESSIVE_DIRECTIONS.find(
-    (value) => value === first(raw.direction)
-  );
   return {
     count: parseNumber(
       first(raw.count),
@@ -101,12 +130,23 @@ export function parseBenchParams(
       BENCH_LIMITS.warmup,
       false
     ),
-    direction: direction ?? defaults.direction,
+    direction: parseOneOf(
+      first(raw.direction),
+      PROGRESSIVE_DIRECTIONS,
+      defaults.direction
+    ),
     offset: parseNumber(
       first(raw.offset),
       defaults.offset,
       BENCH_LIMITS.offset,
       false
+    ),
+    blurType: parseOneOf(first(raw.type), BLUR_TYPES, defaults.blurType),
+    bg: parseOneOf(first(raw.bg), MATERIAL_BACKDROPS, defaults.bg),
+    overlay: parseOneOf(
+      first(raw.overlay),
+      MATERIAL_OVERLAYS,
+      defaults.overlay
     ),
   };
 }
