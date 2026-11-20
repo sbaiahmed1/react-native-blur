@@ -8,8 +8,6 @@ internal data class MaterialDrawSpec(val sigmaPx: Float, val overlayColor: Int, 
 
 /** Scales a blurType material by blurAmount the way iOS does: blur, tint alpha and extra saturation all follow amount / 100. */
 internal object MaterialMath {
-  // The fraction an amount that is not a number draws, the default amount of 10.
-  private const val INVALID_FRACTION = 0.1f
   private const val MAX_AMOUNT = 100f
   private const val LUMA_R = 0.2126f
   private const val LUMA_G = 0.7152f
@@ -19,9 +17,9 @@ internal object MaterialMath {
   // Above 0, so hwui draws its smallest Gaussian of half a node px.
   private const val MIN_EFFECT_RADIUS = 0.001f
 
-  /** The fraction of the material an amount draws: 0 or less is none, above 100 is all of it. */
+  /** The fraction of the material an amount draws, as iOS reads it: 0 or less is none, above 100 and NaN are all of it. */
   fun fraction(amount: Float): Float =
-    if (amount.isNaN() || amount.isInfinite()) INVALID_FRACTION else amount.coerceIn(0f, MAX_AMOUNT) / MAX_AMOUNT
+    if (amount.isNaN()) 1f else amount.coerceIn(0f, MAX_AMOUNT) / MAX_AMOUNT
 
   /** The blur sigma in px for a material radius in dp. */
   fun sigmaPx(amount: Float, radiusDp: Float, density: Float): Float = fraction(amount) * radiusDp * density

@@ -8,12 +8,12 @@ class MaterialMathTest {
 
   private val xlightTint = 0xCCF7F7F7.toInt()
 
-  @Test fun fractionHandlesEdgeAmounts() {
+  @Test fun fractionHandlesEdgeAmountsAsIosDoes() {
     assertEquals(0f, MaterialMath.fraction(0f), 0f)
     assertEquals(0f, MaterialMath.fraction(-5f), 0f)
-    assertEquals(0.1f, MaterialMath.fraction(Float.NaN), 0f)
-    assertEquals(0.1f, MaterialMath.fraction(Float.POSITIVE_INFINITY), 0f)
-    assertEquals(0.1f, MaterialMath.fraction(Float.NEGATIVE_INFINITY), 0f)
+    assertEquals(1f, MaterialMath.fraction(Float.NaN), 0f)
+    assertEquals(1f, MaterialMath.fraction(Float.POSITIVE_INFINITY), 0f)
+    assertEquals(0f, MaterialMath.fraction(Float.NEGATIVE_INFINITY), 0f)
     assertEquals(1f, MaterialMath.fraction(250f), 0f)
     assertEquals(0.5f, MaterialMath.fraction(50f), 0f)
   }
