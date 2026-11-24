@@ -48,6 +48,8 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
   // every frame. gradientPaint is only ever used for the DST_IN mask, so the
   // xfermode can stay set for the paint's whole lifetime.
   private val dstInXfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
+  // The tint is drawn over the masked blur on its own t^3 ramp, so it fades as on iOS rather than on the blur's opacity ramp.
+  private val tintPaint = Paint()
 
   // Raw blur amount (0-100) as received from JS. Kept separate from
   // currentBlurRadius because the effective radius also depends on the current
@@ -208,8 +210,8 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
 
       blurView?.apply {
         setBlurRadius(currentBlurRadius)
-        overlayColor = currentOverlayColor
-        setBackgroundColor(currentOverlayColor)
+        overlayColor = Color.TRANSPARENT
+        setBackgroundColor(Color.TRANSPARENT)
       }
 
       // Swap blur root after BlurView is attached (deferred to let it attach first)
@@ -463,6 +465,7 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
       }
 
       gradientPaint.shader = gradient
+      updateTintShader()
 
       logDebug("Updated gradient: direction=$currentDirection, offset=$currentStartOffset")
       invalidate()
@@ -578,6 +581,10 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
     // allocates nothing per frame.
     canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), gradientPaint)
     canvas.restoreToCount(saveCount)
+
+    if (Color.alpha(currentOverlayColor) != 0 && tintPaint.shader != null) {
+      canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), tintPaint)
+    }
 
     // Draw the remaining children unmasked, preserving order.
     for (i in 0 until childCount) {
@@ -749,11 +756,16 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
     currentOverlayColor = ProgressiveMask.tintColor(materialTint, currentBlurType, currentBlurAmount)
     logDebug("overlay: $currentBlurType -> ${Integer.toHexString(currentOverlayColor)}")
 
-    try {
-      blurView?.setOverlayColor(currentOverlayColor)
-      invalidate()
-    } catch (e: Exception) {
-      logError("Failed to set overlay color: ${e.message}", e)
-    }
+    updateTintShader()
+    invalidate()
+  }
+
+  private fun updateTintShader() {
+    if (width <= 0 || height <= 0) return
+    val spec = ProgressiveMask.tintSpec(currentDirection, currentStartOffset, width.toFloat(), height.toFloat())
+    tintPaint.shader = LinearGradient(
+      spec.x0, spec.y0, spec.x1, spec.y1,
+      ProgressiveMask.overlayColors(currentOverlayColor, spec.alphas), spec.positions, Shader.TileMode.CLAMP
+    )
   }
 }
