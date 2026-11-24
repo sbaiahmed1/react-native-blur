@@ -71,12 +71,14 @@ open class VariableBlurView: UIVisualEffectView {
 
     setupVariableBlur()
     registerForegroundObserver()
+    registerForAppearanceChanges()
   }
 
   required public init?(coder: NSCoder) {
     super.init(coder: coder)
     setupVariableBlur()
     registerForegroundObserver()
+    registerForAppearanceChanges()
   }
 
   // UIKit resets UIVisualEffectView's internal layer configuration when the
@@ -92,6 +94,31 @@ open class VariableBlurView: UIVisualEffectView {
     ) { [weak self] _ in
       self?.setupVariableBlur()
     }
+  }
+
+  // The tint layer holds a CGColor resolved for one appearance, so a light or dark switch resolves it again.
+  private func registerForAppearanceChanges() {
+    if #available(iOS 17.0, *) {
+      registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
+        self.refreshTintColor()
+      }
+    }
+  }
+
+  open override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+    super.traitCollectionDidChange(previousTraitCollection)
+    if #available(iOS 17.0, *) { return }
+    if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) {
+      refreshTintColor()
+    }
+  }
+
+  private func refreshTintColor() {
+    guard let materialTint, tintLayer.superlayer != nil else { return }
+    CATransaction.begin()
+    CATransaction.setDisableActions(true)
+    tintLayer.backgroundColor = materialTint.resolvedColor(with: traitCollection).cgColor
+    CATransaction.commit()
   }
 
   deinit {
