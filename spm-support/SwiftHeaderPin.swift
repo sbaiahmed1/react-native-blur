@@ -58,6 +58,8 @@ private let _helperTypes: [NSObject.Type] = [
   ReactNativeProgressiveBlurViewHelper.updateProgressiveBlurView(view, withStartOffset: value)
   ReactNativeProgressiveBlurViewHelper.updateProgressiveBlurView(view, withBlurType: "regular")
   ReactNativeProgressiveBlurViewHelper.updateProgressiveBlurView(view, withReducedTransparencyFallbackColor: color)
+  let tint: UIColor? = color
+  ReactNativeProgressiveBlurViewHelper.updateProgressiveBlurView(view, withMaterialTint: tint)
 }
 
 @MainActor private func _pinVibrancy(_ frame: CGRect, _ view: VibrancyEffectView) -> UIView {
@@ -101,6 +103,7 @@ private let _swiftHeaderSelectors: [Selector] = [
   #selector(ReactNativeProgressiveBlurViewHelper.updateProgressiveBlurView(_:withStartOffset:)),
   #selector(ReactNativeProgressiveBlurViewHelper.updateProgressiveBlurView(_:withBlurType:)),
   #selector(ReactNativeProgressiveBlurViewHelper.updateProgressiveBlurView(_:withReducedTransparencyFallbackColor:)),
+  #selector(ReactNativeProgressiveBlurViewHelper.updateProgressiveBlurView(_:withMaterialTint:)),
   #selector(ReactNativeVibrancyViewHelper.createVibrancyViewWithFrame(_:)),
   #selector(ReactNativeVibrancyViewHelper.updateVibrancyView(_:withBlurType:)),
   #selector(ReactNativeVibrancyViewHelper.updateVibrancyView(_:withBlurAmount:)),

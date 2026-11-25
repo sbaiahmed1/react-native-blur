@@ -73,6 +73,7 @@ __attribute__((objc_runtime_name("_TtC15ReactNativeBlur36ReactNativeProgressiveB
 + (void)updateProgressiveBlurView:(ProgressiveBlurView *)view withStartOffset:(double)offset;
 + (void)updateProgressiveBlurView:(ProgressiveBlurView *)view withBlurType:(NSString *)type;
 + (void)updateProgressiveBlurView:(ProgressiveBlurView *)view withReducedTransparencyFallbackColor:(UIColor *)color;
++ (void)updateProgressiveBlurView:(ProgressiveBlurView *)view withMaterialTint:(nullable UIColor *)materialTint;
 @end
 
 __attribute__((objc_runtime_name("_TtC15ReactNativeBlur29ReactNativeVibrancyViewHelper")))
