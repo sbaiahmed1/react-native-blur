@@ -57,6 +57,9 @@ jobs:
       - name: Validate web build graph
         run: node scripts/validate-web-build.mjs
 
+      - name: Check SwiftPM header matches the Swift helpers
+        run: node scripts/check-spm-header.mjs
+
   build-web:
     runs-on: ubuntu-latest
     permissions:
