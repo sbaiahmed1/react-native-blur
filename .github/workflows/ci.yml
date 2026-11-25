@@ -187,3 +187,50 @@ jobs:
         if: env.turbo_cache_hit != 1
         run: |
           yarn turbo run build:ios --cache-dir="${{ env.TURBO_CACHE_DIR }}"
+
+  build-ios-spm:
+    runs-on: macos-latest
+
+    env:
+      XCODE_VERSION: 26
+      RN_CLI_VERSION: 20.2.0
+      APP_DIR: ${{ github.workspace }}/../SpmApp
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Use appropriate Xcode version
+        uses: maxim-lobanov/setup-xcode@60606e260d2fc5762a71e64e74b2174e8ea3c8bd # v1.6.0
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Pack the library
+        run: |
+          yarn prepare
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP"
+
+      # A bare app consumes the library the way a SwiftPM user does: from the packed
+      # tarball, through React Native's `spm` tooling. The Expo example app can't be
+      # used here because Expo modules only support CocoaPods.
+      - name: Create a bare app that uses SwiftPM
+        run: |
+          RN_VERSION=$(node -p "require('./example/package.json').dependencies['react-native']")
+          cd "$(dirname "$APP_DIR")"
+          npx --yes @react-native-community/cli@"$RN_CLI_VERSION" init SpmApp \
+            --version "$RN_VERSION" --skip-install --skip-git-init --install-pods false
+          cd SpmApp
+          npm install --no-audit --no-fund
+          npm install --no-audit --no-fund "$RUNNER_TEMP"/sbaiahmed1-react-native-blur-*.tgz
+          npx react-native spm add --deintegrate --yes
+
+      - name: Build the app for iOS with SwiftPM
+        working-directory: ${{ env.APP_DIR }}/ios
+        run: |
+          set -o pipefail
+          xcodebuild -project SpmApp.xcodeproj -scheme SpmApp -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build | xcpretty
