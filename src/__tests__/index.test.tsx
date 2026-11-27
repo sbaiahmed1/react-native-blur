@@ -291,6 +291,15 @@ describe('material props', () => {
       }
     });
 
+    it('sends the fixed-scheme radius whatever the app scheme', () => {
+      act(() => setColorScheme('light'));
+      const tree = render(<Wrapper blurType="systemMaterialDark" />);
+      expect(nativeTokenProps(tree, Native)[0]?.materialRadius).toBe(
+        materialFor('systemMaterialDark', 'dark').radius
+      );
+      act(() => tree.unmount());
+    });
+
     it('passes the full token whatever the amount', () => {
       for (const blurAmount of [10, 90]) {
         const tree = render(
