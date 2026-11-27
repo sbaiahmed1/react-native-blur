@@ -1,12 +1,35 @@
+import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BlurView, ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
 
 import { FeedList } from '../content';
 import type { SceneProps } from '../scenes';
+import { CalibrationBackdrop } from './materials';
 
-export default function ProgressiveRamp({ params, running }: SceneProps) {
+function RampBackdrop({
+  params,
+  running,
+  children,
+}: SceneProps & { children: ReactNode }) {
+  if (params.bg === 'feed') {
+    return (
+      <FeedList scrolling={running} images={params.images}>
+        {children}
+      </FeedList>
+    );
+  }
   return (
-    <FeedList scrolling={running} images={params.images}>
+    <View style={styles.root}>
+      <CalibrationBackdrop bg={params.bg} />
+      {children}
+    </View>
+  );
+}
+
+export default function ProgressiveRamp(props: SceneProps) {
+  const { params } = props;
+  return (
+    <RampBackdrop {...props}>
       <ProgressiveBlurView
         testID="progressive-ramp-view"
         blurType={params.blurType}
@@ -31,11 +54,14 @@ export default function ProgressiveRamp({ params, running }: SceneProps) {
           />
         </View>
       ) : null}
-    </FeedList>
+    </RampBackdrop>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   center: {
     alignItems: 'center',
     justifyContent: 'center',
