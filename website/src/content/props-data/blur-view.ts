@@ -22,6 +22,13 @@ export const blurViewProps: PropRow[] = [
     description: 'Sets how many blur passes run on Android 11 and earlier, for a smoother blur (1-15). Android 12 and later ignore it.',
   },
   {
+    name: 'downsampleFactor',
+    type: 'number',
+    default: '8',
+    platform: 'Android',
+    description: 'Sets how much the backdrop is scaled down before it is blurred on Android 11 and earlier (1-16). Lower values keep edges behind the blur from stepping, at a CPU and memory cost that grows with the square of the reduction. Set it once and do not animate it, since each new value allocates the blur memory again. Android 12 and later ignore it.',
+  },
+  {
     name: 'ignoreSafeArea',
     type: 'boolean',
     default: 'true',

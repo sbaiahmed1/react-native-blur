@@ -42,6 +42,10 @@ class ReactNativeBlurViewManager : ViewGroupManager<ViewGroup>(),
     (view as? BlurViewProps)?.setRounds(blurRounds)
   }
 
+  override fun setDownsampleFactor(view: ViewGroup?, downsampleFactor: Double) {
+    (view as? BlurViewProps)?.setDownsample(downsampleFactor.toFloat())
+  }
+
   override fun setBorderRadius(view: ViewGroup?, borderRadius: Float) {
     (view as? BlurViewProps)?.setBorderRadius(borderRadius)
   }

@@ -97,7 +97,7 @@ No configuration is needed: in an Expo Web or react-native-web project (Metro, w
 
 - **Browser support:** `backdrop-filter` is available in Chrome 76+, Edge 79+, Safari 9+ (via `-webkit-`), and Firefox 103+. See [Can I Use](https://caniuse.com/css-backdrop-filter) for current coverage. In browsers without it (and while server-side rendering), components gracefully degrade to their semi-transparent tint without blur.
 - **Server-side rendering:** fully supported, including Expo Router static output (`web.output: "static"`).
-- Native-only props (`blurRounds`, `reducedTransparencyFallbackColor`, `ignoreSafeArea`, `isInteractive`, `spacing`) are accepted and ignored on web. Each component's page lists its web behavior.
+- Native-only props (`blurRounds`, `downsampleFactor`, `reducedTransparencyFallbackColor`, `ignoreSafeArea`, `isInteractive`, `spacing`) are accepted and ignored on web. Each component's page lists its web behavior.
 
 ## Next steps
 

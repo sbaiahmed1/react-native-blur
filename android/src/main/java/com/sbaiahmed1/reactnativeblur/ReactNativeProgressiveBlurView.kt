@@ -58,6 +58,7 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
   private var currentBlurAmount = DEFAULT_BLUR_RADIUS
   private var currentBlurRadius = DEFAULT_BLUR_RADIUS
   private var currentBlurRounds = DEFAULT_BLUR_ROUNDS
+  private var currentDownsampleFactor = DownsampleFactor.DEFAULT
   private var currentOverlayColor = Color.TRANSPARENT
   private var currentBlurType = "xlight"
   private var materialTint: Int? = null
@@ -79,9 +80,8 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
     private const val DEFAULT_BLUR_RADIUS = 10f
     // Kept at 5 to match the JS wrapper and codegen default (one source of
     // truth); the wrapper always sends blurRounds so a lower internal default
-    // was never reachable. See ReactNativeBlurView for the downsample rationale.
+    // was never reachable.
     private const val DEFAULT_BLUR_ROUNDS = 5
-    private const val DEFAULT_DOWNSAMPLE_FACTOR = 8.0f
     private const val DEBUG = false
 
     // The DST_IN mask cross-fades one fixed-radius blur in *opacity*, while iOS
@@ -191,7 +191,7 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
       if (blurView == null) {
         blurView = BlurView(context, null).apply {
           layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
-          setDownsampleFactor(DEFAULT_DOWNSAMPLE_FACTOR)
+          setDownsampleFactor(currentDownsampleFactor)
           blurRounds = currentBlurRounds
           // BlurView registers its unguarded listener on the activity decor
           // view on every attach, and a pre-draw can run before the posted
@@ -695,6 +695,22 @@ class ReactNativeProgressiveBlurView : FrameLayout, ProgressiveBlurViewProps {
       blurView?.blurRounds = blurRounds
     } catch (e: Exception) {
       logError("Failed to set blur rounds: ${e.message}", e)
+    }
+  }
+
+  /**
+   * Set the capture downsample factor.
+   * @param factor How much the backdrop is scaled down before blurring (1-16)
+   */
+  override fun setDownsample(factor: Float) {
+    val downsampleFactor = DownsampleFactor.clamp(factor)
+    currentDownsampleFactor = downsampleFactor
+    logDebug("setDownsample: $factor -> $downsampleFactor")
+
+    try {
+      blurView?.setDownsampleFactor(downsampleFactor)
+    } catch (e: Exception) {
+      logError("Failed to set downsample factor: ${e.message}", e)
     }
   }
 

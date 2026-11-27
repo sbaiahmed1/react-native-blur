@@ -4,6 +4,7 @@ import { Platform, StyleSheet, View, type ColorValue } from 'react-native';
 
 import * as PublicApi from '../index';
 import ReactNativeBlurView from '../ReactNativeBlurViewNativeComponent';
+import ReactNativeProgressiveBlurView from '../ReactNativeProgressiveBlurViewNativeComponent';
 import ReactNativeLiquidGlassView from '../ReactNativeLiquidGlassViewNativeComponent';
 import { BlurView } from '../BlurView';
 import { ProgressiveBlurView } from '../ProgressiveBlurView';
@@ -11,7 +12,6 @@ import { LiquidGlassView, getFallbackOverlayColor } from '../LiquidGlassView';
 import { LiquidGlassContainer } from '../LiquidGlassContainer';
 import { VibrancyView } from '../VibrancyView';
 import { BlurSwitch } from '../BlurSwitch';
-import ReactNativeProgressiveBlurView from '../ReactNativeProgressiveBlurViewNativeComponent';
 import { materialFor } from '../materials';
 
 // A color scheme store that re-renders its subscribers, like Appearance does.
@@ -111,8 +111,24 @@ describe('wrapper rendering', () => {
     expect(native[0]?.props.blurType).toBe('xlight');
     expect(native[0]?.props.blurAmount).toBe(20);
     expect(native[0]?.props.blurRounds).toBe(5);
+    expect(native[0]?.props.downsampleFactor).toBe(8);
     expect(native[0]?.props.ignoreSafeArea).toBe(true);
     act(() => tree.unmount());
+  });
+
+  it('passes downsampleFactor through to the native views', () => {
+    const blur = render(<BlurView downsampleFactor={2} />);
+    expect(
+      blur.root.findAllByType(ReactNativeBlurView)[0]?.props.downsampleFactor
+    ).toBe(2);
+    act(() => blur.unmount());
+
+    const progressive = render(<ProgressiveBlurView downsampleFactor={2} />);
+    expect(
+      progressive.root.findAllByType(ReactNativeProgressiveBlurView)[0]?.props
+        .downsampleFactor
+    ).toBe(2);
+    act(() => progressive.unmount());
   });
 
   it('renders BlurView with children without throwing', () => {

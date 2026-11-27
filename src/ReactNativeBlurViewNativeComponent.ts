@@ -28,6 +28,7 @@ export interface NativeProps extends ViewProps {
   blurAmount?: CodegenTypes.WithDefault<CodegenTypes.Double, 10.0>;
   blurType?: CodegenTypes.WithDefault<BlurType, 'xlight'>;
   blurRounds?: CodegenTypes.WithDefault<CodegenTypes.Int32, 5>;
+  downsampleFactor?: CodegenTypes.WithDefault<CodegenTypes.Double, 8.0>;
   reducedTransparencyFallbackColor?: ColorValue;
   // The blurType material at full strength, filled by the wrapper. A negative radius means unset.
   materialTint?: ColorValue;
