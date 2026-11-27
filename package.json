@@ -37,6 +37,7 @@
   "scripts": {
     "example": "yarn workspace @sbaiahmed1/react-native-blur-example-app",
     "test": "jest",
+    "test:ios-math": "bash scripts/ios-math/run.sh",
     "typecheck": "tsc",
     "bench:android": "bash scripts/bench/run-all-android.sh",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
@@ -166,7 +167,7 @@
   },
   "codegenConfig": {
     "name": "ReactNativeBlurViewSpec",
-    "type": "components",
+    "type": "all",
     "jsSrcsDir": "src",
     "android": {
       "javaPackageName": "com.sbaiahmed1.reactnativeblur"
@@ -178,6 +179,9 @@
         "ReactNativeProgressiveBlurView": "ReactNativeProgressiveBlurView",
         "ReactNativeLiquidGlassContainer": "ReactNativeLiquidGlassContainer",
         "ReactNativeVibrancyView": "ReactNativeVibrancyView"
+      },
+      "modulesProvider": {
+        "ReactNativeBlur": "ReactNativeBlurModule"
       }
     }
   },

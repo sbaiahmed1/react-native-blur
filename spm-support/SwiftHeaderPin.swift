@@ -41,6 +41,7 @@ private let _helperTypes: [NSObject.Type] = [
   ReactNativeLiquidGlassViewHelper.updateLiquidGlassView(view, withIsInteractive: true)
   ReactNativeLiquidGlassViewHelper.updateLiquidGlassView(view, withIgnoringSafeArea: false)
   ReactNativeLiquidGlassViewHelper.updateLiquidGlassView(view, withReducedTransparencyFallbackColor: color)
+  _ = ReactNativeLiquidGlassViewHelper.isLiquidGlassAvailable()
   view.beginBatchUpdate()
   view.endBatchUpdate()
   let radius: CGFloat = 1
@@ -97,6 +98,7 @@ private let _swiftHeaderSelectors: [Selector] = [
   #selector(ReactNativeLiquidGlassViewHelper.updateLiquidGlassView(_:withIsInteractive:)),
   #selector(ReactNativeLiquidGlassViewHelper.updateLiquidGlassView(_:withIgnoringSafeArea:)),
   #selector(ReactNativeLiquidGlassViewHelper.updateLiquidGlassView(_:withReducedTransparencyFallbackColor:)),
+  #selector(ReactNativeLiquidGlassViewHelper.isLiquidGlassAvailable),
   #selector(ReactNativeProgressiveBlurViewHelper.createProgressiveBlurViewWithFrame(_:)),
   #selector(ReactNativeProgressiveBlurViewHelper.updateProgressiveBlurView(_:withBlurAmount:)),
   #selector(ReactNativeProgressiveBlurViewHelper.updateProgressiveBlurView(_:withDirection:)),
