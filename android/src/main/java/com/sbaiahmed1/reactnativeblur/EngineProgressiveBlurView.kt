@@ -89,7 +89,7 @@ internal class EngineProgressiveBlurView(context: Context) : BackdropHostView(co
   override fun setMaterialSaturation(saturation: Float) = Unit
   override fun setMaterialRadius(radiusDp: Float) = Unit
 
-  // The engine records its backdrop at its own scale; this only sizes QmBlurView's capture.
+  // The engine records its backdrop at its own scale. This only sizes QmBlurView's capture.
   override fun setDownsample(factor: Float) = Unit
 
   override fun setDirection(direction: String) {
