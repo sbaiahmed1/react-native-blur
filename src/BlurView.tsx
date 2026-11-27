@@ -43,7 +43,9 @@ export interface BlurViewProps extends ViewProps {
    * blurring it (1-16). Lower values keep edges behind the blur from stepping
    * at a higher CPU and memory cost, which grows with the square of the
    * reduction (2 captures 16x the pixels of 8). Applies on Android 11 and
-   * earlier. Android 12 and later blur on the GPU and ignore it.
+   * earlier. Android 12 and later blur on the GPU and ignore it. Set it once
+   * and do not animate it: each new value makes QmBlurView allocate its two
+   * capture bitmaps again, about 20 MB at 1 for a full-screen view.
    *
    * @default 8
    *
