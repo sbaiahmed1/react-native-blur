@@ -111,7 +111,7 @@ export type ProgressiveBlurViewRef = React.ComponentRef<
  * creating a smooth gradient from fully blurred to clear (or vice versa).
  *
  * **Platform Support:**
- * - iOS: Full support using private Core Animation filters
+ * - iOS: Apple's private variable blur filter, or stacked system blur views on a release without it
  * - Android 12 and later: ramps the blur radius on the GPU, as strong as iOS
  * - Android 11 and earlier: QmBlurView fades one blur out with a gradient mask
  *
