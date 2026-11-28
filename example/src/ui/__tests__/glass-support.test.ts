@@ -1,3 +1,11 @@
+jest.mock(
+  '@sbaiahmed1/react-native-blur',
+  () => ({ isLiquidGlassAvailable: jest.fn(() => true) }),
+  {
+    virtual: true,
+  }
+);
+
 import {
   chipFill,
   GLASS_FALLBACK_NOTICE,
@@ -37,5 +45,33 @@ describe('chipFill', () => {
     expect(chipFill(true, false, false)).toBe('solid');
     expect(chipFill(true, false, true)).toBe('solid');
     expect(chipFill(true, true, true)).toBe('solid');
+  });
+});
+
+// Loads glass-support with the library reporting `glass`, on a fresh react-native whose Platform.OS is `os`.
+function loadSupport(os: 'ios' | 'android', glass: boolean) {
+  let support!: typeof import('../glass-support');
+  jest.isolateModules(() => {
+    require('@sbaiahmed1/react-native-blur').isLiquidGlassAvailable.mockReturnValue(
+      glass
+    );
+    const { Platform } = require('react-native');
+    Object.defineProperty(Platform, 'OS', { value: os, configurable: true });
+    support = require('../glass-support');
+  });
+  return support;
+}
+
+describe('native glass gates', () => {
+  it('reads native glass from the library', () => {
+    expect(loadSupport('ios', true).NATIVE_GLASS).toBe(true);
+    expect(loadSupport('ios', false).NATIVE_GLASS).toBe(false);
+    expect(loadSupport('android', true).NATIVE_GLASS).toBe(true);
+  });
+
+  it('merges container shapes only on iOS with native glass', () => {
+    expect(loadSupport('ios', true).NATIVE_GLASS_CONTAINER).toBe(true);
+    expect(loadSupport('ios', false).NATIVE_GLASS_CONTAINER).toBe(false);
+    expect(loadSupport('android', true).NATIVE_GLASS_CONTAINER).toBe(false);
   });
 });

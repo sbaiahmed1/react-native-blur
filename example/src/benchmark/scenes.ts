@@ -83,8 +83,8 @@ export const SCENES: readonly SceneDef[] = [
   {
     id: 'progressive-ramp',
     title: 'Progressive ramp',
-    note: 'One ProgressiveBlurView over the whole feed, so the fade runs from edge to edge. The rows in the clear half should read as sharp text. count=2 adds a BlurView card over it.',
-    defaults: { amount: 20, count: 1, blurType: 'regular' },
+    note: 'One ProgressiveBlurView over the whole feed, so the fade runs from edge to edge. The rows in the clear half should read as sharp text. count=2 adds a BlurView card over it. bg swaps the feed for a calibration backdrop.',
+    defaults: { amount: 20, count: 1, blurType: 'regular', bg: 'feed' },
     Component: ProgressiveRamp,
   },
   {

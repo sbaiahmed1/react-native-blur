@@ -17,7 +17,7 @@ order: 1
 
 > This library ships Fabric components only and does not support the legacy (Paper) architecture. Use React Native 0.80+ with the New Architecture enabled.
 
-`LiquidGlassView` needs Xcode 26.0+ and iOS 26+ for the full glass effect on iOS, and Android 13+ (API 33, where AGSL `RuntimeShader` is available) on Android. On older iOS and Android versions it automatically falls back to an enhanced blur approximation. `LiquidGlassContainer`'s merge effect is iOS 26+ only.
+`LiquidGlassView` needs Xcode 26.0+ and iOS 26+ for the full glass effect on iOS, and Android 13+ (API 33, where AGSL `RuntimeShader` is available) on Android. On older iOS and Android versions it falls back to a blur that looks close to glass, and `isLiquidGlassAvailable()` returns whether native glass renders. `LiquidGlassContainer`'s merge effect is iOS 26+ only.
 
 ## Install the package
 

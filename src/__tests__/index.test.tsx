@@ -5,6 +5,7 @@ import { Platform, StyleSheet, View, type ColorValue } from 'react-native';
 import * as PublicApi from '../index';
 import ReactNativeBlurView from '../ReactNativeBlurViewNativeComponent';
 import ReactNativeLiquidGlassView from '../ReactNativeLiquidGlassViewNativeComponent';
+import ReactNativeLiquidGlassContainer from '../ReactNativeLiquidGlassContainerNativeComponent';
 import { BlurView } from '../BlurView';
 import { ProgressiveBlurView } from '../ProgressiveBlurView';
 import { LiquidGlassView, getFallbackOverlayColor } from '../LiquidGlassView';
@@ -35,6 +36,30 @@ const setColorScheme = (
   jest.requireMock('react-native/Libraries/Utilities/useColorScheme')
     .default as { set: (scheme: string | null) => void }
 ).set;
+
+// The native module reports an app that does not render Liquid Glass.
+jest.mock('../NativeReactNativeBlur', () => ({
+  __esModule: true,
+  default: { getConstants: () => ({ isLiquidGlassAvailable: false }) },
+}));
+
+function withIosVersion(version: string, run: () => void) {
+  const replaced = jest.replaceProperty(Platform, 'OS', 'ios');
+  const versionDescriptor = Object.getOwnPropertyDescriptor(
+    Platform,
+    'Version'
+  )!;
+  Object.defineProperty(Platform, 'Version', {
+    value: version,
+    configurable: true,
+  });
+  try {
+    run();
+  } finally {
+    replaced.restore();
+    Object.defineProperty(Platform, 'Version', versionDescriptor);
+  }
+}
 
 // react-test-renderer under React 19 requires renders to run inside act().
 (
@@ -177,6 +202,30 @@ describe('wrapper rendering', () => {
     }
   });
 
+  it('LiquidGlassView renders the BlurView fallback when glass is unavailable on iOS', () => {
+    withIosVersion('26.0', () => {
+      const tree = render(
+        <LiquidGlassView glassTintColor="#007AFF" glassOpacity={0.8} />
+      );
+      expect(tree.root.findAllByType(BlurView)).toHaveLength(1);
+      expect(tree.root.findAllByType(ReactNativeLiquidGlassView)).toHaveLength(
+        0
+      );
+      act(() => tree.unmount());
+    });
+  });
+
+  it('LiquidGlassContainer renders a View when glass is unavailable', () => {
+    withIosVersion('26.0', () => {
+      const tree = render(<LiquidGlassContainer spacing={12} />);
+      expect(
+        tree.root.findAllByType(ReactNativeLiquidGlassContainer)
+      ).toHaveLength(0);
+      expect(tree.root.findAllByType(View).length).toBeGreaterThan(0);
+      act(() => tree.unmount());
+    });
+  });
+
   it('renders every wrapper without throwing', () => {
     const cases = [
       <ProgressiveBlurView key="p" blurAmount={30} />,
@@ -240,6 +289,15 @@ describe('material props', () => {
           replaced.restore();
         }
       }
+    });
+
+    it('sends the fixed-scheme radius whatever the app scheme', () => {
+      act(() => setColorScheme('light'));
+      const tree = render(<Wrapper blurType="systemMaterialDark" />);
+      expect(nativeTokenProps(tree, Native)[0]?.materialRadius).toBe(
+        materialFor('systemMaterialDark', 'dark').radius
+      );
+      act(() => tree.unmount());
     });
 
     it('passes the full token whatever the amount', () => {

@@ -12,7 +12,7 @@ import { progressiveBlurDirectionValues } from '../props-data/enums';
 
 `ProgressiveBlurView` renders a variable/gradient blur that transitions smoothly instead of applying a uniform blur intensity. It works on **iOS, Android, and Web**, though the underlying implementations differ:
 
-- **iOS**: private Core Animation filters for true variable blur.
+- **iOS**: Apple's private variable blur filter. On an iOS release without it, stacked system blur views take over (see [iOS backend notes](#ios-backend-notes)).
 - **iOS accessibility**: Reduce Transparency switches to `reducedTransparencyFallbackColor` immediately, including changes while mounted. Turning it off restores the configured blur without changing the children.
 - **Android**: Android 12 and later ramp the blur radius on the GPU. Android 11 and earlier use QmBlurView's `BlurView`, which fades one blur out with a gradient mask.
 - **Web**: CSS `backdrop-filter` layers with gradient masks, each at half the radius of the one before. Together they ramp the blur radius down to sharp.
@@ -101,12 +101,29 @@ import { ProgressiveBlurView } from '@sbaiahmed1/react-native-blur';
 
 The three backends aim for the same look but get there differently:
 
-- **Blur ramp.** iOS, Android 12 and later, and web ramp the blur *radius* from its strongest at the blurred edge down to 0. They blur about as strongly at the same `blurAmount` up to 48. Past 48, the strongest blur on Android and web stays where it is at 48. Android 11 and earlier render one fixed-radius blur and ramp its *opacity*, so the same `blurAmount` gives a lighter blur there at most amounts. On those versions the center direction also blurs at about a third of `blurAmount`.
+- **Blur ramp.** iOS, Android 12 and later, and web ramp the blur *radius* from its strongest at the blurred edge down to 0. They blur about as strongly at the same `blurAmount` up to 48. Past 48, the strongest blur on Android and web stays where it is at 48. Android 11 and earlier render one fixed-radius blur and ramp its *opacity*, so the same `blurAmount` gives a lighter blur there at most amounts. On those versions the center direction also blurs at about a third of `blurAmount`. On an iOS release without the private filter, the blur stops at the strength of the `blurType` style (see [iOS backend notes](#ios-backend-notes)).
 - **`startOffset`** means the same thing on every platform. For the edge directions it grows a fully blurred plateau from the blurred edge: `0.4` means the nearest 40% of the view is uniformly blurred and the fade spans the remaining 60%. For the center direction it insets the fade start from the edges (clamped to 0.3), which shortens the blur body, so `0` gives the longest body. For the top and bottom direction it sets the fully blurred band at each edge (clamped to 0.3).
 
 <div class="glass-panel-subtle my-6 rounded-xl border border-amber-400/30 p-4 text-sm text-white/80">
   <strong class="text-amber-300">Changed in 6.0:</strong> before 6.0, iOS interpreted <code>startOffset</code> inversely for the edge directions — it grew the fully-<em>clear</em> region from the clear edge — and Web's center direction grew the blurred band instead of shrinking it. If you tuned <code>startOffset</code> per platform (e.g. via <code>Platform.select</code>), collapse it to a single value and re-check the iOS fade geometry.
 </div>
+
+## iOS backend notes
+
+On iOS, `ProgressiveBlurView` uses Apple's private variable blur filter, which every current iOS release has. If a future release drops it, the view switches to a stack of up to six system blur views of your `blurType`. Each one blurs half as much as the one on top of it and fades in where it takes over. Together they ramp the blur from the blurred edge down to sharp.
+
+The fallback looks close to the private filter, with these differences, measured on an iOS 27.2 simulator in a Release build:
+
+- **The blur stops at the strength of the `blurType` style itself.** That's 19 to 48 pt depending on the style, such as 29 pt for `regular` in light appearance and 19 pt in Dark Mode. The private filter keeps growing at about 2 pt per `blurAmount` unit, so it reaches 40 pt at 20. Past a `blurAmount` of 10 to 24, depending on the style, a higher value only moves where the blur starts.
+- **Colors look more saturated with most styles.** Apple boosts saturation in its blur styles, about 1.8 times for `regular`, `prominent`, `light` and `dark`, and the private filter doesn't. The `systemUltraThinMaterial` styles barely change it.
+- **Faint horizontal lines can show where two blur views overlap.** The upper view draws its tint over the tint of the one below. Over light content they're hard to see. Over black they reach 16 of 255 brightness levels, and they show most with dark styles over colorful content.
+- **The tint is the style's own.** At full strength it matches the private filter within 4 of 255 levels.
+
+To preview the fallback on a current iOS release, launch the app with `-RNBlurProgressiveBands YES`. In Xcode, open **Product > Scheme > Edit Scheme**, select **Run**, and add it under **Arguments Passed On Launch**. For a simulator build, you can also launch it from the terminal:
+
+```sh
+xcrun simctl launch booted your.bundle.id -RNBlurProgressiveBands YES
+```
 
 ## Android backend notes
 

@@ -5,7 +5,8 @@ import type {
 
 import { BLUR_TYPES } from '../constants/blur';
 
-export type MaterialBackdrop = 'bw' | 'grays' | 'mid' | 'gb' | 'edge' | 'photo';
+export type MaterialBackdrop =
+  'bw' | 'grays' | 'mid' | 'gb' | 'edge' | 'photo' | 'feed';
 
 export type MaterialOverlay = 'none' | 'prop' | 'above';
 
@@ -16,6 +17,7 @@ export const MATERIAL_BACKDROPS: readonly MaterialBackdrop[] = [
   'gb',
   'edge',
   'photo',
+  'feed',
 ];
 
 const MATERIAL_OVERLAYS: readonly MaterialOverlay[] = ['none', 'prop', 'above'];

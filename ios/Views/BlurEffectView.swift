@@ -11,6 +11,8 @@ class BlurEffectView: UIVisualEffectView {
   private var foregroundObserver: NSObjectProtocol?
   private var stabilizationDisplayLink: CADisplayLink?
   private var stabilizationFramesRemaining = 0
+  /// Called after every rebuild of the effect, so a band can assign its mask again.
+  var onRebuild: (() -> Void)?
 
   override init(effect: UIVisualEffect?) {
     super.init(effect: effect)
@@ -76,6 +78,7 @@ class BlurEffectView: UIVisualEffectView {
 
   private func rebuildAnimator() {
     BlurDebugCounters.rebuild("BlurEffectView")
+    defer { onRebuild?() }
     // Paused animators hang Detox indefinitely — use on/off blur when Detox is running
     if isDetoxPresent() {
       effect = blurIntensity > 0 ? UIBlurEffect(style: blurStyle) : nil

@@ -167,8 +167,8 @@ import UIKit
       return
     }
 
-    // Check if we can use the new API (iOS 26+)
-    if #available(iOS 26.0, *) {
+    // Glass needs iOS 26, an Xcode 26 build, and an app that does not opt out of the new design.
+    if #available(iOS 26.0, *), LiquidGlassSupport.isAvailable {
       #if compiler(>=6.2)
       // Remove the solid fallback and its uniform clipping when the user's
       // Reduce Transparency setting is turned off again.
@@ -202,7 +202,6 @@ import UIKit
       updateFallback()
       #endif
     } else {
-      // Fallback for iOS < 26
       updateFallback()
     }
   }
@@ -239,7 +238,7 @@ import UIKit
   }
 
   private func updateBorderRadius() {
-    if #available(iOS 26.0, *) {
+    if #available(iOS 26.0, *), LiquidGlassSupport.isAvailable {
       #if compiler(>=6.2)
       glassEffectView?.cornerConfiguration = .corners(
         topLeftRadius: UICornerRadius(floatLiteral: Double(topLeftRadius)),
