@@ -71,6 +71,10 @@ it('parses the material params', () => {
   expect([p.blurType, p.bg, p.overlay]).toEqual(['xlight', 'photo', 'prop']);
 });
 
+it('parses the feed backdrop', () => {
+  expect(parseBenchParams({ bg: 'feed' }, D).bg).toBe('feed');
+});
+
 it('falls back on unknown material params', () => {
   const p = parseBenchParams({ type: 'glass', bg: 'sky', overlay: '1' }, D);
   expect([p.blurType, p.bg, p.overlay]).toEqual([

@@ -101,6 +101,10 @@ using namespace facebook::react;
     [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withMaterialTint:materialTint];
   }
 
+  if (oldViewProps.materialRadius != newViewProps.materialRadius) {
+    [ReactNativeProgressiveBlurViewHelper updateProgressiveBlurView:_progressiveBlurView withMaterialRadius:newViewProps.materialRadius];
+  }
+
   [_progressiveBlurView endBatchUpdate];
   [super updateProps:props oldProps:oldProps];
 }

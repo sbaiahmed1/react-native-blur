@@ -41,3 +41,17 @@ import UIKit
     blurView.materialTint = materialTint
   }
 }
+
+extension ReactNativeProgressiveBlurViewHelper {
+  /// Updates the progressive blur view with the blur radius of its blurType style, or below 0 for unset.
+  @objc public static func updateProgressiveBlurView(_ blurView: ProgressiveBlurView, withMaterialRadius materialRadius: Double) {
+    blurView.materialRadius = materialRadius
+  }
+}
+
+extension ReactNativeProgressiveBlurViewHelper {
+  /// Whether this build contains the private variable blur filter.
+  @objc public static func usesPrivateApi() -> Bool {
+    PrivateApiSupport.compiledIn
+  }
+}

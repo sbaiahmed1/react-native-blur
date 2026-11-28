@@ -17,8 +17,12 @@ export const MATERIAL_BANDS: Record<
 
 export const MATERIAL_OVERLAY = '#FF3D9A66';
 
-function CalibrationBackdrop({ bg }: { bg: SceneProps['params']['bg'] }) {
-  if (bg === 'photo') return <Backdrop variant="bands" />;
+export function CalibrationBackdrop({
+  bg,
+}: {
+  bg: SceneProps['params']['bg'];
+}) {
+  if (bg === 'photo' || bg === 'feed') return <Backdrop variant="bands" />;
   if (bg === 'edge') {
     return (
       <View style={[styles.fill, styles.row]}>

@@ -1,11 +1,11 @@
 import React, { forwardRef, memo, useMemo } from 'react';
-import { Platform } from 'react-native';
 import type { ColorValue, ViewStyle, StyleProp, ViewProps } from 'react-native';
 import ReactNativeLiquidGlassView, {
   type GlassType,
 } from './ReactNativeLiquidGlassViewNativeComponent';
 import BlurView from './BlurView';
 import { FALLBACK_BLUR_AMOUNT, getFallbackOverlayColor } from './colorUtils';
+import { isLiquidGlassAvailable } from './platformSupport';
 
 // Re-exported for back-compat: the helper lived here before it moved to the
 // platform-neutral colorUtils module (shared with the web implementation).
@@ -149,21 +149,13 @@ const LiquidGlassViewComponent = forwardRef<
     },
     ref
   ) => {
-    const isIos = Platform.OS === 'ios';
     const fallbackOverlayColor = useMemo(
       () => getFallbackOverlayColor(glassTintColor, glassOpacity),
       [glassTintColor, glassOpacity]
     );
 
-    // Native glass needs iOS 26+ (UIGlassEffect) or Android 13+ (the AGSL
-    // RuntimeShader the AndroidLiquidGlassView effect is built on). Older
-    // platforms fall back to a strong, lightly-tinted blur that approximates
-    // liquid glass.
-    const platformVersion = Number.parseInt(String(Platform.Version), 10);
-    const supportsNativeGlass = isIos
-      ? platformVersion >= 26
-      : platformVersion >= 33;
-    if (!supportsNativeGlass) {
+    // Without native glass, a strong, lightly tinted blur stands in for it.
+    if (!isLiquidGlassAvailable()) {
       return (
         <BlurView
           // "regular" is a subtle (~14% white) overlay. The default "xlight" is

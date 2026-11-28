@@ -43,7 +43,7 @@ Full documentation, guides, and the complete API reference live on the docs site
 - Six focused components for blur, vibrancy, progressive/gradient blur, liquid glass, and a blurred switch.
 - True native effects: `UIVisualEffectView` / `UIGlassEffect` on iOS. On Android 12 and later, each blur view blurs the views drawn behind it on the GPU. On Android 11 and earlier it blurs on the CPU with QmBlurView. Liquid glass runs as a GPU shader.
 - Web support out of the box (Expo Web / react-native-web) via CSS `backdrop-filter`, including a real progressive-blur ramp.
-- Native liquid glass on iOS 26+ and Android 13+, with automatic fallback to an enhanced blur on older iOS, older Android, and Web.
+- Native liquid glass on iOS 26+ and Android 13+, with automatic fallback to an enhanced blur on older iOS, older Android, and Web. `isLiquidGlassAvailable()` returns whether native glass renders.
 - New Architecture (Fabric) components with full TypeScript types.
 
 ## Requirements
