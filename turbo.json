@@ -22,7 +22,8 @@
     "build:ios": {
       "env": [
         "RCT_USE_RN_DEP",
-        "RCT_USE_PREBUILT_RNCORE"
+        "RCT_USE_PREBUILT_RNCORE",
+        "REACT_NATIVE_BLUR_NO_PRIVATE_API"
       ],
       "inputs": [
         "package.json",
