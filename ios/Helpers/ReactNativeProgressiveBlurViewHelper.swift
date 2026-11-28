@@ -48,3 +48,10 @@ extension ReactNativeProgressiveBlurViewHelper {
     blurView.materialRadius = materialRadius
   }
 }
+
+extension ReactNativeProgressiveBlurViewHelper {
+  /// Whether this build contains the private variable blur filter.
+  @objc public static func usesPrivateApi() -> Bool {
+    PrivateApiSupport.compiledIn
+  }
+}

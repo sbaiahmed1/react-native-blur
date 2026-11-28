@@ -18,5 +18,18 @@ Pod::Spec.new do |s|
   s.module_name = "ReactNativeBlur"
   s.private_header_files = "ios/**/*.h"
 
+  # Podfile.properties.json wins over the environment, so an Expo prebuild keeps the setting.
+  no_private_api = begin
+    properties = File.join(Pod::Config.instance.installation_root.to_s, "Podfile.properties.json")
+    JSON.parse(File.read(properties))["ReactNativeBlur_noPrivateApi"]
+  rescue StandardError
+    nil
+  end
+  no_private_api = ENV["REACT_NATIVE_BLUR_NO_PRIVATE_API"] if no_private_api.nil?
+  if ["1", "true"].include?(no_private_api.to_s)
+    s.pod_target_xcconfig = { "SWIFT_ACTIVE_COMPILATION_CONDITIONS" => "$(inherited) REACT_NATIVE_BLUR_NO_PRIVATE_API" }
+    Pod::UI.puts "[ReactNativeBlur] Private iOS API compiled out"
+  end
+
   install_modules_dependencies(s)
 end

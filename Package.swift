@@ -15,6 +15,9 @@ let unusedRootEntries = try! FileManager.default.contentsOfDirectory(atPath: Con
     .filter { !usedRootEntries.contains($0) }
     .sorted()
 
+// Read when Xcode evaluates the manifest, which it caches, so a change needs a clean build.
+let noPrivateApi = ["1", "true"].contains(Context.environment["REACT_NATIVE_BLUR_NO_PRIVATE_API"] ?? "")
+
 let reactNativeSettings: [CSetting] = [
     .define("DEBUG", .when(configuration: .debug)),
     .define("NDEBUG", .when(configuration: .release)),
@@ -44,7 +47,8 @@ let package = Package(
             name: "ReactNativeBlur",
             path: ".",
             exclude: unusedRootEntries + ["spm-headers"],
-            sources: ["ios/Helpers", "ios/Views", "spm-support"]
+            sources: ["ios/Helpers", "ios/Views", "spm-support"],
+            swiftSettings: noPrivateApi ? [.define("REACT_NATIVE_BLUR_NO_PRIVATE_API")] : []
         ),
         .target(
             name: "ReactNativeBlurObjC",

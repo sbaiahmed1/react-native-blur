@@ -79,4 +79,7 @@ export { default as ReactNativeVibrancyView } from './ReactNativeVibrancyViewNat
 export { VibrancyView } from './VibrancyView.web';
 export type { VibrancyViewProps, VibrancyViewRef } from './VibrancyView.web';
 
-export { isLiquidGlassAvailable } from './platformSupport.web';
+export {
+  isLiquidGlassAvailable,
+  usesPrivateIOSApi,
+} from './platformSupport.web';

@@ -24,6 +24,7 @@ RCT_EXPORT_MODULE(ReactNativeBlur)
 {
   return facebook::react::typedConstants<JS::NativeReactNativeBlur::Constants>({
     .isLiquidGlassAvailable = [ReactNativeLiquidGlassViewHelper isLiquidGlassAvailable],
+    .usesPrivateIOSApi = [ReactNativeProgressiveBlurViewHelper usesPrivateApi],
   });
 }
 

@@ -1,11 +1,13 @@
 // ProgressiveBlurView.swift
-// React Native wrapper for VariableBlurView
+// React Native wrapper for the progressive blur: the private variable blur filter, or the public bands
 
 import UIKit
 
 @objc public class ProgressiveBlurView: UIView {
 
+  #if !REACT_NATIVE_BLUR_NO_PRIVATE_API
   private var variableBlurView: VariableBlurView?
+  #endif
   private var reduceTransparencyObserver: NSObjectProtocol?
   private var isBatchingUpdates = false
   private var hasPendingBatchUpdate = false
@@ -87,36 +89,56 @@ import UIKit
     registerAccessibilityObserver()
   }
 
-  private var backend: UIView? { bandsView ?? variableBlurView }
+  private var backend: UIView? {
+    #if REACT_NATIVE_BLUR_NO_PRIVATE_API
+    return bandsView
+    #else
+    return bandsView ?? variableBlurView
+    #endif
+  }
 
   private func setupView() {
     backend?.removeFromSuperview()
+    #if REACT_NATIVE_BLUR_NO_PRIVATE_API
+    addBands()
+    #else
     if Self.forcesBands || !VariableBlurView.isPrivateFilterAvailable {
-      let bands = ProgressiveBandsView(frame: bounds)
-      bands.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-      insertSubview(bands, at: 0)
-      bandsView = bands
+      addBands()
     } else {
-      let variableBlur = VariableBlurView(
-        maxBlurRadius: CGFloat(blurAmount),
-        direction: VariableBlurDirection(fromString: direction),
-        startOffset: CGFloat(startOffset),
-        blurStyle: blurStyleFromString(blurTypeString)
-      )
-      variableBlur.translatesAutoresizingMaskIntoConstraints = false
-      insertSubview(variableBlur, at: 0)
-      NSLayoutConstraint.activate([
-        variableBlur.topAnchor.constraint(equalTo: topAnchor),
-        variableBlur.leadingAnchor.constraint(equalTo: leadingAnchor),
-        variableBlur.trailingAnchor.constraint(equalTo: trailingAnchor),
-        variableBlur.bottomAnchor.constraint(equalTo: bottomAnchor),
-      ])
-      variableBlurView = variableBlur
-      variableBlur.setTint(materialTint)
+      addVariableBlur()
     }
+    #endif
     applyInterfaceStyle()
     updateAccessibilityFallback()
   }
+
+  private func addBands() {
+    let bands = ProgressiveBandsView(frame: bounds)
+    bands.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+    insertSubview(bands, at: 0)
+    bandsView = bands
+  }
+
+  #if !REACT_NATIVE_BLUR_NO_PRIVATE_API
+  private func addVariableBlur() {
+    let variableBlur = VariableBlurView(
+      maxBlurRadius: CGFloat(blurAmount),
+      direction: VariableBlurDirection(fromString: direction),
+      startOffset: CGFloat(startOffset),
+      blurStyle: blurStyleFromString(blurTypeString)
+    )
+    variableBlur.translatesAutoresizingMaskIntoConstraints = false
+    insertSubview(variableBlur, at: 0)
+    NSLayoutConstraint.activate([
+      variableBlur.topAnchor.constraint(equalTo: topAnchor),
+      variableBlur.leadingAnchor.constraint(equalTo: leadingAnchor),
+      variableBlur.trailingAnchor.constraint(equalTo: trailingAnchor),
+      variableBlur.bottomAnchor.constraint(equalTo: bottomAnchor),
+    ])
+    variableBlurView = variableBlur
+    variableBlur.setTint(materialTint)
+  }
+  #endif
 
   private func updateBlur() {
     if isBatchingUpdates {
@@ -141,7 +163,9 @@ import UIKit
         startOffset: startOffset,
         style: blurStyle
       )
-    } else if let variableBlurView {
+    }
+    #if !REACT_NATIVE_BLUR_NO_PRIVATE_API
+    if let variableBlurView {
       variableBlurView.updateBlur(
         maxBlurRadius: CGFloat(blurAmount),
         direction: blurDirection,
@@ -150,6 +174,7 @@ import UIKit
       )
       variableBlurView.setTint(materialTint)
     }
+    #endif
 
     applyInterfaceStyle()
     updateAccessibilityFallback()
@@ -194,7 +219,9 @@ import UIKit
       NotificationCenter.default.removeObserver(reduceTransparencyObserver)
     }
     backend?.removeFromSuperview()
+    #if !REACT_NATIVE_BLUR_NO_PRIVATE_API
     variableBlurView = nil
+    #endif
     bandsView = nil
   }
 }

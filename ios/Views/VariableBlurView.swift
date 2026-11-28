@@ -5,6 +5,8 @@ import UIKit
 import CoreImage.CIFilterBuiltins
 import QuartzCore
 
+#if !REACT_NATIVE_BLUR_NO_PRIVATE_API
+
 /// Variable (gradient) blur backed by the private `CAFilter` `variableBlur`
 /// type, which UIKit does not expose publicly.
 ///
@@ -446,3 +448,5 @@ open class VariableBlurView: UIVisualEffectView {
     return context.makeImage()!
   }
 }
+
+#endif
