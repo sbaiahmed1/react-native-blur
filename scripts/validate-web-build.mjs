@@ -89,7 +89,7 @@ const web = walkGraph(path.join(libModule, 'index.web.js'), {
 });
 failures.push(...web.errors.map((e) => `web graph: ${e}`));
 for (const file of web.seen) {
-  if (/NativeComponent\.(js|ts)$/.test(file)) {
+  if (/(NativeComponent|\/Native\w+)\.(js|ts)$/.test(file)) {
     failures.push(
       `web graph reaches native codegen module: ${path.relative(libModule, file)}`
     );

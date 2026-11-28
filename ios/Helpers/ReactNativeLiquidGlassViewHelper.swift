@@ -41,3 +41,10 @@ import UIKit
     liquidGlassView.reducedTransparencyFallbackColor = reducedTransparencyFallbackColor
   }
 }
+
+extension ReactNativeLiquidGlassViewHelper {
+  /// Whether this app renders Liquid Glass, read by the library's native module.
+  @objc public static func isLiquidGlassAvailable() -> Bool {
+    LiquidGlassSupport.isAvailable
+  }
+}

@@ -1,6 +1,7 @@
 import React, { forwardRef, memo } from 'react';
 import { Platform, View, type ViewProps } from 'react-native';
 import ReactNativeLiquidGlassContainer from './ReactNativeLiquidGlassContainerNativeComponent';
+import { isLiquidGlassAvailable } from './platformSupport';
 
 export interface LiquidGlassContainerProps extends ViewProps {
   /**
@@ -42,8 +43,7 @@ const LiquidGlassContainerComponent = forwardRef<
   LiquidGlassContainerRef,
   LiquidGlassContainerProps
 >(({ spacing = 0, style, children, ...rest }, ref) => {
-  const isCompatibleIOS =
-    Platform.OS === 'ios' && parseInt(Platform.Version as string, 10) >= 26;
+  const isCompatibleIOS = Platform.OS === 'ios' && isLiquidGlassAvailable();
 
   if (!isCompatibleIOS) {
     // Fallback to regular View on non-iOS platforms or older iOS versions

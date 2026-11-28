@@ -74,3 +74,5 @@ export type { BlurSwitchProps } from './BlurSwitch';
 export { default as ReactNativeVibrancyView } from './ReactNativeVibrancyViewNativeComponent';
 export { VibrancyView } from './VibrancyView';
 export type { VibrancyViewProps, VibrancyViewRef } from './VibrancyView';
+
+export { isLiquidGlassAvailable } from './platformSupport';

@@ -63,6 +63,7 @@ __attribute__((objc_runtime_name("_TtC15ReactNativeBlur32ReactNativeLiquidGlassV
 + (void)updateLiquidGlassView:(LiquidGlassContainerView *)view withIsInteractive:(BOOL)isInteractive;
 + (void)updateLiquidGlassView:(LiquidGlassContainerView *)view withIgnoringSafeArea:(BOOL)ignoreSafeArea;
 + (void)updateLiquidGlassView:(LiquidGlassContainerView *)view withReducedTransparencyFallbackColor:(UIColor *)color;
++ (BOOL)isLiquidGlassAvailable;
 @end
 
 __attribute__((objc_runtime_name("_TtC15ReactNativeBlur36ReactNativeProgressiveBlurViewHelper")))
